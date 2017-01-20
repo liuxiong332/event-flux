@@ -1,0 +1,25 @@
+{
+  "name": "reevent",
+  "version": "1.0.0",
+  "description": "The flux framework for React",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/liuxiong332/reevent.git"
+  },
+  "author": "liuxiong",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/liuxiong332/reevent/issues"
+  },
+  "homepage": "https://github.com/liuxiong332/reevent#readme",
+  "devDependencies": {
+    "del": "^2.2.2",
+    "gulp": "^3.9.1",
+    "gulp-babel": "^6.1.2",
+    "gulp-mocha": "^3.0.1"
+  }
+}
