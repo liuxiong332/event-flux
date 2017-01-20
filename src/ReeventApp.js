@@ -1,4 +1,4 @@
-module.exports = class AppMain {
+module.exports = class ReeventApp {
   loadInClient() {
   }
 
