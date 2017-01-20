@@ -1,6 +1,7 @@
 var gulp = require('gulp');
 var babel = require('gulp-babel');
 var del = require('del');
+var gulpSequence = require('gulp-sequence');
 var mocha = require('gulp-mocha');
 
 gulp.task('clean', function() {
