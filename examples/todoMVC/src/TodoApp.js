@@ -9,13 +9,14 @@ import PureVMComponent from '../../../lib/PureVMComponent';
 var ENTER_KEY = 13;
 
 export default class TodoApp extends PureVMComponent {
-	getInitialState: function () {
-		return {
-			nowShowing: app.ALL_TODOS,
+	constructor(props) {
+		super(props);
+		this.state = {
+			nowShowing: ALL_TODOS,
 			editing: null,
 			newTodo: ''
 		};
-	},
+	}
 
 	componentDidMount: function () {
 		var setState = this.setState;
