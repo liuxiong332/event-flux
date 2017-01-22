@@ -1,8 +1,18 @@
 module.exports = class ModelBase {
-  constructor() {
+  constructor(reeventApp) {
+    this.reeventApp = reeventApp;
     this._listeners = [];
     this.state = {};
     this.disposables = [];
+    this.onStateChange = this.onStateChange.bind(this);
+  }
+
+  addDisposable(disposable) {
+    this.disposables.push(disposable);
+  }
+
+  onStateChange(state) {
+    this.setState(state);
   }
 
   addStateChange(callback) {
@@ -10,18 +20,26 @@ module.exports = class ModelBase {
     return () => {
       const index = this._listeners.indexOf(callback);
       if (index !== -1) {
-        this._listeners.splice(index, 1)
+        this._listeners.splice(index, 1);
       }
     };
-  }
-
-  addDisposable(disposable) {
-    this.disposables.push(disposable);
   }
 
   observeState(callback) {
     let disposable = this.addStateChange(callback);
     this.forceUpdate();
+    return disposable;
+  }
+
+  addStoreStateChange(store, callback) {
+    let disposable = store.addStateChange(callback || this.onStateChange);
+    this.addDisposable(disposable);
+    return disposable;
+  }
+
+  observeStore(store, callback) {
+    let disposable = store.observeState(callback || this.onStateChange);
+    this.addDisposable(disposable);
     return disposable;
   }
 

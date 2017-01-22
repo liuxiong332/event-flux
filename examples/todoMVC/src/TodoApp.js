@@ -10,22 +10,18 @@ const COMPLETED_TODOS = 'completed';
 const ENTER_KEY = 13;
 
 export default class TodoApp extends PureVMComponent {
-	static contextTypes = {
-	  reeventApp: React.PropTypes.object
-	};
-
-	constructor(props) {
+	constructor(props, context) {
 		super(props);
 		this.state = {
 			nowShowing: ALL_TODOS,
 			editing: null,
 			newTodo: ''
 		};
+		this.todoStore = context.reeventApp.todoStore;
 	}
 
 	componentWillMount() {
-		this.todoStore = this.context.reeventApp.todoStore;
-		this.addDisposable(this.todoStore.observeState(this.onStateChange));
+		this.observeStore(this.todoStore);
 	}
 
 	componentDidMount() {
