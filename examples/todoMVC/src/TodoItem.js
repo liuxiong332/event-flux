@@ -4,7 +4,7 @@ import classNames from 'classnames';
 var ESCAPE_KEY = 27;
 var ENTER_KEY = 13;
 
-class TodoItem extends PureComponent {
+export default class TodoItem extends PureComponent {
 	constructor(props) {
 		super(props);
 		this.state = { editText: props.todo.title };

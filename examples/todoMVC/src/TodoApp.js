@@ -2,7 +2,7 @@ import React from 'react';
 import TodoFooter from './TodoFooter';
 import TodoItem from './TodoItem';
 import PureVMComponent from '../../../lib/PureVMComponent';
-import { Router } from 'director';
+import { Router } from 'director/build/director';
 
 const ALL_TODOS = 'all';
 const ACTIVE_TODOS = 'active';
@@ -30,7 +30,7 @@ export default class TodoApp extends PureVMComponent {
 
 	componentDidMount() {
 		var setState = this.setState;
-		var router = Router({
+		var router = new Router({
 			'/': setState.bind(this, {nowShowing: ALL_TODOS}),
 			'/active': setState.bind(this, {nowShowing: ACTIVE_TODOS}),
 			'/completed': setState.bind(this, {nowShowing: COMPLETED_TODOS})
@@ -38,11 +38,11 @@ export default class TodoApp extends PureVMComponent {
 		router.init('/');
 	}
 
-	handleChange(event) {
+	handleChange = (event) => {
 		this.setState({newTodo: event.target.value});
-	}
+	};
 
-	handleNewTodoKeyDown(event) {
+	handleNewTodoKeyDown = (event) => {
 		if (event.keyCode !== ENTER_KEY) {
 			return;
 		}
@@ -55,16 +55,16 @@ export default class TodoApp extends PureVMComponent {
 			this.todoStore.addTodo(val);
 			this.setState({newTodo: ''});
 		}
-	}
+	};
 
-	toggleAll(event) {
+	toggleAll = (event) => {
 		var checked = event.target.checked;
 		this.todoStore.toggleAll(checked);
-	}
+	};
 
-	toggle(todoToToggle) {
+	toggle = (todoToToggle) => {
 		this.todoStore.toggle(todoToToggle);
-	}
+	};
 
 	destroy(todo) {
 		this.todoStore.destroy(todo);
@@ -79,13 +79,13 @@ export default class TodoApp extends PureVMComponent {
 		this.setState({editing: null});
 	}
 
-	cancel() {
+	cancel = () => {
 		this.setState({editing: null});
-	}
+	};
 
-	clearCompleted() {
+	clearCompleted = () => {
 		this.todoStore.clearCompleted();
-	}
+	};
 
 	render() {
 		var footer;
@@ -94,9 +94,9 @@ export default class TodoApp extends PureVMComponent {
 
 		var shownTodos = todos.filter(function (todo) {
 			switch (this.state.nowShowing) {
-			case app.ACTIVE_TODOS:
+			case ACTIVE_TODOS:
 				return !todo.completed;
-			case app.COMPLETED_TODOS:
+			case COMPLETED_TODOS:
 				return todo.completed;
 			default:
 				return true;
