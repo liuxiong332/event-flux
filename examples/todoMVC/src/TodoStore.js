@@ -3,6 +3,7 @@ import StoreBase from '../../../lib/StoreBase';
 
 export default class TodoModel extends StoreBase {
   constructor(key) {
+    super();
   	this.state = { key, todos: store(key) };
   }
 

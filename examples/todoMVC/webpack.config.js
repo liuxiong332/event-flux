@@ -13,7 +13,7 @@ module.exports = {
         include: path.join(__dirname, 'src'),
         loader: 'babel-loader',
         query: {
-          presets: ['es2015', 'stage-0']
+          presets: ['es2015', 'stage-0', 'react']
         }
       }
     ]

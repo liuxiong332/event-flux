@@ -1,11 +1,16 @@
-import PureVMComponent from '../../../lib/PureVMComponent';
+import React, { PureComponent } from 'react';
 import classNames from 'classnames';
 
 var ESCAPE_KEY = 27;
 var ENTER_KEY = 13;
 
-class TodoItem extends PureVMComponent {
-	handleSubmit: function (event) {
+class TodoItem extends PureComponent {
+	constructor(props) {
+		super(props);
+		this.state = { editText: props.todo.title };
+	}
+
+	handleSubmit(event) {
 		var val = this.state.editText.trim();
 		if (val) {
 			this.props.onSave(val);
@@ -13,31 +18,28 @@ class TodoItem extends PureVMComponent {
 		} else {
 			this.props.onDestroy();
 		}
-	},
+	}
 
-	handleEdit: function () {
+	handleEdit() {
 		this.props.onEdit();
 		this.setState({editText: this.props.todo.title});
-	},
+	}
 
-	handleKeyDown: function (event) {
+	handleKeyDown(event) {
 		if (event.which === ESCAPE_KEY) {
 			this.setState({editText: this.props.todo.title});
 			this.props.onCancel(event);
 		} else if (event.which === ENTER_KEY) {
 			this.handleSubmit(event);
 		}
-	},
+	}
 
-	handleChange: function (event) {
+	handleChange(event) {
 		if (this.props.editing) {
 			this.setState({editText: event.target.value});
 		}
-	},
+	}
 
-	getInitialState: function () {
-		return {editText: this.props.todo.title};
-	},
 
 	/**
 	 * This is a completely optional performance enhancement that you can
@@ -46,13 +48,13 @@ class TodoItem extends PureVMComponent {
 	 * just use it as an example of how little code it takes to get an order
 	 * of magnitude performance improvement.
 	 */
-	shouldComponentUpdate: function (nextProps, nextState) {
+	shouldComponentUpdate(nextProps, nextState) {
 		return (
 			nextProps.todo !== this.props.todo ||
 			nextProps.editing !== this.props.editing ||
 			nextState.editText !== this.state.editText
 		);
-	},
+	}
 
 	/**
 	 * Safely manipulate the DOM after updating the state when invoking
@@ -60,15 +62,15 @@ class TodoItem extends PureVMComponent {
 	 * For more info refer to notes at https://facebook.github.io/react/docs/component-api.html#setstate
 	 * and https://facebook.github.io/react/docs/component-specs.html#updating-componentdidupdate
 	 */
-	componentDidUpdate: function (prevProps) {
+	componentDidUpdate(prevProps) {
 		if (!prevProps.editing && this.props.editing) {
 			var node = React.findDOMNode(this.refs.editField);
 			node.focus();
 			node.setSelectionRange(node.value.length, node.value.length);
 		}
-	},
+	}
 
-	render: function () {
+	render() {
 		return (
 			<li className={classNames({
 				completed: this.props.todo.completed,

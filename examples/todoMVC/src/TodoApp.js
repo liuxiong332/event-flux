@@ -1,14 +1,19 @@
-const ALL_TODOS = 'all';
-const ACTIVE_TODOS = 'active';
-const COMPLETED_TODOS = 'completed';
-
+import React from 'react';
 import TodoFooter from './TodoFooter';
 import TodoItem from './TodoItem';
 import PureVMComponent from '../../../lib/PureVMComponent';
+import { Router } from 'director';
 
-var ENTER_KEY = 13;
+const ALL_TODOS = 'all';
+const ACTIVE_TODOS = 'active';
+const COMPLETED_TODOS = 'completed';
+const ENTER_KEY = 13;
 
 export default class TodoApp extends PureVMComponent {
+	static contextTypes = {
+	  reeventApp: React.PropTypes.object
+	};
+
 	constructor(props) {
 		super(props);
 		this.state = {
@@ -18,21 +23,26 @@ export default class TodoApp extends PureVMComponent {
 		};
 	}
 
-	componentDidMount: function () {
+	componentWillMount() {
+		this.todoStore = this.context.reeventApp.todoStore;
+		this.addDisposable(this.todoStore.observeState(this.onStateChange));
+	}
+
+	componentDidMount() {
 		var setState = this.setState;
 		var router = Router({
-			'/': setState.bind(this, {nowShowing: app.ALL_TODOS}),
-			'/active': setState.bind(this, {nowShowing: app.ACTIVE_TODOS}),
-			'/completed': setState.bind(this, {nowShowing: app.COMPLETED_TODOS})
+			'/': setState.bind(this, {nowShowing: ALL_TODOS}),
+			'/active': setState.bind(this, {nowShowing: ACTIVE_TODOS}),
+			'/completed': setState.bind(this, {nowShowing: COMPLETED_TODOS})
 		});
 		router.init('/');
-	},
+	}
 
-	handleChange: function (event) {
+	handleChange(event) {
 		this.setState({newTodo: event.target.value});
-	},
+	}
 
-	handleNewTodoKeyDown: function (event) {
+	handleNewTodoKeyDown(event) {
 		if (event.keyCode !== ENTER_KEY) {
 			return;
 		}
@@ -42,45 +52,45 @@ export default class TodoApp extends PureVMComponent {
 		var val = this.state.newTodo.trim();
 
 		if (val) {
-			this.props.model.addTodo(val);
+			this.todoStore.addTodo(val);
 			this.setState({newTodo: ''});
 		}
-	},
+	}
 
-	toggleAll: function (event) {
+	toggleAll(event) {
 		var checked = event.target.checked;
-		this.props.model.toggleAll(checked);
-	},
+		this.todoStore.toggleAll(checked);
+	}
 
-	toggle: function (todoToToggle) {
-		this.props.model.toggle(todoToToggle);
-	},
+	toggle(todoToToggle) {
+		this.todoStore.toggle(todoToToggle);
+	}
 
-	destroy: function (todo) {
-		this.props.model.destroy(todo);
-	},
+	destroy(todo) {
+		this.todoStore.destroy(todo);
+	}
 
-	edit: function (todo) {
+	edit(todo) {
 		this.setState({editing: todo.id});
-	},
+	}
 
-	save: function (todoToSave, text) {
-		this.props.model.save(todoToSave, text);
+	save(todoToSave, text) {
+		this.todoStore.save(todoToSave, text);
 		this.setState({editing: null});
-	},
+	}
 
-	cancel: function () {
+	cancel() {
 		this.setState({editing: null});
-	},
+	}
 
-	clearCompleted: function () {
-		this.props.model.clearCompleted();
-	},
+	clearCompleted() {
+		this.todoStore.clearCompleted();
+	}
 
-	render: function () {
+	render() {
 		var footer;
 		var main;
-		var todos = this.props.model.todos;
+		var todos = this.state.todos;
 
 		var shownTodos = todos.filter(function (todo) {
 			switch (this.state.nowShowing) {
