@@ -3,12 +3,12 @@ module.exports = class ModelBase {
     this.reeventApp = reeventApp;
     this._listeners = [];
     this.state = {};
-    this.disposables = [];
+    this._disposables = [];
     this.onStateChange = this.onStateChange.bind(this);
   }
 
   addDisposable(disposable) {
-    this.disposables.push(disposable);
+    this._disposables.push(disposable);
   }
 
   onStateChange(state) {
@@ -60,7 +60,7 @@ module.exports = class ModelBase {
 
   dispose() {
     this._listeners = null;
-    for (let disposable of this.disposables) {
+    for (let disposable of this._disposables) {
       disposable();
     }
   }
