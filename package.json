@@ -2,7 +2,7 @@
   "name": "reevent",
   "version": "1.0.0",
   "description": "The flux framework for React",
-  "main": "index.js",
+  "main": "./lib/index.js",
   "scripts": {
     "test": "jest"
   },

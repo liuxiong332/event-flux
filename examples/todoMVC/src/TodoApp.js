@@ -1,7 +1,7 @@
 import React from 'react';
 import TodoFooter from './TodoFooter';
 import TodoItem from './TodoItem';
-import PureVMComponent from '../../../lib/PureVMComponent';
+import { PureVMComponent } from '../../..';
 import { Router } from 'director/build/director';
 
 const ALL_TODOS = 'all';

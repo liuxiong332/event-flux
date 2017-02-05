@@ -1,7 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import AppStore from './AppStore';
-import ReeventProvider from '../../../lib/ReeventProvider';
+import { ReeventProvider } from '../../../';
 import TodoApp from './TodoApp';
 
 const reeventApp = new AppStore().loadInClient();

@@ -1,4 +1,4 @@
-import ReeventApp from '../../../lib/ReeventApp';
+import { ReeventApp } from '../../..';
 import TodoStore from './TodoStore';
 
 export default class AppStore extends ReeventApp {

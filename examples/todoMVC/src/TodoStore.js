@@ -1,5 +1,5 @@
 import { uuid, pluralize, store, extend } from './util';
-import StoreBase from '../../../lib/StoreBase';
+import { StoreBase } from '../../..';
 
 export default class TodoModel extends StoreBase {
   constructor(key) {
