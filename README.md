@@ -44,12 +44,12 @@ export default class TodoStore extends StoreBase {
   }
 
   addTodo(title) {
-		let todos = this.state.todos.concat({
-			title: title,
-			completed: false
-		});
+  	let todos = this.state.todos.concat({
+      title: title,
+      completed: false
+  	});
     this.setState({ todos });
-	}
+  }
 }
 ```
 
@@ -75,10 +75,10 @@ Then, create some React component just like before.
 
 ```js
 class TodoItem extends PureComponent {
-	constructor(props) {
-		super(props);
-		this.state = { editText: props.todo.title };
-	}
+  constructor(props) {
+    super(props);
+    this.state = { editText: props.todo.title };
+  }
 }
 ```
 
@@ -88,19 +88,19 @@ Then, create some `VMComponent` that observe the store's state change.
 
 ```js
 class TodoApp extends PureVMComponent {
-	constructor(props, context) {
-		super(props);
-		this.state = {
-			nowShowing: ALL_TODOS,
-			editing: null,
-			newTodo: ''
-		};
-		this.todoStore = context.reeventApp.todoStore;
-	}
+  constructor(props, context) {
+    super(props);
+    this.state = {
+      nowShowing: ALL_TODOS,
+      editing: null,
+      newTodo: ''
+    };
+    this.todoStore = context.reeventApp.todoStore;
+  }
 
-	componentWillMount() {
-		this.observeStore(this.todoStore);
-	}
+  componentWillMount() {
+    this.observeStore(this.todoStore);
+  }
 }
 ```
 
@@ -115,10 +115,12 @@ import TodoApp from './TodoApp';
 
 const reeventApp = new AppStore().loadInClient();
 
-ReactDOM.render((
-		<ReeventProvider reeventApp={reeventApp}>
-			<TodoApp />
-		</ReeventProvider>
-	), document.getElementsByClassName('todoapp')[0]
+ReactDOM.render(
+  <ReeventProvider reeventApp={reeventApp}>
+    <TodoApp />
+  </ReeventProvider>,
+  document.getElementsByClassName('todoapp')[0]
 );
 ```
+
+More info can refer to `example/todoMVC/`
