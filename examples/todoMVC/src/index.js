@@ -7,11 +7,8 @@ import TodoApp from './TodoApp';
 const reeventApp = new AppStore().loadInClient();
 
 ReactDOM.render(
-	(
-		<ReeventProvider reeventApp={reeventApp}>
-			<TodoApp />
-		</ReeventProvider>
-	),
-
-	document.getElementsByClassName('todoapp')[0]
+  <ReeventProvider reeventApp={reeventApp}>
+    <TodoApp />
+  </ReeventProvider>,
+  document.getElementsByClassName('todoapp')[0]
 );
