@@ -1,6 +1,6 @@
 module.exports = class ModelBase {
-  constructor(appStore) {
-    this.appStore = appStore;
+  constructor(reeventApp) {
+    this.reeventApp = reeventApp;
     this._listeners = [];
     this.state = {};
     this._disposables = [];
