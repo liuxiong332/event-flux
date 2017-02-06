@@ -1,6 +1,6 @@
 {
   "name": "reevent",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "The flux framework for React",
   "main": "./lib/index.js",
   "scripts": {
@@ -17,6 +17,7 @@
     "url": "https://github.com/liuxiong332/reevent/issues"
   },
   "homepage": "https://github.com/liuxiong332/reevent#readme",
+  "files": ["src", "lib"],
   "devDependencies": {
     "babel-jest": "^18.0.0",
     "babel-polyfill": "^6.22.0",
