@@ -59,7 +59,7 @@ module.exports = class ModelBase {
   }
 
   dispose() {
-    this._listeners = null;
+    this._listeners = [];
     for (let disposable of this._disposables) {
       disposable();
     }
