@@ -11043,7 +11043,7 @@ module.exports = function () {
   }, {
     key: "forceUpdate",
     value: function forceUpdate() {
-      var listeners = this._listeners;
+      var listeners = this._listeners.slice(0);
       var length = listeners.length;
       for (var i = 0; i < length; ++i) {
         listeners[i](this.state);
@@ -11060,7 +11060,7 @@ module.exports = function () {
   }, {
     key: "dispose",
     value: function dispose() {
-      this._listeners = null;
+      this._listeners = [];
       var _iteratorNormalCompletion = true;
       var _didIteratorError = false;
       var _iteratorError = undefined;

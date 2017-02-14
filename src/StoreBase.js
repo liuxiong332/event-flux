@@ -44,7 +44,7 @@ module.exports = class ModelBase {
   }
 
   forceUpdate() {
-    let listeners = this._listeners;
+    let listeners = this._listeners.slice(0);
     let length = listeners.length;
     for (let i = 0; i < length; ++i) {
       listeners[i](this.state);
