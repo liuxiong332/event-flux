@@ -21,6 +21,10 @@ module.exports = class ModelBase {
     return this._emitter.on('changeState', callback);
   }
 
+  addEventCallback(event, callback) {
+    return this._emitter.on(event, callback);
+  }
+
   observeState(callback) {
     let disposable = this.addStateChange(callback);
     this._emitter.emit('changeState', this.state);
@@ -50,6 +54,10 @@ module.exports = class ModelBase {
       Object.assign(this.state, state);
       this._emitter.emit('changeState', this.state);
     }
+  }
+
+  emitEvent(event, value) {
+    this._emitter.emit(event, value);
   }
 
   dispose() {
