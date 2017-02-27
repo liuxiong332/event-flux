@@ -6,7 +6,7 @@ test('StoreBase', () => {
     let stateChangeMock = jest.fn();
     store.addStateChange(stateChangeMock);
     expect(stateChangeMock.mock.calls.length).toBe(0);
-    store.forceUpdate();
+    store.setState({ state1: 'dd' });
     expect(stateChangeMock.mock.calls.length).toBe(1);
   });
 
@@ -15,7 +15,7 @@ test('StoreBase', () => {
     let stateChangeMock = jest.fn();
     store.observeState(stateChangeMock);
     expect(stateChangeMock.mock.calls.length).toBe(1);
-    store.forceUpdate();
+    store.setState({ state1: 'dd' });
     expect(stateChangeMock.mock.calls.length).toBe(2);
   });
 

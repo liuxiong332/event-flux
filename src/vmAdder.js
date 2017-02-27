@@ -1,4 +1,5 @@
 const React = require('react');
+const { CompositeDisposable } = require('event-kit');
 
 module.exports = (componentClass) => {
   return class NewVMComponent extends componentClass {
@@ -8,25 +9,25 @@ module.exports = (componentClass) => {
 
     constructor(props) {
       super(props);
-      this.disposables = [];
+      this.disposables = new CompositeDisposable();
     }
 
     addDisposable(disposable) {
-      this.disposables.push(disposable);
-    }
-
-    removeDisposables() {
-      for (let disposable of this.disposables) {
-        disposable();
-      }
+      this.disposables.add(disposable);
     }
 
     componentWillUnmount() {
-      this.removeDisposables();
+      this.disposables.dispose();
     }
 
     addStoreStateChange(store, callback) {
       let disposable = store.addStateChange(callback || this.onStateChange);
+      this.addDisposable(disposable);
+      return disposable;
+    }
+
+    addStoreEvent(store, event, callback) {
+      let disposable = store._emitter.on(event, callback);
       this.addDisposable(disposable);
       return disposable;
     }

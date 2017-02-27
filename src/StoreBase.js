@@ -1,14 +1,16 @@
+const { Emitter, Disposable, CompositeDisposable } = require('event-kit');
+
 module.exports = class ModelBase {
   constructor(reeventApp) {
     this.reeventApp = reeventApp;
-    this._listeners = [];
     this.state = {};
-    this._disposables = [];
     this.onStateChange = this.onStateChange.bind(this);
+    this._emitter = new Emitter();
+    this._disposables = new CompositeDisposable();
   }
 
   addDisposable(disposable) {
-    this._disposables.push(disposable);
+    this._disposables.add(disposable);
   }
 
   onStateChange(state) {
@@ -16,23 +18,23 @@ module.exports = class ModelBase {
   }
 
   addStateChange(callback) {
-    this._listeners.push(callback);
-    return () => {
-      const index = this._listeners.indexOf(callback);
-      if (index !== -1) {
-        this._listeners.splice(index, 1);
-      }
-    };
+    return this._emitter.on('changeState', callback);
   }
 
   observeState(callback) {
     let disposable = this.addStateChange(callback);
-    this.forceUpdate();
+    this._emitter.emit('changeState', this.state);
     return disposable;
   }
 
   addStoreStateChange(store, callback) {
     let disposable = store.addStateChange(callback || this.onStateChange);
+    this.addDisposable(disposable);
+    return disposable;
+  }
+
+  addStoreEvent(store, event, callback) {
+    let disposable = store._emitter.on(event, callback);
     this.addDisposable(disposable);
     return disposable;
   }
@@ -43,25 +45,14 @@ module.exports = class ModelBase {
     return disposable;
   }
 
-  forceUpdate() {
-    let listeners = this._listeners.slice(0);
-    let length = listeners.length;
-    for (let i = 0; i < length; ++i) {
-      listeners[i](this.state);
-    }
-  }
-
   setState(state) {
     if (state && Object.keys(state).length > 0) {
       Object.assign(this.state, state);
-      this.forceUpdate();
+      this._emitter.emit('changeState', this.state);
     }
   }
 
   dispose() {
-    this._listeners = [];
-    for (let disposable of this._disposables) {
-      disposable();
-    }
+    this.emitter.dispose();
   }
 }
