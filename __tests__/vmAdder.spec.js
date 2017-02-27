@@ -15,9 +15,18 @@ test('vmAdder', () => {
     expect(module.setState.calls.length).toBe(0);
     store.setState({ hello: 'world' });
     expect(module.setState.calls[0][0]).toMatchObject({ hello: 'world' });
-    disposable();
+    disposable.dispose();
     store.setState({ hello: 'myworld'});
     expect(module.setState.calls.length).toBe(1);
+  });
+
+  test('addStoreEvent', () => {
+    let module = new VMModule();
+    let store = new StoreBase();
+    let mockFn = jest.fn();
+    let disposable = store.addStoreEvent('myevent', mockFn);
+    store.emitEvent('myevent');
+    expect(mockFn.calls.length).toBe(1);
   });
 
   test('no notification will emit after unmount', () => {

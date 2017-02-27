@@ -27,7 +27,7 @@ module.exports = (componentClass) => {
     }
 
     addStoreEvent(store, event, callback) {
-      let disposable = store._emitter.on(event, callback);
+      let disposable = store.addEventCallback(event, callback);
       this.addDisposable(disposable);
       return disposable;
     }

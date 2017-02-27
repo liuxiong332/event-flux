@@ -61,6 +61,7 @@ module.exports = class ModelBase {
   }
 
   dispose() {
-    this.emitter.dispose();
+    this._emitter.dispose();
+    this._disposables.dispose();
   }
 }

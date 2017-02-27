@@ -19,6 +19,16 @@ test('StoreBase', () => {
     expect(stateChangeMock.mock.calls.length).toBe(2);
   });
 
+  test('emitEvent and addEventCallback', () => {
+    let store = new StoreBase();
+    let eventMock = jest.fn();
+    store.addEventCallback('myevent', eventMock);
+    store.emitEvent('myevent');
+    expect(eventMock.mock.calls.length).toBe(1);
+    store.dispose();
+    expect(store._disposables.length).toBe(0);
+  });
+
   test('setState method', () => {
     let store = new StoreBase();
     let stateChangeMock = jest.fn();
