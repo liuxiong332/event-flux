@@ -4,47 +4,49 @@ module.exports = class ModelBase {
   constructor(reeventApp) {
     this.reeventApp = reeventApp;
     this.state = {};
-    this.onStateChange = this.onStateChange.bind(this);
+    this.storeUpdated = this.storeUpdated.bind(this);
     this._emitter = new Emitter();
     this._disposables = new CompositeDisposable();
+  }
+
+  serialize() {
+  	return this.state;
+  }
+
+  deserialize(state) {
+  	this.setState(state);
   }
 
   addDisposable(disposable) {
     this._disposables.add(disposable);
   }
 
-  onStateChange(state) {
+  storeUpdated(state) {
     this.setState(state);
   }
 
-  addStateChange(callback) {
-    return this._emitter.on('changeState', callback);
+  onDidUpdate(callback) {
+    return this._emitter.on('did-update', callback);
   }
 
-  addEventCallback(event, callback) {
+  onEvent(event, callback) {
     return this._emitter.on(event, callback);
   }
 
-  observeState(callback) {
-    let disposable = this.addStateChange(callback);
-    this._emitter.emit('changeState', this.state);
+  observe(callback) {
+    let disposable = this.onDidUpdate(callback);
+    this._emitter.emit('did-update', this.state);
     return disposable;
   }
 
-  addStoreStateChange(store, callback) {
-    let disposable = store.addStateChange(callback || this.onStateChange);
-    this.addDisposable(disposable);
-    return disposable;
-  }
-
-  addStoreEvent(store, event, callback) {
-    let disposable = store._emitter.on(event, callback);
+  onDidUpdateStore(store, callback) {
+    let disposable = store.onDidUpdate(callback || this.storeUpdated);
     this.addDisposable(disposable);
     return disposable;
   }
 
   observeStore(store, callback) {
-    let disposable = store.observeState(callback || this.onStateChange);
+    let disposable = store.observe(callback || this.storeUpdated);
     this.addDisposable(disposable);
     return disposable;
   }
@@ -52,7 +54,7 @@ module.exports = class ModelBase {
   setState(state) {
     if (state && Object.keys(state).length > 0) {
       Object.assign(this.state, state);
-      this._emitter.emit('changeState', this.state);
+      this._emitter.emit('did-update', state);
     }
   }
 

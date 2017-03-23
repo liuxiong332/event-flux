@@ -20,25 +20,19 @@ module.exports = (componentClass) => {
       this.disposables.dispose();
     }
 
-    addStoreStateChange(store, callback) {
-      let disposable = store.addStateChange(callback || this.onStateChange);
-      this.addDisposable(disposable);
-      return disposable;
-    }
-
-    addStoreEvent(store, event, callback) {
-      let disposable = store.addEventCallback(event, callback);
+    onDidUpdateStore(store, callback) {
+      let disposable = store.onDidUpdate(callback || this.storeUpdated);
       this.addDisposable(disposable);
       return disposable;
     }
 
     observeStore(store, callback) {
-      let disposable = store.observeState(callback || this.onStateChange);
+      let disposable = store.observe(callback || this.storeUpdated);
       this.addDisposable(disposable);
       return disposable;
     }
 
-    onStateChange = (state) => {
+    storeUpdated = (state) => {
       this.setState(state);
     };
   }

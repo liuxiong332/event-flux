@@ -11,7 +11,7 @@ test('vmAdder', () => {
     let module = new VMModule();
     let store = new StoreBase();
     module.setState = jest.fn();
-    let disposable = store.addStateChange(module.onStateChange);
+    let disposable = store.onDidUpdate(module.onStateChange);
     expect(module.setState.calls.length).toBe(0);
     store.setState({ hello: 'world' });
     expect(module.setState.calls[0][0]).toMatchObject({ hello: 'world' });
@@ -24,7 +24,7 @@ test('vmAdder', () => {
     let module = new VMModule();
     let store = new StoreBase();
     let mockFn = jest.fn();
-    let disposable = store.addStoreEvent('myevent', mockFn);
+    let disposable = store.onEvent('myevent', mockFn);
     store.emitEvent('myevent');
     expect(mockFn.calls.length).toBe(1);
   });
@@ -33,7 +33,7 @@ test('vmAdder', () => {
     let module = new VMModule();
     let store = new StoreBase();
     module.setState = jest.fn();
-    module.addDisposable(store.addStateChange(module.onStateChange));
+    module.addDisposable(store.onDidUpdate(module.onStateChange));
     store.setState({ hello: 'world' });
     expect(module.setState.calls[0][0]).toMatchObject({ hello: 'world' });
     module.componentWillUnmount();

@@ -1,28 +1,28 @@
 import StoreBase from '../src/StoreBase';
 
 test('StoreBase', () => {
-  test('addStateChange method', () => {
+  test('onDidUpdate method', () => {
     let store = new StoreBase();
     let stateChangeMock = jest.fn();
-    store.addStateChange(stateChangeMock);
+    store.onDidUpdate(stateChangeMock);
     expect(stateChangeMock.mock.calls.length).toBe(0);
     store.setState({ state1: 'dd' });
     expect(stateChangeMock.mock.calls.length).toBe(1);
   });
 
-  test('observeState method', () => {
+  test('observe method', () => {
     let store = new StoreBase();
     let stateChangeMock = jest.fn();
-    store.observeState(stateChangeMock);
+    store.observe(stateChangeMock);
     expect(stateChangeMock.mock.calls.length).toBe(1);
     store.setState({ state1: 'dd' });
     expect(stateChangeMock.mock.calls.length).toBe(2);
   });
 
-  test('emitEvent and addEventCallback', () => {
+  test('emitEvent and onEvent', () => {
     let store = new StoreBase();
     let eventMock = jest.fn();
-    store.addEventCallback('myevent', eventMock);
+    store.onEvent('myevent', eventMock);
     store.emitEvent('myevent');
     expect(eventMock.mock.calls.length).toBe(1);
     store.dispose();
@@ -32,7 +32,7 @@ test('StoreBase', () => {
   test('setState method', () => {
     let store = new StoreBase();
     let stateChangeMock = jest.fn();
-    store.addStateChange(stateChangeMock);
+    store.onDidUpdate(stateChangeMock);
     store.setState({ hello: 'world' });
     expect(stateChangeMock.mock.calls[0][0]).toMatchObject({ hello: 'world' });
   });
@@ -49,7 +49,7 @@ test('StoreBase', () => {
   test('the observer callback will clear after dispose', () => {
     let store = new StoreBase();
     let stateChangeMock = jest.fn();
-    let disposable = store.addStateChange(stateChangeMock);
+    let disposable = store.onDidUpdate(stateChangeMock);
     expect(store._disposables.length).toBe(1);
     disposable();
     expect(store._disposables.length).toBe(0);
