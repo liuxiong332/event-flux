@@ -54,7 +54,7 @@ module.exports = class ModelBase {
   setState(state) {
     if (state && Object.keys(state).length > 0) {
       Object.assign(this.state, state);
-      this._emitter.emit('did-update', state);
+      this._emitter.emit('did-update', this.state);
     }
   }
 
