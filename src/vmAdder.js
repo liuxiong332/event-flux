@@ -10,6 +10,7 @@ module.exports = (componentClass) => {
     constructor(props) {
       super(props);
       this.disposables = new CompositeDisposable();
+      this.storeUpdated = this.storeUpdated.bind(this);
     }
 
     addDisposable(disposable) {
@@ -32,8 +33,8 @@ module.exports = (componentClass) => {
       return disposable;
     }
 
-    storeUpdated = (state) => {
+    storeUpdated(state) {
       this.setState(state);
-    };
+    }
   }
 }
