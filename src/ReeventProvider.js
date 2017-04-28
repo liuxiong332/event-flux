@@ -1,8 +1,9 @@
 const React = require('react');
+import PropTypes from 'prop-types';
 
 module.exports = class ReeventProvider extends React.PureComponent {
   static childContextTypes = {
-    reeventApp: React.PropTypes.object
+    reeventApp: PropTypes.object
   };
 
   getChildContext() {

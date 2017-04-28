@@ -1,10 +1,11 @@
 const React = require('react');
 const { CompositeDisposable } = require('event-kit');
+import PropTypes from 'prop-types';
 
 module.exports = (componentClass) => {
   return class NewVMComponent extends componentClass {
     static contextTypes = {
-  	  reeventApp: React.PropTypes.object
+  	  reeventApp: PropTypes.object
   	};
 
     constructor(props) {
