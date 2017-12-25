@@ -1,29 +1,27 @@
-## Reevent
+## event-flux
 
-*Reevent* is the flux-like store management. It manage the complex links in those stores and make the view respond to the store change easy.
+*event-flux* is the flux-like store management. It manage the complex links in those stores and make the view respond to the store change easy.
 
 ### How it run
 
-*Reevent* contains the following objects:
+*event-flux* contains the following objects:
 
 * Store: the state container that like MVC's model.
 
 * StoreApp: the store management container. It manage the life cycle of the stores and control the initialization sequence.
 
-* VMComponent or PureVMComponent: just like `React` Component or PureComponent but add some methods that can obseve the store's state change.
-
-*Reevent* use the event-emitter style to notify other stores and components that the store state has changed.
+*event-flux* use the event-emitter style to notify other stores and components that the store state has changed.
 
 ### Install the package
 
 ```bash
-npm install reevent --save
+npm install event-flux --save
 ```
 
 require the package by
 
 ```js
-const { StoreBase, VMComponent, PureVMComponent, ReeventProvider, ReeventApp } = require('reevent');
+const { StoreBase, Provider, AppStoreBase } = require('event-flux');
 ```
 
 ### How to use
@@ -35,7 +33,7 @@ First, define some stores that your app need. Store object is the class extends 
 The `Store` class contains `constructor` function that set the initialization state and some action methods that change the store's state by `setState`.
 
 ```js
-import { StoreBase } from 'reevent';
+import { StoreBase } from 'event-flux';
 
 export default class TodoStore extends StoreBase {
   constructor(key) {
@@ -58,16 +56,17 @@ export default class TodoStore extends StoreBase {
 Then, create class `AppStore` that init the stores.
 
 ```js
-class AppStore extends ReeventApp {
-  loadInClient() {
-    this.todoStore = new TodoStore('reevent-todos');
+class AppStore extends AppStoreBase {
+  initInClient() {
+    this.todoStore = new TodoStore(this, 'reevent-todos');
+    this.todoStore.observeState((state) => this.setState({ ...state }));
     return this;
   }
   loadInServer() {}
 }
 ```
 
-`loadInClient` will run the initialization method in browser and `loadInServer` will run the initialization function in server.
+`initInClient` will run the initialization method in browser and `initInServer` will run the initialization function in server.
 
 ### define React Component
 
@@ -82,12 +81,13 @@ class TodoItem extends PureComponent {
 }
 ```
 
-### define some VM Components
+### define some container Components
 
-Then, create some `VMComponent` that observe the store's state change.
+Then, create some `PureComponent` that observe the store's state change and `connect` the root store to the container component.
 
 ```js
-class TodoApp extends PureVMComponent {
+const { connect } = require('event-flux');
+class TodoApp extends PureComponent {
   constructor(props, context) {
     super(props);
     this.state = {
@@ -95,30 +95,34 @@ class TodoApp extends PureVMComponent {
       editing: null,
       newTodo: ''
     };
-    this.todoStore = context.reeventApp.todoStore;
+    this.todoStore = this.props.todoStore;
   }
 
   componentWillMount() {
     this.observeStore(this.todoStore);
   }
 }
+
+const mapStateToProps = (state) => state;
+const mapStoreToProps = (appStore) => ({ todoStore: appStore.todoStore });
+export default connect(mapStateToProps, mapStoreToProps)(TodoApp);
 ```
 
-The `TodoApp` will observe the `todoStore` state. When the `todoStore` state changes, the TodoApp's `onStateChange` method will be invoked and the `TodoApp` component's state will be changed.
+The `TodoApp` will observe the `todoStore` state. When the `todoStore` state changes, the TodoApp's props will be changed and the `TodoApp` component's state will be changed.
 
 ### Render the DOM
 
 ```js
 import AppStore from './AppStore';
-import { ReeventProvider } from 'reevent';
+import { Provider } from 'event-flux';
 import TodoApp from './TodoApp';
 
-const reeventApp = new AppStore().loadInClient();
+const appStore = new AppStore().loadInClient();
 
 ReactDOM.render(
-  <ReeventProvider reeventApp={reeventApp}>
+  <Provider appStore={appStore}>
     <TodoApp />
-  </ReeventProvider>,
+  </appStore>,
   document.getElementsByClassName('todoapp')[0]
 );
 ```
