@@ -2,13 +2,14 @@ import React from 'react';
 import TodoFooter from './TodoFooter';
 import TodoItem from './TodoItem';
 import { Router } from 'director/build/director';
+import { connect } from '../../..';
 
 const ALL_TODOS = 'all';
 const ACTIVE_TODOS = 'active';
 const COMPLETED_TODOS = 'completed';
 const ENTER_KEY = 13;
 
-export default class TodoApp extends React.PureComponent {
+class TodoApp extends React.PureComponent {
   constructor(props, context) {
     super(props);
     this.state = {
@@ -17,10 +18,6 @@ export default class TodoApp extends React.PureComponent {
       newTodo: ''
     };
     this.todoStore = context.reeventApp.todoStore;
-  }
-
-  componentWillMount() {
-    this.observeStore(this.todoStore);
   }
 
   componentDidMount() {
@@ -164,3 +161,7 @@ export default class TodoApp extends React.PureComponent {
     );
   }
 }
+
+const mapStateToProps = (state) => state;
+const mapStoreToProps = (appStore) => ({ todoStore: appStore.todoStore });
+export default connect(mapStateToProps, mapStoreToProps);
