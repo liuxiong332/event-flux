@@ -37,6 +37,7 @@
     "react-addons-test-utils": "^15.4.2"
   },
   "dependencies": {
-    "event-kit": "^2.2.0"
+    "event-kit": "^2.2.0",
+    "prop-types": "^15.6.0"
   }
 }
