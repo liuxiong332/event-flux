@@ -1,6 +1,6 @@
 {
-  "name": "reevent",
-  "version": "3.0.0",
+  "name": "event-flux",
+  "version": "0.3.0",
   "description": "The flux framework for React",
   "main": "./lib/index.js",
   "scripts": {
