@@ -164,4 +164,4 @@ class TodoApp extends React.PureComponent {
 
 const mapStateToProps = (state) => state;
 const mapStoreToProps = (appStore) => ({ todoStore: appStore.todoStore });
-export default connect(mapStateToProps, mapStoreToProps);
+export default connect(mapStateToProps, mapStoreToProps)(TodoApp);

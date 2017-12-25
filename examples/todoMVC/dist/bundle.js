@@ -4077,13 +4077,37 @@ module.exports = __webpack_require__(21);
 "use strict";
 
 
-exports.StoreBase = __webpack_require__(59);
-exports.Provider = __webpack_require__(220);
-exports.AppStoreBase = __webpack_require__(217);
-exports.RouterInfo = __webpack_require__(221);
-exports.AsyncStorage = __webpack_require__(218);
-exports.connect = __webpack_require__(98);
-exports.inject = __webpack_require__(222);
+var _StoreBase = __webpack_require__(59);
+
+var _StoreBase2 = _interopRequireDefault(_StoreBase);
+
+var _Provider = __webpack_require__(220);
+
+var _Provider2 = _interopRequireDefault(_Provider);
+
+var _AppStoreBase = __webpack_require__(217);
+
+var _AppStoreBase2 = _interopRequireDefault(_AppStoreBase);
+
+var _RouterInfo = __webpack_require__(221);
+
+var _RouterInfo2 = _interopRequireDefault(_RouterInfo);
+
+var _AsyncStorage = __webpack_require__(218);
+
+var _AsyncStorage2 = _interopRequireDefault(_AsyncStorage);
+
+var _connect = __webpack_require__(98);
+
+var _connect2 = _interopRequireDefault(_connect);
+
+var _inject = __webpack_require__(222);
+
+var _inject2 = _interopRequireDefault(_inject);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+module.exports = { StoreBase: _StoreBase2.default, Provider: _Provider2.default, AppStoreBase: _AppStoreBase2.default, RouterInfo: _RouterInfo2.default, AsyncStorage: _AsyncStorage2.default, connect: _connect2.default, inject: _inject2.default };
 
 /***/ }),
 /* 31 */
@@ -12482,8 +12506,8 @@ function _possibleConstructorReturn(self, call) { if (!self) { throw new Referen
 
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
-var AppStore = function (_ReeventApp) {
-  _inherits(AppStore, _ReeventApp);
+var AppStore = function (_AppStoreBase) {
+  _inherits(AppStore, _AppStoreBase);
 
   function AppStore() {
     _classCallCheck(this, AppStore);
@@ -12496,7 +12520,7 @@ var AppStore = function (_ReeventApp) {
     value: function initInClient() {
       var _this2 = this;
 
-      this.todoStore = new _TodoStore2.default('reevent-todos');
+      this.todoStore = new _TodoStore2.default(this, 'reevent-todos');
       this.todoStore.observeState(function (state) {
         return _this2.setState(_extends({}, state));
       });
@@ -12505,7 +12529,7 @@ var AppStore = function (_ReeventApp) {
   }]);
 
   return AppStore;
-}(_.ReeventApp);
+}(_.AppStoreBase);
 
 exports.default = AppStore;
 
@@ -12730,7 +12754,7 @@ var mapStateToProps = function mapStateToProps(state) {
 var mapStoreToProps = function mapStoreToProps(appStore) {
   return { todoStore: appStore.todoStore };
 };
-exports.default = (0, _.connect)(mapStateToProps, mapStoreToProps);
+exports.default = (0, _.connect)(mapStateToProps, mapStoreToProps)(TodoApp);
 
 /***/ }),
 /* 111 */
@@ -13044,10 +13068,10 @@ function _inherits(subClass, superClass) { if (typeof superClass !== "function" 
 var TodoModel = function (_StoreBase) {
   _inherits(TodoModel, _StoreBase);
 
-  function TodoModel(key) {
+  function TodoModel(appStore, key) {
     _classCallCheck(this, TodoModel);
 
-    var _this = _possibleConstructorReturn(this, (TodoModel.__proto__ || Object.getPrototypeOf(TodoModel)).call(this));
+    var _this = _possibleConstructorReturn(this, (TodoModel.__proto__ || Object.getPrototypeOf(TodoModel)).call(this, appStore));
 
     _this.state = { key: key, todos: (0, _util.store)(key) };
     return _this;
