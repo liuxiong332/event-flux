@@ -10,14 +10,14 @@ const COMPLETED_TODOS = 'completed';
 const ENTER_KEY = 13;
 
 class TodoApp extends React.PureComponent {
-  constructor(props, context) {
+  constructor(props) {
     super(props);
     this.state = {
       nowShowing: ALL_TODOS,
       editing: null,
       newTodo: ''
     };
-    this.todoStore = context.reeventApp.todoStore;
+    this.todoStore = this.props.todoStore;
   }
 
   componentDidMount() {
@@ -82,7 +82,7 @@ class TodoApp extends React.PureComponent {
   render() {
     var footer;
     var main;
-    var todos = this.state.todos;
+    var todos = this.props.todos;
 
     var shownTodos = todos.filter(function (todo) {
       switch (this.state.nowShowing) {

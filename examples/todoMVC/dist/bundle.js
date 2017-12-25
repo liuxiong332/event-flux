@@ -12578,7 +12578,7 @@ var ENTER_KEY = 13;
 var TodoApp = function (_React$PureComponent) {
   _inherits(TodoApp, _React$PureComponent);
 
-  function TodoApp(props, context) {
+  function TodoApp(props) {
     _classCallCheck(this, TodoApp);
 
     var _this = _possibleConstructorReturn(this, (TodoApp.__proto__ || Object.getPrototypeOf(TodoApp)).call(this, props));
@@ -12624,7 +12624,7 @@ var TodoApp = function (_React$PureComponent) {
       editing: null,
       newTodo: ''
     };
-    _this.todoStore = context.reeventApp.todoStore;
+    _this.todoStore = _this.props.todoStore;
     return _this;
   }
 
@@ -12660,7 +12660,7 @@ var TodoApp = function (_React$PureComponent) {
     value: function render() {
       var footer;
       var main;
-      var todos = this.state.todos;
+      var todos = this.props.todos;
 
       var shownTodos = todos.filter(function (todo) {
         switch (this.state.nowShowing) {
