@@ -1,69 +1,58 @@
-const { Emitter, Disposable, CompositeDisposable } = require('event-kit');
+import { Emitter } from 'event-kit';
 
-module.exports = class ModelBase {
-  constructor(reeventApp) {
-    this.reeventApp = reeventApp;
+export default class StoreBase {
+  appStore: any;
+  state: any;
+  inWillUpdate = false;
+  willUpdateStates = [];
+  emitter: Emitter;
+
+  constructor(appStore: any) {
+    this.appStore = appStore;
     this.state = {};
-    this.storeUpdated = this.storeUpdated.bind(this);
-    this._emitter = new Emitter();
-    this._disposables = new CompositeDisposable();
+    this.emitter = new Emitter();
   }
 
-  serialize() {
-  	return this.state;
-  }
-
-  deserialize(state) {
-  	this.setState(state);
-  }
-
-  addDisposable(disposable) {
-    this._disposables.add(disposable);
-  }
-
-  storeUpdated(state) {
-    this.setState(state);
-  }
-
-  onDidUpdate(callback) {
-    return this._emitter.on('did-update', callback);
-  }
-
-  onEvent(event, callback) {
-    return this._emitter.on(event, callback);
-  }
-
-  observe(callback) {
-    let disposable = this.onDidUpdate(callback);
-    this._emitter.emit('did-update', this.state);
-    return disposable;
-  }
-
-  onDidUpdateStore(store, callback) {
-    let disposable = store.onDidUpdate(callback || this.storeUpdated);
-    this.addDisposable(disposable);
-    return disposable;
-  }
-
-  observeStore(store, callback) {
-    let disposable = store.observe(callback || this.storeUpdated);
-    this.addDisposable(disposable);
-    return disposable;
-  }
-
-  setState(state) {
-    if (state && Object.keys(state).length > 0) {
-      Object.assign(this.state, state);
-      this._emitter.emit('did-update', this.state);
+  setState(state: any) {
+    // 当will-update，将状态保存到缓存队列中
+    if (this.inWillUpdate) {
+      return this.willUpdateStates.push(state);
     }
+    // Make the update delay to next tick that can collect many update into one operation.
+    this.appStore.batchUpdater.addTask(() => {
+      let nextState = { ...this.state, ...state }; 
+      this.inWillUpdate = true;   
+      this.emitter.emit('will-update', nextState);
+      this.inWillUpdate = false;
+      if (this.willUpdateStates.length > 0) {
+        this.state = this.willUpdateStates.reduce((allState, state) => Object.assign(allState, state), nextState);
+        this.willUpdateStates = [];
+      } else {
+        this.state = nextState;
+      }
+      this.emitter.emit('did-update', this.state);
+    });
+    // this.emitter.emit('did-update', this.state);
   }
 
-  emitEvent(event, value) {
-    this._emitter.emit(event, value);
+  onDidUpdate(callback: (state: any) => any) {
+    return this.emitter.on('did-update', callback);
+  }
+
+  onWillUpdate(callback: (nextState: any) => any) {
+    return this.emitter.on('will-update', callback);    
+  }
+
+  observeState(callback: (state: any) => any) {
+    callback(this.state);
+    return this.emitter.on('did-update', callback);    
   }
 
   dispose() {
-    this._emitter.dispose();
-    this._disposables.dispose();
+    this.emitter.dispose();
+  }
+
+  getState() {
+    return this.state;
   }
 }

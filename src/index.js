@@ -1,5 +1,5 @@
 exports.StoreBase = require('./StoreBase');
-exports.VMComponent = require('./VMComponent');
-exports.PureVMComponent = require('./PureVMComponent');
-exports.ReeventProvider = require('./ReeventProvider');
-exports.ReeventApp = require('./ReeventApp');
+exports.Provider = require('./Provider');
+exports.AppStoreBase = require('./AppStoreBase');
+exports.RouterInfo = require('./RouterInfo');
+exports.AsyncStorage = require('./AsyncStorage');
