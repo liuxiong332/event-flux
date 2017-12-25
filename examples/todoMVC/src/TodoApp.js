@@ -1,7 +1,6 @@
 import React from 'react';
 import TodoFooter from './TodoFooter';
 import TodoItem from './TodoItem';
-import { PureVMComponent } from '../../..';
 import { Router } from 'director/build/director';
 
 const ALL_TODOS = 'all';
@@ -9,7 +8,7 @@ const ACTIVE_TODOS = 'active';
 const COMPLETED_TODOS = 'completed';
 const ENTER_KEY = 13;
 
-export default class TodoApp extends PureVMComponent {
+export default class TodoApp extends React.PureComponent {
   constructor(props, context) {
     super(props);
     this.state = {
