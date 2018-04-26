@@ -1,9 +1,8 @@
 import StoreBase from './StoreBase';
+import StoreRecycleBase from './StoreRecycleBase';
 import Provider from './Provider';
-import AppStoreBase from './AppStoreBase';
-import RouterInfo from './RouterInfo';
 import AsyncStorage from './AsyncStorage';
-import connect from './connect';
-import inject from './inject';
+import withProvider from './withProvider';
+import withState from './withState';
 
-module.exports = { StoreBase, Provider, AppStoreBase, RouterInfo, AsyncStorage, connect, inject };
+module.exports = { StoreBase, StoreRecycleBase, Provider, AsyncStorage, withProvider, withState };

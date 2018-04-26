@@ -1,7 +1,7 @@
 import { uuid, pluralize, store, extend } from './util';
 import { StoreBase } from '../../..';
 
-export default class TodoModel extends StoreBase {
+export default class TodoStore extends StoreBase {
   constructor(appStore, key) {
     super(appStore);
     this.state = { key, todos: store(key) };

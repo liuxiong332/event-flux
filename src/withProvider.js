@@ -54,7 +54,7 @@ class SubProvider extends React.PureComponent {
   }
 }
 
-export function withProvider(storeClasses) {
+export default function withProvider(storeClasses) {
   return function(Component) {
     return function(props) {
       let child = <Component {...props}/>;

@@ -17,7 +17,7 @@ export function pick(obj, keys) {
 
 
 // storeClass must be factory or class.
-function buildStore(appStore, storeClass) {
+export function buildStore(appStore, storeClass) {
   let store = null;
   if (typeof storeClass === 'function') {
     store = storeClass();
@@ -30,7 +30,7 @@ function buildStore(appStore, storeClass) {
   return store;
 }
 
-function buildObserveStore(store, storeClass) {
+export function buildObserveStore(store, storeClass) {
   buildStore(store._appStore, storeClass);
   store.observeState((state) => {
     let key = store.constructor.getStateKey();

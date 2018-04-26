@@ -2,7 +2,7 @@ import React from 'react';
 import TodoFooter from './TodoFooter';
 import TodoItem from './TodoItem';
 import { Router } from 'director/build/director';
-import { connect } from '../../..';
+import { withState } from '../../..';
 
 const ALL_TODOS = 'all';
 const ACTIVE_TODOS = 'active';
@@ -162,6 +162,6 @@ class TodoApp extends React.PureComponent {
   }
 }
 
-const mapStateToProps = (state) => state;
+const mapStateToProps = (state) => state.todo;
 const mapStoreToProps = (appStore) => ({ todoStore: appStore.todoStore });
-export default connect(mapStateToProps, mapStoreToProps)(TodoApp);
+export default withState(mapStoreToProps, mapStateToProps)(TodoApp);

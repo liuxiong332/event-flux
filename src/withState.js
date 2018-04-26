@@ -11,7 +11,7 @@ function unifySelector(selector) {
   return selector;
 }
 
-export function withState(storeSelector, stateSelector) {
+export default function withState(storeSelector, stateSelector) {
   storeSelector = unifySelector(storeSelector);
   stateSelector = unifySelector(stateSelector);
   return function(Component) {
