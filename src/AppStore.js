@@ -4,6 +4,29 @@ import BatchUpdateHost from './BatchUpdateHost';
 import { findInList, injectDependencies } from './utils';
 
 const StoreExp = /Store/;
+
+function parseStore(store) {
+  if (store instanceof StoreBase) {
+    return store;
+  } else if (StoreExp.test(store)) {
+    return new store();
+  } else {
+    console.error('The store you specific must be Store instance or Store class');
+    return null;
+  }
+}
+
+export function parseStores(storeList) {
+  let stores = {};
+  storeList.forEach(store => {
+    let resStore = parseStore(store);
+    if (resStore) {
+      stores[resStore.getStoreKey()] = resStore;
+    };
+  });
+  return stores;
+}
+
 export default class AppStore {
   constructor(stores, onChange) {
     this._enableUpdate = true;  // 是否可以更新
@@ -15,27 +38,6 @@ export default class AppStore {
     this.stores = this.parseStores(stores);
     this.observeStores();
     this.injectStores();
-  }
-
-  parseStore(store) {
-    if (store instanceof StoreBase) {
-      return store;
-    } else if (StoreExp.test(store)) {
-      return new store();
-    } else {
-      console.error('The store you specific must be Store instance or Store class');
-      return null;
-    }
-  }
-
-  parseStores(storeList) {
-    let stores = {};
-    storeList.forEach(store => {
-      let resStore = this.parseStore(store);
-      if (resStore) {
-        stores[resStore.getStoreKey()] = resStore;
-      };
-    });
   }
 
   injectStores() {

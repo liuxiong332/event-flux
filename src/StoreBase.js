@@ -71,7 +71,7 @@ export default class StoreBase {
     return this.emitter.on('will-update', callback);    
   }
 
-  observeState(callback) {
+  observe(callback) {
     callback(this.state);
     return this.emitter.on('did-update', callback);    
   }
