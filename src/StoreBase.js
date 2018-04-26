@@ -26,16 +26,16 @@ export default class StoreBase {
     return buildStore(this._appStore, storeClass);
   }
 
-  static getStateKey() {
-    if (this._stateKey) {
-      this._stateKey = getStateKey(this)      
+  getStateKey() {
+    if (!this._stateKey) {
+      this._stateKey = getStateKey(this.constructor)      
     }
     return this._stateKey;
   }
 
-  static getStoreKey() {
-    if (this._storeKey) {
-      let name = this.name;
+  getStoreKey() {
+    if (!this._storeKey) {
+      let name = this.constructor.name;
       this._storeKey = name[0].toLowerCase() + name.slice(1);
     }
     return this._storeKey;

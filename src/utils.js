@@ -1,7 +1,15 @@
 export function findInList(list, func) {
   let len = list.length;
   for (let i = 0; i < len; ++i) {
-    if (func(func(list[i]))) return list[i];
+    if (func(list[i])) return list[i];
+  }
+}
+
+export function forEachVal(obj, func) {
+  let stores = this.stores;
+  for (let key in stores) {
+    let store = stores[key];
+    func(store);
   }
 }
 
@@ -33,7 +41,7 @@ export function buildStore(appStore, storeClass) {
 export function buildObserveStore(store, storeClass) {
   buildStore(store._appStore, storeClass);
   store.observeState((state) => {
-    let key = store.constructor.getStateKey();
+    let key = store.getStateKey();
     appStore.setState({ [key]: state });
   });
 }
@@ -46,19 +54,18 @@ export function injectDependencies(appStore, store) {
   deps.forEach(dep => {
     let depStore = null;
     if (typeof dep === 'string') {
-      depStore = findInList(stores, (s) => s.constructor.name === dep);
+      depStore = forEachVal(stores, (s) => s.constructor.name === dep);
       if (!depStore) {
         return console.error(`The dep ${dep} cannot find in stores`);
       }
     } else {
-      depStore = findInList(stores, (s) => s.constructor === dep);      
+      depStore = forEachVal(stores, (s) => s.constructor === dep);      
       if (!depStore) {
         depStore = buildObserveStore(appStore, dep);
-        stores[depStore.constructor.getStoreKey()] = stores;
+        stores[depStore.getStoreKey()] = depStore;
       }
     }
-    let name = depStore.constructor.name;
-    let injectKey = name[0].toLowerCase() + name.slice(1); 
+    let injectKey = depStore.getStoreKey();
     store[injectKey] = depStore;
   });
 }

@@ -1,8 +1,9 @@
-const React = require('react');
+import React from 'react';
+import AppStore from './AppStore';
+import StoreBase from './StoreBase';
 
 export const StoreContext = React.createContext('event-flux');
-const AppStore = require('./AppStore');
-const StoreBase = require('./StoreBase');
+const ContextProvider = StoreContext.Provider;
 
 export default class Provider extends React.PureComponent {
   constructor(props) {
@@ -11,15 +12,8 @@ export default class Provider extends React.PureComponent {
     let inStores = props.stores;
     if (!Array.isArray(inStores)) {
       inStores = [inStores];
-      inStores.forEach(store => {
-        let resStore = this.parseStore(store);
-        resStore && stores.push(resStore);
-      })
-    } else {
-      let resStore = this.parseStore(store);
-      resStore && stores.push(resStore);
-    }
-    this.appStore = new AppStore(stores, this.stateChanged);
+    } 
+    this.appStore = new AppStore(inStores, this.stateChanged);
     this.state = { 
       _appStore: this.appStore, 
       stores: this.appStore.stores, 
@@ -37,9 +31,9 @@ export default class Provider extends React.PureComponent {
 
   render() {
     return (
-      <StoreContext.Provider value={this.state}>
+      <ContextProvider value={this.state}>
         {React.Children.only(this.props.children)}
-      </StoreContext.Provider>
+      </ContextProvider>
     );
   }
 }

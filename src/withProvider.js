@@ -15,7 +15,7 @@ function pickStores(appStore, storeCls) {
   let resStores = {};
   storeCls.forEach(cls => {
     let resStore = findInList(stores, (store) => store instanceof cls);
-    let storeKey = resStore.constructor.getStoreKey();
+    let storeKey = resStore.getStoreKey();
     if (!resStore) {
       console.warn(`The store ${cls.name} cannot find in parent context, will create in air`);
       resStore = buildObserveStore(appStore, cls);

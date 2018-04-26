@@ -12,7 +12,7 @@ export default class AppStore {
     this.onChange = onChange;
     this.batchUpdater = new BatchUpdateHost(this);  
     this.state = {};
-    this.stores = stores;
+    this.stores = this.parseStores(stores);
     this.observeStores();
     this.injectStores();
   }
@@ -29,30 +29,34 @@ export default class AppStore {
   }
 
   parseStores(storeList) {
-    stores = {};
+    let stores = {};
     storeList.forEach(store => {
       let resStore = this.parseStore(store);
       if (resStore) {
-        stores[resStore.constructor.getStoreKey()] = resStore;
+        stores[resStore.getStoreKey()] = resStore;
       };
     });
   }
 
   injectStores() {
-    this.stores.forEach(store => {
+    let stores = this.stores;
+    for (let key in stores) {
+      let store = stores[key];
       store.batchUpdater = this.batchUpdater;
       store._appStore = this._appStore;
       injectDependencies(this, store);
-    });
+    }
   }
 
   observeStores() {
-    this.stores.forEach(store => {
+    let stores = this.stores;
+    for (let key in stores) {
+      let store = stores[key];
       store.observeState((state) => {
-        let key = store.constructor.getStateKey();
+        let key = store.getStateKey();
         this.setState({ [key]: state });
       });
-    });
+    }
   }
 
   onUpdateState = (state) => {
@@ -91,9 +95,11 @@ export default class AppStore {
 
   init() {
     this._init = true;    
-    this.stores.forEach(store => {
+    let stores = this.stores;
+    for (let key in stores) {
+      let store = stores[key];
       store.init && store.init();
-    });
+    }
     return this;
   }
 
