@@ -33,11 +33,11 @@
     "gulp-mocha": "^3.0.1",
     "gulp-sequence": "^0.4.6",
     "jest": "^18.1.0",
-    "react": "^15.4.2",
+    "react": "^16.3.2",
     "react-addons-test-utils": "^15.4.2"
   },
   "dependencies": {
     "event-kit": "^2.2.0",
-    "prop-types": "^15.6.0"
+    "react-addons-shallow-compare": "^15.6.2"
   }
 }

@@ -23,6 +23,10 @@ export class NSStorage {
 export default class AsyncStorage {
   // Update the version when the storage is obsolete
   constructor(version) {
+    this.version = version;
+  }
+
+  init() {
     if (version) {
       const curVersion = parseInt(this.getItem('version'));
       if (version !== curVersion) {

@@ -1,12 +1,44 @@
 import { Emitter } from 'event-kit';
+import { findInList, buildStore } from './utils';
+
+const stateKeyReg = /^(\w+)Store$/;
+
+// get store state key from store instance
+function getStateKey(storeClass) {
+  let res = stateKeyReg.exec(storeClass.name);
+  if (!res) {
+    throw new Error(`Store ${storeClass.name} must be end with Store`);
+  }
+  let key = res[1];
+  return key[0].toLowerCase() + key.slice(1);
+}
 
 export default class StoreBase {
-  constructor(appStore) {
-    this.appStore = appStore;
+  constructor() {
     this.state = {};
     this.emitter = new Emitter();
     this.inWillUpdate = false;
     this.willUpdateStates = [];
+  }
+
+  // Create new store from storeClass. storeClass must be factory or class.  
+  buildStore(storeClass) {
+    return buildStore(this._appStore, storeClass);
+  }
+
+  static getStateKey() {
+    if (this._stateKey) {
+      this._stateKey = getStateKey(this)      
+    }
+    return this._stateKey;
+  }
+
+  static getStoreKey() {
+    if (this._storeKey) {
+      let name = this.name;
+      this._storeKey = name[0].toLowerCase() + name.slice(1);
+    }
+    return this._storeKey;
   }
 
   setState(state) {
@@ -15,7 +47,7 @@ export default class StoreBase {
       return this.willUpdateStates.push(state);
     }
     // Make the update delay to next tick that can collect many update into one operation.
-    this.appStore.batchUpdater.addTask(() => {
+    this.batchUpdater.addTask(() => {
       let nextState = { ...this.state, ...state }; 
       this.inWillUpdate = true;   
       this.emitter.emit('will-update', nextState);
