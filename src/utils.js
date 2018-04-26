@@ -8,7 +8,9 @@ export function findInList(list, func) {
 export function pick(obj, keys) {
   let resObj = {};
   for(let key of keys) {
-    resObj[key] = obj[key];
+    if (key in obj) {
+      resObj[key] = obj[key];      
+    }
   }
   return resObj;
 }

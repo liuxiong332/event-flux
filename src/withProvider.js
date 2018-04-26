@@ -55,14 +55,16 @@ class SubProvider extends React.PureComponent {
 }
 
 export function withProvider(storeClasses) {
-  return function(props) {
-    let child = React.Children.only(props.children);
-    return (
-      <StoreContext.Consumer>
-        {value => value ? 
-          <SubProvider {...value} storeClasses={storeClasses}>{child}</SubProvider> :
-          <Provider stores={storeClasses}>{child}</Provider>}
-      </StoreContext.Consumer>
-    );
+  return function(Component) {
+    return function(props) {
+      let child = <Component {...props}/>;
+      return (
+        <StoreContext.Consumer>
+          {value => value ? 
+            <SubProvider {...value} storeClasses={storeClasses}>{child}</SubProvider> :
+            <Provider stores={storeClasses}>{child}</Provider>}
+        </StoreContext.Consumer>
+      );
+    }
   }
 }
