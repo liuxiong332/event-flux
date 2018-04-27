@@ -19,16 +19,18 @@ class Todo3Store extends StoreBase {
   }
 }
 
-test('AppStore', () => {
+jest.useFakeTimers();
+
+describe('AppStore', () => {
   test('parseStores', () => {
-    let stores = parseStores([TodoStore, Todo2Store]);
-    expect(stores['todoStore'] instanceof TodoStore).toBeTruthy();
+    let stores = parseStores([Todo3Store, Todo2Store]);
+    expect(stores['todo3Store'] instanceof Todo3Store).toBeTruthy();
     expect(stores['todo2Store'] instanceof Todo2Store).toBeTruthy();
   });
 
   test('appStore inject class dependencies', () => {
     let appStore = new AppStore([Todo2Store]);
-    expect(appStore.stores.keys()).toEqual(['todo2Store', 'todoDep1Store']);
+    expect(Object.keys(appStore.stores)).toEqual(['todo2Store', 'todoDep1Store']);
     let { todo2Store, todoDep1Store } = appStore.stores;
     expect(appStore.state.todo2).toEqual({ todo2: 'todo2' });
 
@@ -39,7 +41,7 @@ test('AppStore', () => {
 
   test('appStore inject string dependencies', () => {
     let appStore = new AppStore([Todo2Store, TodoDep1Store]);
-    expect(appStore.stores.keys()).toEqual(['todo2Store', 'todoDep1Store']);    
+    expect(Object.keys(appStore.stores)).toEqual(['todo2Store', 'todoDep1Store']);    
   });
 
   test('onChange', () => {
@@ -53,7 +55,8 @@ test('AppStore', () => {
     expect(appStore.stores.todo2Store.init).toBeCalled();
 
     appStore.setState({ 'hello': 'ddd' });
-    expect(onChange).toBeCalledWith({ hello: 'ddd', todo2: { todo2: 'todo3' } });
+    jest.runAllTimers();
+    expect(onChange).toBeCalledWith({ hello: 'ddd', todo2: { todo2: 'todo3' }, todoDep1: {} });
   });
 
   test('enable update', () => {
@@ -67,6 +70,9 @@ test('AppStore', () => {
 
     appStore.enableUpdate();
     appStore.setState({ hello2: 'ddd' });
-    expect(onChange).toBeCalledWith({ hello: 'hello1', hello2: 'ddd' });
+    jest.runAllTimers();
+    expect(onChange.mock.calls[onChange.mock.calls.length - 1][0]).toMatchObject({ 
+      hello: 'hello1', hello2: 'ddd' 
+    });
   });
 });

@@ -1,5 +1,6 @@
 import { Emitter } from 'event-kit';
-import { findInList, buildStore } from './utils';
+import { findInList } from './utils';
+import { buildStore } from './buildStore';
 
 const stateKeyReg = /^(\w+)Store$/;
 
@@ -21,9 +22,18 @@ export default class StoreBase {
     this.willUpdateStates = [];
   }
 
+  _initWrap() {
+    if (!this._isInit) {
+      this.init && this.init();
+      this._isInit = true;
+    }
+  }
+
   // Create new store from storeClass. storeClass must be factory or class.  
   buildStore(storeClass) {
-    return buildStore(this._appStore, storeClass);
+    let store = buildStore(this._appStore, storeClass);
+    store._initWrap();
+    return store;
   }
 
   getStateKey() {

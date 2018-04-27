@@ -35,7 +35,8 @@
     "gulp-sequence": "^0.4.6",
     "jest": "^18.1.0",
     "react": "^16.3.2",
-    "react-addons-test-utils": "^15.4.2"
+    "react-addons-test-utils": "^15.4.2",
+    "react-test-renderer": "^16.3.2"
   },
   "dependencies": {
     "event-kit": "^2.2.0",

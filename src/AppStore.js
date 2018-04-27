@@ -1,20 +1,8 @@
 import { Emitter } from 'event-kit';
 import StoreBase from './StoreBase';
 import BatchUpdateHost from './BatchUpdateHost';
-import { findInList, injectDependencies } from './utils';
-
-const StoreExp = /Store/;
-
-function parseStore(store) {
-  if (store instanceof StoreBase) {
-    return store;
-  } else if (StoreExp.test(store.name)) {
-    return new store();
-  } else {
-    console.error('The store you specific must be Store instance or Store class');
-    return null;
-  }
-}
+import { findInList } from './utils';
+import { parseStore, injectDependencies } from './buildStore';
 
 export function parseStores(storeList) {
   let stores = {};
@@ -35,7 +23,7 @@ export default class AppStore {
     this.onChange = onChange;
     this.batchUpdater = new BatchUpdateHost(this);  
     this.state = {};
-    this.stores = this.parseStores(stores);
+    this.stores = parseStores(stores);
     this.observeStores();
     this.injectStores();
   }
@@ -89,8 +77,7 @@ export default class AppStore {
     this._init = true;    
     let stores = this.stores;
     for (let key in stores) {
-      let store = stores[key];
-      store.init && store.init();
+      stores[key]._initWrap();
     }
     return this;
   }

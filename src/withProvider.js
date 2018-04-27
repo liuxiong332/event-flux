@@ -1,13 +1,11 @@
 import React from 'react';
 import Provider, { StoreContext } from './Provider';
-import { findInList, pick, buildObserveStore } from './utils';
-const shallowEqual = require('fbjs/lib/shallowEqual');
+import { findInList, pick } from './utils';
+import { buildObserveStore } from './buildStore';
+import shallowEqual from 'fbjs/lib/shallowEqual';
 
 function getStateKeyFromStores(stores) {
-  return stores.map(store => {
-    let name = tore.constructor.name;
-    return name[0].toLowerCase() + name.slice(1);
-  });
+  return stores.map(store => store.getStateKey());
 }
 
 function pickStores(appStore, storeCls) {
@@ -46,6 +44,7 @@ class SubProvider extends React.PureComponent {
   }
 
   render() {
+    console.log('this.props:', this.props);
     return (
       <StoreContext.Provider value={this.state}>
         {React.Children.only(this.props.children)}      
