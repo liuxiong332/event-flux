@@ -63,7 +63,9 @@ export default class StoreBase {
       this.emitter.emit('will-update', nextState);
       this.inWillUpdate = false;
       if (this.willUpdateStates.length > 0) {
-        this.state = this.willUpdateStates.reduce((allState, state) => Object.assign(allState, state), nextState);
+        this.state = this.willUpdateStates.reduce((allState, state) => 
+          Object.assign(allState, state
+        ), nextState);
         this.willUpdateStates = [];
       } else {
         this.state = nextState;

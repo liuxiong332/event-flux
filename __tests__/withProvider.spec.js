@@ -18,34 +18,41 @@ class Todo2Store extends StoreBase {
 }
 
 function injectView(getValue) {
-  return function(props) {
-    getValue(props);
-    return <div />;
+  return function MyView() {
+    return (
+      <StoreContext.Consumer>
+        {value => getValue(value) || <div />}
+      </StoreContext.Consumer>
+    );
   }
 }
 
 jest.useFakeTimers();
 
 describe('withProvider', () => {
-  // test('has parent provider', () => {
-  //   let getValue = jest.fn();
-  //   renderer.create(
-  //     <Provider stores={[Todo2Store]}>
-  //       {withProvider([Todo2Store, TodoDep1Store])(injectView(getValue))}
-  //     </Provider>
-  //   );
-  //   console.log(getValue.mock.calls[0][0].state);
-  //   expect(getValue.mock.calls[0][0].state).toEqual({ 
-  //     todo2: { todo2: 'todo2' }, todoDep1: { status: 'hasinit' } 
-  //   });
-  // });
+  test('has parent provider', () => {
+    let getValue = jest.fn();
+    let WrapProvider = withProvider([Todo2Store, TodoDep1Store])(injectView(getValue));
+    renderer.create(
+      <Provider stores={[Todo2Store]}>
+        <WrapProvider />
+      </Provider>
+    );
+    jest.runAllTimers();    
+    expect(getValue.mock.calls[getValue.mock.calls.length - 1][0].state).toEqual({ 
+      todo2: { todo2: 'todo2' }, todoDep1: { status: 'hasinit' } 
+    });
+  });
 
   test('no parent provider', () => {
     let getValue = jest.fn();
+    let WrapProvider = withProvider([TodoDep1Store])(injectView(getValue));
     renderer.create(
-      withProvider([TodoDep1Store])(injectView(getValue))
+      <WrapProvider />
     );
-    console.log(getValue.mock.calls[0][0].state);    
-    expect(getValue.mock.calls[0][0].state).toEqual({ todoDep1: { status: 'hasinit' } });    
+    jest.runAllTimers();
+    expect(getValue.mock.calls[getValue.mock.calls.length - 1][0].state).toEqual({ 
+      todoDep1: { status: 'hasinit' } 
+    });    
   });
 });

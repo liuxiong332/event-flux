@@ -5,7 +5,12 @@ import { buildObserveStore } from './buildStore';
 import shallowEqual from 'fbjs/lib/shallowEqual';
 
 function getStateKeyFromStores(stores) {
-  return stores.map(store => store.getStateKey());
+  if (!stores) return null;
+  let keys = [];
+  for (let key in stores) {
+    keys.push(stores[key].getStateKey());
+  }
+  return keys;
 }
 
 function pickStores(appStore, storeCls) {
@@ -13,23 +18,34 @@ function pickStores(appStore, storeCls) {
   let resStores = {};
   storeCls.forEach(cls => {
     let resStore = findInList(stores, (store) => store instanceof cls);
-    let storeKey = resStore.getStoreKey();
+    let storeKey = null;
     if (!resStore) {
-      console.warn(`The store ${cls.name} cannot find in parent context, will create in air`);
+      // console.warn(`The store ${cls.name} cannot find in parent context, will create in air`);
       resStore = buildObserveStore(appStore, cls);
+      storeKey = resStore.getStoreKey();
       stores[storeKey] = resStore;
+    } else {
+      storeKey = resStore.getStoreKey();      
     }
     resStores[storeKey] = resStore;
   });
   return resStores;
 }
 
-class SubProvider extends React.PureComponent {
+class SubProvider extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {};
+  }
+
   static getDerivedStateFromProps(nextProps, prevState) {
     let { _appStore, stores, state, storeClasses } = nextProps;  
-    let derivedStores = prevState.stores || pickStores(appStore, storeClasses);
+    let derivedStores = prevState.stores || pickStores(_appStore, storeClasses);
     let stateKeys = getStateKeyFromStores(derivedStores);
-    let newState = pick(state, stateKeys);
+    let newState = null;
+    if (state && stateKeys) {
+      newState = pick(state, stateKeys);
+    }
     return { _appStore, stores: derivedStores, state: newState };
   }
 
@@ -44,7 +60,6 @@ class SubProvider extends React.PureComponent {
   }
 
   render() {
-    console.log('this.props:', this.props);
     return (
       <StoreContext.Provider value={this.state}>
         {React.Children.only(this.props.children)}      
@@ -59,8 +74,14 @@ export default function withProvider(storeClasses) {
       let child = <Component {...props}/>;
       return (
         <StoreContext.Consumer>
-          {value => value ? 
-            <SubProvider {...value} storeClasses={storeClasses}>{child}</SubProvider> :
+          {value => value._appStore ? 
+            <SubProvider 
+              stores={value.stores} 
+              state={value.state} 
+              _appStore={value._appStore} 
+              storeClasses={storeClasses}>
+              {child}
+            </SubProvider> :
             <Provider stores={storeClasses}>{child}</Provider>}
         </StoreContext.Consumer>
       );

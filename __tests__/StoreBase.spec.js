@@ -1,9 +1,17 @@
 import StoreBase from '../src/StoreBase';
 import StoreRecycleBase from '../src/StoreRecycleBase';
 
-test('StoreBase', () => {
+class StoreBaseInherit extends StoreBase {
+  constructor(props) {
+    super(props);
+    this.batchUpdater = {};
+    this.batchUpdater.addTask = (task) => task();
+  }
+}
+
+describe('StoreBase', () => {
   test('onDidUpdate method', () => {
-    let store = new StoreBase();
+    let store = new StoreBaseInherit();
     let stateChangeMock = jest.fn();
     store.onDidUpdate(stateChangeMock);
     expect(stateChangeMock.mock.calls.length).toBe(0);
@@ -12,7 +20,7 @@ test('StoreBase', () => {
   });
 
   test('observe method', () => {
-    let store = new StoreBase();
+    let store = new StoreBaseInherit();
     let stateChangeMock = jest.fn();
     store.observe(stateChangeMock);
     expect(stateChangeMock.mock.calls.length).toBe(1);
@@ -22,43 +30,25 @@ test('StoreBase', () => {
 
 
   test('setState method', () => {
-    let store = new StoreBase();
+    let store = new StoreBaseInherit();
     let stateChangeMock = jest.fn();
     store.onDidUpdate(stateChangeMock);
     store.setState({ hello: 'world' });
     expect(stateChangeMock.mock.calls[0][0]).toMatchObject({ hello: 'world' });
   });
 
-  test('addDisposable method', () => {
-    let store = new StoreRecycleBase();
-    let stateChangeMock = jest.fn();
-    store.addDisposable(store.addStateChange(stateChangeMock));
-    expect(store._disposables.length).toBe(1);
-    store.dispose();
-    expect(store._disposables.length).toBe(0);
-  });
-
-  test('the observer callback will clear after dispose', () => {
-    let store = new StoreBase();
-    let stateChangeMock = jest.fn();
-    let disposable = store.onDidUpdate(stateChangeMock);
-    expect(store._disposables.length).toBe(1);
-    disposable();
-    expect(store._disposables.length).toBe(0);
-  });
-
   test('setState will update test', () => {
-    let store = new StoreBase();
+    let store = new StoreBaseInherit();
     store.setState({ hello: 'hello1' });
-    expect(this.state).toEqual({ hello: 'hello1' });
+    expect(store.state).toEqual({ hello: 'hello1' });
 
-    store.onWillUpdate = function() {
-      this.setState({ hello: 'updateHello' });
-    }
-    store.onWillUpdate = function() {
-      this.setState({ hello: 'updateHello2', newKey: 'key' });      
-    }
-    this.setState({ hello: 'hello1' });
-    expect(this.state).toEqual({ hello: 'updateHello2', newKey: 'key' });
+    store.onWillUpdate(function() {
+      store.setState({ hello: 'updateHello' });
+    });
+    store.onWillUpdate(function() {
+      store.setState({ hello: 'updateHello2', newKey: 'key' });      
+    });
+    store.setState({ hello: 'hello1' });
+    expect(store.state).toEqual({ hello: 'updateHello2', newKey: 'key' });
   });
 });
