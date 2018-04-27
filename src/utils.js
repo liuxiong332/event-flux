@@ -5,11 +5,9 @@ export function findInList(list, func) {
   }
 }
 
-export function forEachVal(obj, func) {
-  let stores = this.stores;
-  for (let key in stores) {
-    let store = stores[key];
-    func(store);
+export function findInObject(obj, func) {
+  for (let key in obj) {
+    if (func(obj[key])) return obj[key];
   }
 }
 
@@ -54,12 +52,12 @@ export function injectDependencies(appStore, store) {
   deps.forEach(dep => {
     let depStore = null;
     if (typeof dep === 'string') {
-      depStore = forEachVal(stores, (s) => s.constructor.name === dep);
+      depStore = findInObject(stores, (s) => s.constructor.name === dep);
       if (!depStore) {
         return console.error(`The dep ${dep} cannot find in stores`);
       }
     } else {
-      depStore = forEachVal(stores, (s) => s.constructor === dep);      
+      depStore = findInObject(stores, (s) => s.constructor === dep);      
       if (!depStore) {
         depStore = buildObserveStore(appStore, dep);
         stores[depStore.getStoreKey()] = depStore;

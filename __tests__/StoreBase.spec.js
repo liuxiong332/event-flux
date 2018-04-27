@@ -45,5 +45,20 @@ test('StoreBase', () => {
     expect(store._disposables.length).toBe(1);
     disposable();
     expect(store._disposables.length).toBe(0);
-  })
+  });
+
+  test('setState will update test', () => {
+    let store = new StoreBase();
+    store.setState({ hello: 'hello1' });
+    expect(this.state).toEqual({ hello: 'hello1' });
+
+    store.onWillUpdate = function() {
+      this.setState({ hello: 'updateHello' });
+    }
+    store.onWillUpdate = function() {
+      this.setState({ hello: 'updateHello2', newKey: 'key' });      
+    }
+    this.setState({ hello: 'hello1' });
+    expect(this.state).toEqual({ hello: 'updateHello2', newKey: 'key' });
+  });
 });

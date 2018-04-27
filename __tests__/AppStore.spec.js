@@ -1,49 +1,72 @@
+import AppStore, { parseStores } from '../src/AppStore';
 import StoreBase from '../src/StoreBase';
-import StoreRecycleBase from '../src/StoreRecycleBase';
 
-test('StoreBase', () => {
-  test('onDidUpdate method', () => {
-    let store = new StoreBase();
-    let stateChangeMock = jest.fn();
-    store.onDidUpdate(stateChangeMock);
-    expect(stateChangeMock.mock.calls.length).toBe(0);
-    store.setState({ state1: 'dd' });
-    expect(stateChangeMock.mock.calls.length).toBe(1);
+class TodoDep1Store extends StoreBase {}
+
+class Todo2Store extends StoreBase {
+  static dependencies = [TodoDep1Store];
+  constructor() {
+    super();
+    this.state = { todo2: 'todo2' };
+  }
+}
+
+class Todo3Store extends StoreBase {
+  static dependencies = ['TodoDep1Store'];
+  constructor() {
+    super();
+    this.state = { todo3: 'todo3' };
+  }
+}
+
+test('AppStore', () => {
+  test('parseStores', () => {
+    let stores = parseStores([TodoStore, Todo2Store]);
+    expect(stores['todoStore'] instanceof TodoStore).toBeTruthy();
+    expect(stores['todo2Store'] instanceof Todo2Store).toBeTruthy();
   });
 
-  test('observe method', () => {
-    let store = new StoreBase();
-    let stateChangeMock = jest.fn();
-    store.observe(stateChangeMock);
-    expect(stateChangeMock.mock.calls.length).toBe(1);
-    store.setState({ state1: 'dd' });
-    expect(stateChangeMock.mock.calls.length).toBe(2);
+  test('appStore inject class dependencies', () => {
+    let appStore = new AppStore([Todo2Store]);
+    expect(appStore.stores.keys()).toEqual(['todo2Store', 'todoDep1Store']);
+    let { todo2Store, todoDep1Store } = appStore.stores;
+    expect(appStore.state.todo2).toEqual({ todo2: 'todo2' });
+
+    todo2Store.setState({ todo2: 'todo3' });
+    todoDep1Store.setState({ 'dep1': 'dep' });
+    expect(appStore.state).toEqual({ todo2: { todo2: 'todo3' }, todoDep1: { dep1: 'dep' } });
   });
 
-
-  test('setState method', () => {
-    let store = new StoreBase();
-    let stateChangeMock = jest.fn();
-    store.onDidUpdate(stateChangeMock);
-    store.setState({ hello: 'world' });
-    expect(stateChangeMock.mock.calls[0][0]).toMatchObject({ hello: 'world' });
+  test('appStore inject string dependencies', () => {
+    let appStore = new AppStore([Todo2Store, TodoDep1Store]);
+    expect(appStore.stores.keys()).toEqual(['todo2Store', 'todoDep1Store']);    
   });
 
-  test('addDisposable method', () => {
-    let store = new StoreRecycleBase();
-    let stateChangeMock = jest.fn();
-    store.addDisposable(store.addStateChange(stateChangeMock));
-    expect(store._disposables.length).toBe(1);
-    store.dispose();
-    expect(store._disposables.length).toBe(0);
+  test('onChange', () => {
+    let onChange = jest.fn();
+    let appStore = new AppStore([Todo2Store, TodoDep1Store], onChange);
+    appStore.stores.todo2Store.setState({ todo2: 'todo3' });
+    expect(onChange).not.toBeCalled();
+    appStore.stores.todo2Store.init = jest.fn();
+
+    appStore.init();
+    expect(appStore.stores.todo2Store.init).toBeCalled();
+
+    appStore.setState({ 'hello': 'ddd' });
+    expect(onChange).toBeCalledWith({ hello: 'ddd', todo2: { todo2: 'todo3' } });
   });
 
-  test('the observer callback will clear after dispose', () => {
-    let store = new StoreBase();
-    let stateChangeMock = jest.fn();
-    let disposable = store.onDidUpdate(stateChangeMock);
-    expect(store._disposables.length).toBe(1);
-    disposable();
-    expect(store._disposables.length).toBe(0);
-  })
+  test('enable update', () => {
+    let onChange = jest.fn();
+    let appStore = new AppStore([Todo2Store, TodoDep1Store], onChange);
+    appStore.init();
+    
+    appStore.disableUpdate();
+    appStore.setState({ hello: 'hello1' });
+    expect(onChange).not.toBeCalled();
+
+    appStore.enableUpdate();
+    appStore.setState({ hello2: 'ddd' });
+    expect(onChange).toBeCalledWith({ hello: 'hello1', hello2: 'ddd' });
+  });
 });

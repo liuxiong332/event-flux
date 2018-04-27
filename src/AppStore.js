@@ -8,7 +8,7 @@ const StoreExp = /Store/;
 function parseStore(store) {
   if (store instanceof StoreBase) {
     return store;
-  } else if (StoreExp.test(store)) {
+  } else if (StoreExp.test(store.name)) {
     return new store();
   } else {
     console.error('The store you specific must be Store instance or Store class');
@@ -54,22 +54,12 @@ export default class AppStore {
     let stores = this.stores;
     for (let key in stores) {
       let store = stores[key];
-      store.observeState((state) => {
+      store.observe((state) => {
         let key = store.getStateKey();
         this.setState({ [key]: state });
       });
     }
   }
-
-  onUpdateState = (state) => {
-    this.state = { ...this.state, ...state };
-    if (this._enableUpdate) {
-      // this.emitter.emit('did-update', this.state);
-      this.onChange(this.state);
-    } else {
-      this._needUpdate = true;
-    }
-  };
 
   setState(state) {
     if (!this._init) {  // 未初始化完成
