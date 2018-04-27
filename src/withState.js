@@ -2,10 +2,11 @@ import React from 'react';
 import Provider, { StoreContext } from './Provider';
 import { pick } from './utils';
 
+const notUsed = () => null;
 function unifySelector(selector) {
-  if (!selector) return null;
+  if (!selector) return notUsed;
   if (typeof selector !== 'function') {
-    if (Array.isArray(selector)) selector = [selector];
+    if (!Array.isArray(selector)) selector = [selector];
     return (state) => pick(state, selector); 
   }
   return selector;
