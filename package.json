@@ -1,9 +1,8 @@
 {
   "name": "event-flux",
-  "version": "0.6.3",
+  "version": "0.6.5",
   "description": "The flux framework for React",
   "main": "./index.js",
-  "module": "./index.es.js",
   "scripts": {
     "test": "jest",
     "prepublish": "gulp"
