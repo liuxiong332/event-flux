@@ -51,23 +51,6 @@ export default class TodoStore extends StoreBase {
 }
 ```
 
-#### define AppStore
-
-Then, create class `AppStore` that init the stores.
-
-```js
-class AppStore extends AppStoreBase {
-  initInClient() {
-    this.todoStore = new TodoStore(this, 'reevent-todos');
-    this.todoStore.observeState((state) => this.setState({ ...state }));
-    return this;
-  }
-  loadInServer() {}
-}
-```
-
-`initInClient` will run the initialization method in browser and `initInServer` will run the initialization function in server.
-
 ### define React Component
 
 Then, create some React component just like before.
@@ -86,7 +69,7 @@ class TodoItem extends PureComponent {
 Then, create some `PureComponent` that observe the store's state change and `connect` the root store to the container component.
 
 ```js
-const { connect } = require('event-flux');
+const { withState } = require('event-flux');
 class TodoApp extends PureComponent {
   constructor(props, context) {
     super(props);
@@ -105,7 +88,7 @@ class TodoApp extends PureComponent {
 
 const mapStateToProps = (state) => state;
 const mapStoreToProps = (appStore) => ({ todoStore: appStore.todoStore });
-export default connect(mapStateToProps, mapStoreToProps)(TodoApp);
+export default withState(mapStoreToProps, mapStateToProps)(TodoApp);
 ```
 
 The `TodoApp` will observe the `todoStore` state. When the `todoStore` state changes, the TodoApp's props will be changed and the `TodoApp` component's state will be changed.
@@ -113,14 +96,12 @@ The `TodoApp` will observe the `todoStore` state. When the `todoStore` state cha
 ### Render the DOM
 
 ```js
-import AppStore from './AppStore';
 import { Provider } from 'event-flux';
 import TodoApp from './TodoApp';
-
-const appStore = new AppStore().loadInClient();
+import TodoStore from './TodoStore';
 
 ReactDOM.render(
-  <Provider appStore={appStore}>
+  <Provider stores={[TodoStore]}>
     <TodoApp />
   </appStore>,
   document.getElementsByClassName('todoapp')[0]
