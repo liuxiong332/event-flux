@@ -5,4 +5,9 @@ import AsyncStorage from './AsyncStorage';
 import withProvider from './withProvider';
 import withState from './withState';
 
-module.exports = { StoreBase, StoreRecycleBase, Provider, AsyncStorage, withProvider, withState };
+exports.StoreBase = StoreBase;
+exports.StoreRecycleBase = StoreRecycleBase;
+exports.Provider = Provider;
+exports.AsyncStorage = AsyncStorage;
+exports.withProvider = withProvider;
+exports.withState = withState; 
