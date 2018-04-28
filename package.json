@@ -1,8 +1,8 @@
 {
   "name": "event-flux",
-  "version": "0.6.0",
+  "version": "0.6.3",
   "description": "The flux framework for React",
-  "main": "./lib/index.js",
+  "main": "./index.js",
   "module": "./index.es.js",
   "scripts": {
     "test": "jest",
@@ -20,7 +20,9 @@
   "homepage": "https://github.com/liuxiong332/reevent#readme",
   "files": [
     "src",
-    "lib"
+    "lib",
+    "/index.js",
+    "index.es.js"
   ],
   "devDependencies": {
     "babel-jest": "^18.0.0",
