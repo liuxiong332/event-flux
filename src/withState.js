@@ -16,6 +16,7 @@ export default function withState(storeSelector, stateSelector) {
   storeSelector = unifySelector(storeSelector);
   stateSelector = unifySelector(stateSelector);
   return function(Component) {
+
     return function(props) {
       return (
         <StoreContext.Consumer>
