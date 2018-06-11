@@ -11,6 +11,7 @@
 const isObject = require('lodash/isObject');
 const isEmpty = require('lodash/isEmpty');
 const keys = require('lodash/keys');
+const { Map } = require('immutable');
 
 const isShallow = val => Array.isArray(val) || !isObject(val);
 
@@ -19,6 +20,7 @@ module.exports = function objectDifference(old, curr) {
   const deleted = {};
 
   keys(curr).forEach(key => {
+    if ()
     if (isShallow(curr[key]) || isShallow(old[key])) {
       updated[key] = curr[key];
     } else {

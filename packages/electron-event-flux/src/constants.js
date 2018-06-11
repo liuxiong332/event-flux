@@ -1,3 +1,3 @@
 module.exports = {
-  globalName: '__REDUX_ELECTRON_STORE__',
+  globalName: '__EVENT_FLUX_STORE__',
 };

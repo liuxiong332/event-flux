@@ -17,7 +17,7 @@ export default class Provider extends React.PureComponent {
     this.state = { 
       _appStore: this.appStore, 
       stores: this.appStore.stores, 
-      state: this.appStore.state 
+      state: this.appStore.state, 
     };
   }
 
