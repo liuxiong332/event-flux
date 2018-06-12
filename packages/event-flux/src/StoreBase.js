@@ -1,5 +1,4 @@
 import { Emitter } from 'event-kit';
-import { findInList } from './utils';
 import { buildStore } from './buildStore';
 
 const stateKeyReg = /^(\w+)Store$/;

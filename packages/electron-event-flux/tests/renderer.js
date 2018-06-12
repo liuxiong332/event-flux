@@ -3,18 +3,21 @@
 // All of the Node.js APIs are available in this process.
 
 const { ipcRenderer } = require('electron');
-
-const store = require('./store');
+import RendererStore from '../src/RendererAppStore';
+// const store = require('./store');
 
 const button = document.createElement('button');
 button.textContent = 'INCREMENT';
-button.onclick = () => store.dispatch({type: 'INCREMENT', payload: 2});
+
+const store = new RendererStore(null, (state) => {
+  button.textContent = `INCREMENT ${state.todo.count}`
+});
+
+button.onclick = () => store.todoStore.addTodo(2);
 
 document.body.appendChild(document.createElement('br'));
 document.body.appendChild(document.createElement('br'));
 document.body.appendChild(button);
-
-store.subscribe(() => button.textContent = `INCREMENT ${store.getState().count}`);
 
 if (!process.guestInstanceId) {
   const webview = document.getElementById('webview');

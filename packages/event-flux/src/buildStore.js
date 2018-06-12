@@ -5,10 +5,10 @@ import { findInObject } from './utils';
 const StoreExp = /Store/;
 // Parse the store instance or create instance from instance class
 export function parseStore(store) {
-  if (store instanceof StoreBase) {
-    return store;
-  } else if (StoreExp.test(store.name)) {
+  if (typeof store === 'function') {
     return new store();
+  } else if (typeof store === 'objec') {
+    return store;
   } else {
     console.error('The store you specific must be Store instance or Store class');
     return null;

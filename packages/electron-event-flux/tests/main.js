@@ -39,11 +39,6 @@ app.on('ready', () => {
     loadFileUrl(win, {id: index});
     return win;
   });
-
-  (function interval() {
-    store.dispatch({type: 'INCREMENT', payload: 1});
-    setTimeout(interval, 2000);
-  })();
 });
 
 

@@ -1,6 +1,5 @@
 import React from 'react';
 import AppStore from './AppStore';
-import StoreBase from './StoreBase';
 
 export const StoreContext = React.createContext('event-flux');
 const ContextProvider = StoreContext.Provider;
@@ -8,7 +7,6 @@ const ContextProvider = StoreContext.Provider;
 export default class Provider extends React.PureComponent {
   constructor(props) {
     super(props);
-    let stores = [];
     let inStores = props.stores;
     if (!Array.isArray(inStores)) {
       inStores = [inStores];

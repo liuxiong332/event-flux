@@ -9,7 +9,9 @@ export function parseStores(storeList) {
   storeList.forEach(store => {
     let resStore = parseStore(store);
     if (resStore) {
-      stores[resStore.getStoreKey()] = resStore;
+      let storeKey = resStore.getStoreKey();
+      if (stores[storeKey]) console.error('The store ' + storeKey + ' has existed');
+      stores[storeKey] = resStore;
     };
   });
   return stores;
@@ -55,7 +57,7 @@ export default class AppStore {
     } else {
       this.state = { ...this.state, ...state };
       if (this._enableUpdate) {
-        this.onChange(this.state);
+        this.sendUpdate();
       } else {
         this._needUpdate = true;
       }
@@ -69,8 +71,14 @@ export default class AppStore {
   enableUpdate() {
     this._enableUpdate = true;
     if (this._needUpdate) {
-      this.onChange(this.state);
+      this.sendUpdate();
     }
+  }
+
+  sendUpdate() {
+    this.onWillChange && this.onWillChange(this.prevState, this.state);
+    this.onChange && this.onChange(this.state);
+    this.prevState = this.state;
   }
 
   init() {
@@ -79,6 +87,7 @@ export default class AppStore {
     for (let key in stores) {
       stores[key]._initWrap();
     }
+    this.prevState = this.state;
     return this;
   }
 

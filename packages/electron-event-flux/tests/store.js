@@ -1,19 +1,19 @@
-const { createStore } = require('redux');
-const { electronEnhancer } = require('../src');
+import StoreBase from '../../event-flux/src/StoreBase';
+import MainAppStore from '../src/MainAppStore';
 
-const counter = (state, action) => {
-  return action.type === 'INCREMENT' ? {count: state.count + action.payload} : state;
+export default class TodoStore extends StoreBase {
+  constructor() {
+    super();
+    this.state = { count: 0 };
+  }
+
+  addTodo(num) {
+    this.setState({ count: this.state.count + num });
+  }
+
+  decreaseTodo(num) {
+    this.setState({ count: this.state.count - num });
+  }
 }
 
-const opts = {}
-if (process.type === 'renderer') {
-  if (window.rendererId === 1)
-    opts.filter = { counter: true }
-}
-
-
-let store = createStore(counter, {count: 0}, electronEnhancer(opts));
-store.subscribe(() => console.log(store.getState()));
-
-global.store = store;
-module.exports = store;
+export default new MainAppStore([Store]);

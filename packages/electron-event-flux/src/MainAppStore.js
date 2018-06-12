@@ -1,8 +1,10 @@
 import AppStore from '../../event-flux/AppStore';
-const { ipcRenderer, remote } = require('electron');
+const { ipcMain } = require('electron');
 const { globalName } = require('./constants');
+const objectDifference = require('./utils/object-difference');
+const isEmpty = require('lodash/isEmpty');
 
-function storeEnhancer() {
+function storeEnhancer(stores) {
   let clients = {}; // webContentsId -> {webContents, filter, clientId, windowId, active}
 
   // Need to keep track of windows, as when a window refreshes it creates a new
@@ -37,11 +39,10 @@ function storeEnhancer() {
     }
   });
 
-  const forwarder = ({ type, payload }) => {
+  const forwarder = (payload) => {
     // Forward all actions to the listening renderers
     for (let webContentsId in clients) {
       if (!clients[webContentsId].active) continue;
-      if (clients[webContentsId].clientId === context.flags.senderClientId) continue;
 
       let webContents = clients[webContentsId].webContents;
 
@@ -58,7 +59,7 @@ function storeEnhancer() {
         continue;
       }
 
-      const action = { type, payload: { updated, deleted } };
+      const action = { payload: { updated, deleted } };
       webContents.send(`${globalName}-browser-dispatch`, JSON.stringify(action));
     }
   };
@@ -69,19 +70,25 @@ function storeEnhancer() {
   // https://github.com/electron/electron/blob/master/docs/api/remote.md#remote-objects
   global[globalName] = () => JSON.stringify(store.getState());
 
-  const dispatcher = params.dispatchProxy || store.dispatch;
+  const storeNames = Object.keys(stores);
+  global[globalName + 'Stores'] = () => storeNames;
+
   ipcMain.on(`${globalName}-renderer-dispatch`, (event, clientId, stringifiedAction) => {
-    context.flags.isUpdating = true;
-    const action = JSON.parse(stringifiedAction);
-    context.flags.senderClientId = clientId;
-    dispatcher(action);
-    context.flags.senderClientId = null;
+    const { store, method, args } = JSON.parse(stringifiedAction);
+    stores[store][method].apply(stores[store], args);
   });
+  return forwarder;
 }
 
-class MultiWindowAppStore extends AppStore {
+export default class MultiWindowAppStore extends AppStore {
+  onWillChange(prevState, state) {
+    const delta = objectDifference(prevState, state);
+    if (isEmpty(delta.updated) && isEmpty(delta.deleted)) return;
+    this.forwarder(delta);
+  };
+
   init() {
     super.init();
-    storeEnhancer();
+    this.forwarder = storeEnhancer(this.stores);
   }
 }

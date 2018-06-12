@@ -3,7 +3,6 @@ const { ipcRenderer, remote } = require('electron');
 const { globalName } = require('./constants');
 const objectMerge = require('./utils/object-merge');
 const fillShape = require('./utils/fill-shape');
-const setupStore = require('./setup-electron-store');
 
 function storeEnhancer(onGetAction, filter) {
   const rendererId = process.guestInstanceId || remote.getCurrentWindow().id;
@@ -45,7 +44,7 @@ function storeEnhancer(onGetAction, filter) {
   return { stores, initialState };
 }
 
-class RendererAppStore extends AppStore {
+export default class RendererAppStore extends AppStore {
   init() {
     super.init();
     let { initialState, stores } = storeEnhancer(this.handleAction);
