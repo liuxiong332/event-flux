@@ -62,9 +62,26 @@ function storeEnhancer() {
       webContents.send(`${globalName}-browser-dispatch`, JSON.stringify(action));
     }
   };
+
+  // Give renderers a way to sync the current state of the store, but be sure we don't
+  // expose any remote objects. In other words, we need to rely exclusively on primitive
+  // data types, Arrays, or Buffers. Refer to:
+  // https://github.com/electron/electron/blob/master/docs/api/remote.md#remote-objects
+  global[globalName] = () => JSON.stringify(store.getState());
+
+  const dispatcher = params.dispatchProxy || store.dispatch;
+  ipcMain.on(`${globalName}-renderer-dispatch`, (event, clientId, stringifiedAction) => {
+    context.flags.isUpdating = true;
+    const action = JSON.parse(stringifiedAction);
+    context.flags.senderClientId = clientId;
+    dispatcher(action);
+    context.flags.senderClientId = null;
+  });
 }
+
 class MultiWindowAppStore extends AppStore {
   init() {
     super.init();
+    storeEnhancer();
   }
 }

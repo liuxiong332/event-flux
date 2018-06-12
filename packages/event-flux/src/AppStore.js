@@ -16,7 +16,7 @@ export function parseStores(storeList) {
 }
 
 export default class AppStore {
-  constructor(stores, onChange) {
+  constructor(stores = [], onChange) {
     this._enableUpdate = true;  // 是否可以更新
     this._needUpdate = false;   // 是否需要更新
     this._init = false;         // 是否已经初始化

@@ -106,6 +106,7 @@ module.exports = overrides => storeCreator => (reducer, initialState) => {
   // data types, Arrays, or Buffers. Refer to:
   // https://github.com/electron/electron/blob/master/docs/api/remote.md#remote-objects
   global[globalName] = () => JSON.stringify(store.getState());
+  global[globalName + 'Stores'] = () => [];
 
   const dispatcher = params.dispatchProxy || store.dispatch;
   ipcMain.on(`${globalName}-renderer-dispatch`, (event, clientId, stringifiedAction) => {

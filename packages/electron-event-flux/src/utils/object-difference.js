@@ -20,7 +20,6 @@ module.exports = function objectDifference(old, curr) {
   const deleted = {};
 
   keys(curr).forEach(key => {
-    if ()
     if (isShallow(curr[key]) || isShallow(old[key])) {
       updated[key] = curr[key];
     } else {
