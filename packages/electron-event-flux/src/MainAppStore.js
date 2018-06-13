@@ -4,7 +4,7 @@ const { globalName } = require('./constants');
 const objectDifference = require('./utils/object-difference');
 const isEmpty = require('lodash/isEmpty');
 
-function storeEnhancer(stores) {
+function storeEnhancer(appStore, stores) {
   let clients = {}; // webContentsId -> {webContents, filter, clientId, windowId, active}
 
   // Need to keep track of windows, as when a window refreshes it creates a new
@@ -68,7 +68,7 @@ function storeEnhancer(stores) {
   // expose any remote objects. In other words, we need to rely exclusively on primitive
   // data types, Arrays, or Buffers. Refer to:
   // https://github.com/electron/electron/blob/master/docs/api/remote.md#remote-objects
-  global[globalName] = () => JSON.stringify(store.getState());
+  global[globalName] = () => JSON.stringify(appStore.state);
 
   const storeNames = Object.keys(stores);
   global[globalName + 'Stores'] = () => storeNames;
@@ -89,6 +89,6 @@ export default class MultiWindowAppStore extends AppStore {
 
   init() {
     super.init();
-    this.forwarder = storeEnhancer(this.stores);
+    this.forwarder = storeEnhancer(this, this.stores);
   }
 }

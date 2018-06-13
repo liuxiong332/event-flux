@@ -1,5 +1,6 @@
 import StoreBase from '../../../../event-flux/src/StoreBase';
 import MainAppStore from '../../../src/MainAppStore';
+import { NOTINITIALIZED } from 'dns';
 
 class TodoStore extends StoreBase {
   constructor() {
@@ -16,4 +17,6 @@ class TodoStore extends StoreBase {
   }
 }
 
-export default new MainAppStore([TodoStore]);
+const appStore = new MainAppStore([TodoStore]);
+appStore.init();
+export default appStore;

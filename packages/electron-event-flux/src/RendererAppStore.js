@@ -1,4 +1,4 @@
-import AppStore from '../../event-flux/AppStore';
+import AppStore from '../../event-flux/src/AppStore';
 const { ipcRenderer, remote } = require('electron');
 const { globalName } = require('./constants');
 const objectMerge = require('./utils/object-merge');
@@ -47,12 +47,12 @@ function storeEnhancer(onGetAction, filter) {
 export default class RendererAppStore extends AppStore {
   init() {
     super.init();
-    let { initialState, stores } = storeEnhancer(this.handleAction);
+    let { initialState, stores } = storeEnhancer(this.handleAction.bind(this));
     this.state = initialState;
     this.stores = stores;
   }
 
-  handleAction = (action) => {
+  handleAction(action) {
     const { updated, deleted } = action.payload;
     const withDeletions = filterObject(this.state, deleted);
     this.state = objectMerge(withDeletions, updated);

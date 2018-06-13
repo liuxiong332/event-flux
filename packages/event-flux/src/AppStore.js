@@ -6,6 +6,7 @@ import { parseStore, injectDependencies } from './buildStore';
 
 export function parseStores(storeList) {
   let stores = {};
+  if (!storeList) return stores;
   storeList.forEach(store => {
     let resStore = parseStore(store);
     if (resStore) {

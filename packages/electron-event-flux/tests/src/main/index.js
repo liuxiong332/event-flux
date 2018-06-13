@@ -3,7 +3,7 @@
 import { app, BrowserWindow } from 'electron'
 import * as path from 'path'
 import { format as formatUrl } from 'url'
-import store from './store';
+import './store';
 
 const isDevelopment = process.env.NODE_ENV !== 'production'
 
@@ -18,7 +18,7 @@ function createMainWindow(params) {
   }
 
   if (isDevelopment) {
-    window.loadURL(`http://localhost:${process.env.ELECTRON_WEBPACK_WDS_PORT}`)
+    window.loadURL(`http://localhost:${process.env.ELECTRON_WEBPACK_WDS_PORT}?windowParams=${JSON.stringify(params)}`)
   }
   else {
     window.loadURL(formatUrl({
@@ -60,8 +60,8 @@ app.on('activate', () => {
 
 // create main BrowserWindow when electron is ready
 app.on('ready', () => {
-  mainWindow = createMainWindow()
-  // Array(3).fill().map((_, index) => {
-  //   createMainWindow({ id: index });
-  // });
+  // mainWindow = createMainWindow()
+  Array(1).fill().map((_, index) => {
+    createMainWindow({ id: index });
+  });
 })
