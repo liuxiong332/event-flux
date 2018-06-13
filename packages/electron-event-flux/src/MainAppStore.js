@@ -2,6 +2,7 @@ import AppStore from '../../event-flux/src/AppStore';
 const { ipcMain } = require('electron');
 const { globalName } = require('./constants');
 const objectDifference = require('./utils/object-difference');
+const fillShape = require('./utils/fill-shape');
 const isEmpty = require('lodash/isEmpty');
 
 function storeEnhancer(appStore, stores) {

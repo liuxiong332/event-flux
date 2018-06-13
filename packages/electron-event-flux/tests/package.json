@@ -9,11 +9,13 @@
     "dist:dir": "yarn dist --dir -c.compression=store -c.mac.identity=null"
   },
   "dependencies": {
+    "@material-ui/core": "^1.2.1",
     "react": "^16.4.0",
     "react-dom": "^16.4.0",
     "source-map-support": "^0.5.5"
   },
   "devDependencies": {
+    "@babel/preset-react": "^7.0.0-beta.51",
     "electron": "2.0.0",
     "electron-builder": "^20.11.1",
     "electron-webpack": "^2.0.1",

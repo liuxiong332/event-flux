@@ -26,7 +26,7 @@ function createMainWindow(params) {
       protocol: 'file',
       slashes: true,
       query: { windowParams: JSON.stringify(params) }
-    }))
+    }));
   }
 
   window.on('closed', () => {
@@ -61,7 +61,7 @@ app.on('activate', () => {
 // create main BrowserWindow when electron is ready
 app.on('ready', () => {
   // mainWindow = createMainWindow()
-  Array(1).fill().map((_, index) => {
+  Array(3).fill().map((_, index) => {
     createMainWindow({ id: index });
   });
 })

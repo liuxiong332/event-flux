@@ -3,8 +3,9 @@ const { ipcRenderer, remote } = require('electron');
 const { globalName } = require('./constants');
 const objectMerge = require('./utils/object-merge');
 const fillShape = require('./utils/fill-shape');
+const filterObject = require('./utils/filter-object');
 
-function storeEnhancer(onGetAction, filter) {
+function storeEnhancer(onGetAction, filter = true) {
   const rendererId = process.guestInstanceId || remote.getCurrentWindow().id;
   const clientId = process.guestInstanceId ? `webview ${rendererId}` : `window ${rendererId}`;
 
