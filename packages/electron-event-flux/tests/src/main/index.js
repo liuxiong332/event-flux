@@ -11,7 +11,11 @@ const isDevelopment = process.env.NODE_ENV !== 'production'
 let mainWindow
 
 function createMainWindow(params) {
-  const window = new BrowserWindow()
+  const window = new BrowserWindow({ show: false });
+
+  window.on('ready-to-show', function() {
+    window.show();
+  });
 
   if (isDevelopment) {
     window.webContents.openDevTools()
@@ -61,7 +65,7 @@ app.on('activate', () => {
 // create main BrowserWindow when electron is ready
 app.on('ready', () => {
   // mainWindow = createMainWindow()
-  Array(3).fill().map((_, index) => {
-    createMainWindow({ id: index });
-  });
+  let count = 0;
+  createMainWindow({ id: count++ });
+  global.createMainWindow = () => createMainWindow({ id: count++ });
 })

@@ -1,6 +1,5 @@
 import StoreBase from '../../../../event-flux/src/StoreBase';
 import MainAppStore from '../../../src/MainAppStore';
-import { NOTINITIALIZED } from 'dns';
 
 class TodoStore extends StoreBase {
   constructor() {
@@ -16,6 +15,7 @@ class TodoStore extends StoreBase {
     this.setState({ count: this.state.count - num });
   }
 }
+TodoStore.stateKey = 'todo';
 
 const appStore = new MainAppStore([TodoStore]);
 appStore.init();

@@ -1,14 +1,14 @@
 import React from 'react';
 import Provider, { StoreContext } from './Provider';
 import { findInList, pick } from './utils';
-import { buildObserveStore } from './buildStore';
+import { buildObserveStore, getStateKey } from './buildStore';
 import shallowEqual from 'fbjs/lib/shallowEqual';
 
 function getStateKeyFromStores(stores) {
   if (!stores) return null;
   let keys = [];
   for (let key in stores) {
-    keys.push(stores[key].getStateKey());
+    keys.push(getStateKey(stores[key].constructor));
   }
   return keys;
 }
@@ -22,10 +22,10 @@ function pickStores(appStore, storeCls) {
     if (!resStore) {
       // console.warn(`The store ${cls.name} cannot find in parent context, will create in air`);
       resStore = buildObserveStore(appStore, cls);
-      storeKey = resStore.getStoreKey();
+      storeKey = getStoreKey(resStore.constructor);
       stores[storeKey] = resStore;
     } else {
-      storeKey = resStore.getStoreKey();      
+      storeKey = getStoreKey(resStore.constructor);      
     }
     resStores[storeKey] = resStore;
   });

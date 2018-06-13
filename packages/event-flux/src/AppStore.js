@@ -2,7 +2,7 @@ import { Emitter } from 'event-kit';
 import StoreBase from './StoreBase';
 import BatchUpdateHost from './BatchUpdateHost';
 import { findInList } from './utils';
-import { parseStore, injectDependencies } from './buildStore';
+import { parseStore, injectDependencies, getStoreKey, getStateKey } from './buildStore';
 
 export function parseStores(storeList) {
   let stores = {};
@@ -10,7 +10,7 @@ export function parseStores(storeList) {
   storeList.forEach(store => {
     let resStore = parseStore(store);
     if (resStore) {
-      let storeKey = resStore.getStoreKey();
+      let storeKey = getStoreKey(resStore.constructor);
       if (stores[storeKey]) console.error('The store ' + storeKey + ' has existed');
       stores[storeKey] = resStore;
     };
@@ -46,7 +46,7 @@ export default class AppStore {
     for (let key in stores) {
       let store = stores[key];
       store.observe((state) => {
-        let key = store.getStateKey();
+        let key = getStateKey(store.constructor);
         this.setState({ [key]: state });
       });
     }

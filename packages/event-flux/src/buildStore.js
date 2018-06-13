@@ -7,12 +7,36 @@ const StoreExp = /Store/;
 export function parseStore(store) {
   if (typeof store === 'function') {
     return new store();
-  } else if (typeof store === 'objec') {
+  } else if (typeof store === 'object') {
     return store;
   } else {
     console.error('The store you specific must be Store instance or Store class');
     return null;
   }
+}
+
+const stateKeyReg = /^(\w+)Store$/;
+
+// get store state key from store instance
+export function getStateKey(storeClass) {
+  if (storeClass.stateKey) return storeClass.stateKey;
+  if (!storeClass.storeKey) {
+    throw new Error(`Store ${storeClass.name} must provider storeKey or stateKey`);
+  }
+  let res = stateKeyReg.exec(storeClass.storeKey);
+ 
+  let key = res ? res[1] : storeClass.storeKey + 'State';
+  storeClass.stateKey = key;
+  return key;
+}
+
+export function getStoreKey(storeClass) {
+  if (storeClass.storeKey) return storeClass.storeKey;
+  if (!storeClass.stateKey) {
+    throw new Error(`Store ${storeClass.name} must provider storeKey or stateKey`);
+  }
+  storeClass.storeKey = storeClass.stateKey + 'Store';
+  return storeClass.storeKey;
 }
 
 // storeClass must be factory or class.
@@ -27,9 +51,9 @@ export function buildStore(appStore, storeClass) {
 
 export function buildObserveStore(appStore, storeClass) {
   let store = buildStore(appStore, storeClass);
+  const stateKey = getStateKey(storeClass);
   store.observe((state) => {
-    let key = store.getStateKey();
-    appStore.setState({ [key]: state });
+    appStore.setState({ [stateKey]: state });
   });
   return store;
 }
@@ -50,10 +74,10 @@ export function injectDependencies(appStore, store) {
       depStore = findInObject(stores, (s) => s.constructor === dep);      
       if (!depStore) {
         depStore = buildObserveStore(appStore, dep);
-        stores[depStore.getStoreKey()] = depStore;
+        stores[getStoreKey(depStore.constructor)] = depStore;
       }
     }
-    let injectKey = depStore.getStoreKey();
+    let injectKey = getStoreKey(depStore.constructor);
     store[injectKey] = depStore;
   });
 }

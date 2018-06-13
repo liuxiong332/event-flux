@@ -1,18 +1,6 @@
 import { Emitter } from 'event-kit';
 import { buildStore } from './buildStore';
 
-const stateKeyReg = /^(\w+)Store$/;
-
-// get store state key from store instance
-function getStateKey(storeClass) {
-  let res = stateKeyReg.exec(storeClass.name);
-  if (!res) {
-    throw new Error(`Store ${storeClass.name} must be end with Store`);
-  }
-  let key = res[1];
-  return key[0].toLowerCase() + key.slice(1);
-}
-
 export default class StoreBase {
   constructor() {
     this.state = {};
@@ -33,21 +21,6 @@ export default class StoreBase {
     let store = buildStore(this._appStore, storeClass);
     store._initWrap();
     return store;
-  }
-
-  getStateKey() {
-    if (!this._stateKey) {
-      this._stateKey = getStateKey(this.constructor)      
-    }
-    return this._stateKey;
-  }
-
-  getStoreKey() {
-    if (!this._storeKey) {
-      let name = this.constructor.name;
-      this._storeKey = name[0].toLowerCase() + name.slice(1);
-    }
-    return this._storeKey;
   }
 
   setState(state) {
