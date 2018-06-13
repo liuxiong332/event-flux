@@ -1,7 +1,7 @@
-import StoreBase from '../../event-flux/src/StoreBase';
-import MainAppStore from '../src/MainAppStore';
+import StoreBase from '../../../../event-flux/src/StoreBase';
+import MainAppStore from '../../../src/MainAppStore';
 
-export default class TodoStore extends StoreBase {
+class TodoStore extends StoreBase {
   constructor() {
     super();
     this.state = { count: 0 };
@@ -16,4 +16,4 @@ export default class TodoStore extends StoreBase {
   }
 }
 
-export default new MainAppStore([Store]);
+export default new MainAppStore([TodoStore]);

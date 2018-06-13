@@ -1,4 +1,4 @@
-import AppStore from '../../event-flux/AppStore';
+import AppStore from '../../event-flux/src/AppStore';
 const { ipcMain } = require('electron');
 const { globalName } = require('./constants');
 const objectDifference = require('./utils/object-difference');
