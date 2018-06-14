@@ -3,7 +3,7 @@ const { ipcRenderer, remote } = require('electron');
 const { globalName } = require('./constants');
 const objectMerge = require('./utils/object-merge');
 const fillShape = require('./utils/fill-shape');
-const filterObject = require('./utils/filter-object');
+// const filterObject = require('./utils/filter-object');
 
 function storeEnhancer(onGetAction, filter = true) {
   const rendererId = process.guestInstanceId || remote.getCurrentWindow().id;
@@ -55,14 +55,10 @@ export default class RendererAppStore extends AppStore {
 
   handleAction(action) {
     const { updated, deleted } = action.payload;
-    const withDeletions = filterObject(this.state, deleted);
-    this.state = objectMerge(withDeletions, updated);
-    if (this._init) {
-      if (this._enableUpdate) {
-        this.onChange(this.state);
-      } else {
-        this._needUpdate = true;
-      }
-    }
+    // const withDeletions = filterObject(this.state, deleted);
+    this.state = objectMerge(this.state, updated, deleted);
+    const util = require('util')
+    console.log(util.inspect(this.state, {showHidden: false, depth: null}))
+    this.sendUpdate();
   }
 }

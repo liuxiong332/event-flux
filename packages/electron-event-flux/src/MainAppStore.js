@@ -61,6 +61,9 @@ function storeEnhancer(appStore, stores) {
       }
 
       const action = { payload: { updated, deleted } };
+
+      const util = require('util')
+      console.log(util.inspect(action, {showHidden: false, depth: null}))
       webContents.send(`${globalName}-browser-dispatch`, JSON.stringify(action));
     }
   };

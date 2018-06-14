@@ -58,7 +58,7 @@ export default class AppStore {
     } else {
       this.state = { ...this.state, ...state };
       if (this._enableUpdate) {
-        this.sendUpdate();
+        this._sendUpdate();
       } else {
         this._needUpdate = true;
       }
@@ -72,11 +72,20 @@ export default class AppStore {
   enableUpdate() {
     this._enableUpdate = true;
     if (this._needUpdate) {
-      this.sendUpdate();
+      this._sendUpdate();
     }
   }
 
   sendUpdate() {
+    if (!this._init) return;
+    if (this._enableUpdate) {
+      this._sendUpdate();
+    } else {
+      this._needUpdate = true;
+    }
+  }
+
+  _sendUpdate() {
     this.onWillChange && this.onWillChange(this.prevState, this.state);
     this.onChange && this.onChange(this.state);
     this.prevState = this.state;

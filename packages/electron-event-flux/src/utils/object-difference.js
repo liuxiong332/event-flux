@@ -11,27 +11,39 @@
 const isObject = require('lodash/isObject');
 const isEmpty = require('lodash/isEmpty');
 const keys = require('lodash/keys');
-const { Map } = require('immutable');
+const { Map, List } = require('immutable');
+const { serialize } = require('json-immutable');
 
-const isShallow = val => Array.isArray(val) || !isObject(val);
+const isShallow = val => Array.isArray(val) || !isObject(val) || List.isList(val);
 
-module.exports = function objectDifference(old, curr) {
+const isDiffType = (val1, val2) => (Map.isMap(val1) && !Map.isMap(val2)) || (!Map.isMap(val1) && Map.isMap(val2));
+
+function checkUpdateVal(key, oldVal, currVal, updated, deleted) {
+  if (currVal === oldVal) return;
+  
+  if (isShallow(currVal) || isShallow(oldVal)) {
+    updated[key] = serialize(currVal);
+  } else if (isDiffType(currVal, oldVal)) {
+    updated[key] = serialize(currVal);
+  } else {
+    const diff = objectDifference(oldVal, currVal);
+    !isEmpty(diff.updated) && (updated[key] = diff.updated);
+    !isEmpty(diff.deleted) && (deleted[key] = diff.deleted);
+  }
+}
+
+function objectDifference(old, curr) {
   const updated = {};
   const deleted = {};
 
-  keys(curr).forEach(key => {
-    if (curr[key] === old[key]) return;
-    if (isShallow(curr[key]) || isShallow(old[key])) {
-      updated[key] = curr[key];
-    } else {
-      const diff = objectDifference(old[key], curr[key]);
-      !isEmpty(diff.updated) && (updated[key] = diff.updated);
-      !isEmpty(diff.deleted) && (deleted[key] = diff.deleted);
-    }
-  });
-
-  keys(old)
-    .forEach(key => curr[key] === undefined && (deleted[key] = true));
-
+  if (Map.isMap(curr)) {
+    curr.forEach(key => checkUpdateVal(key, old.get(key), curr.get(key), updated, deleted));
+    old.forEach(key => curr.get(key) === undefined && (deleted[key] = true));
+  } else {
+    keys(curr).forEach(key => checkUpdateVal(key, old[key], curr[key], updated, deleted));
+    keys(old).forEach(key => curr[key] === undefined && (deleted[key] = true));
+  }
   return { updated, deleted };
 };
+
+module.exports = objectDifference;

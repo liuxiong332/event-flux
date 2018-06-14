@@ -1,14 +1,41 @@
 const isObject = require('lodash/isObject');
 const keys = require('lodash/keys');
+const { List, Map } = require('immutable');
+const { deserialize } = require('json-immutable');
 
-const isShallow = (val) => Array.isArray(val) || !isObject(val);
+const isShallow = (val) => Array.isArray(val) || !isObject(val) || List.isList(val);
 
-module.exports = function objectMerge(a, b) {
-  if (a === b || isShallow(a) || isShallow(b)) {
-    return b !== undefined ? b : a;
+module.exports = function objectMerge(origin, updated, deleted) {
+  if (isShallow(origin) || isShallow(updated)) {
+    return deserialize(updated);
   }
-  let merged = {};
-  keys(a).forEach(key => merged[key] = objectMerge(a[key], b[key]));
-  keys(b).forEach(key => a[key] === undefined && (merged[key] = b[key]));
-  return merged;
+  if (Map.isMap(origin)) {
+    let merged;
+    if (isObject(deleted)) {
+      merged = {};
+      origin.forEach((val, key) => {
+        if (deleted[key] !== true) merged[key] = val;
+      });
+    } else {
+      merged = { ...origin };
+    }
+    keys(updated).forEach(key => {
+      merged[key] = objectMerge(origin.get(key), updated[key], deleted && deleted[key])
+    });
+    return new Map(merged);
+  } else {
+    let merged = {};
+    if (isObject(deleted)) {
+      merged = {};
+      keys(origin).forEach(key => {
+        if (deleted[key] !== true) merged[key] = origin[key];
+      });
+    } else {
+      merged = { ...origin };
+    }
+    keys(updated).forEach(key => {
+      merged[key] = objectMerge(origin[key], updated[key], deleted && deleted[key])
+    });
+    return merged;
+  }
 };

@@ -27,6 +27,7 @@
   "homepage": "https://github.com/samiskin/redux-electron-store#readme",
   "dependencies": {
     "immutable": "^3.8.2",
+    "json-immutable": "^0.4.0",
     "lodash": "^4.13.1"
   },
   "devDependencies": {
