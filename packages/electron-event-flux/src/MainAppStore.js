@@ -4,8 +4,22 @@ const { globalName } = require('./constants');
 const objectDifference = require('./utils/object-difference');
 const fillShape = require('./utils/fill-shape');
 const isEmpty = require('lodash/isEmpty');
+const isObject = require('lodash/isObject');
 const { serialize, deserialize } = require('json-immutable');
 const filterStore = require('./utils/filter-store');
+
+function findStore(stores, storePath) {
+  return storePath.reduce((subStores, entry) => {
+    if (!isObject(entry)) return subStores[entry]
+    let { name, type, index } = entry;
+    let storeCol = subStores[name];
+    if (type === 'List') {
+      return storeCol[index];
+    } else if (type === 'Map') {
+      return storeCol.get ? storeCol.get(index) : storeCol[index];
+    }
+  }, stores);
+}
 
 function storeEnhancer(appStore, stores) {
   let clients = {}; // webContentsId -> {webContents, filter, clientId, windowId, active}
@@ -81,7 +95,7 @@ function storeEnhancer(appStore, stores) {
 
   ipcMain.on(`${globalName}-renderer-dispatch`, (event, clientId, stringifiedAction) => {
     const { store, method, args } = deserialize(stringifiedAction);
-    stores[store][method].apply(stores[store], args);
+    findStore(stores, store)[method].apply(stores[store], args);
   });
   return forwarder;
 }

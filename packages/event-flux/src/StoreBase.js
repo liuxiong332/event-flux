@@ -71,7 +71,6 @@ export default class StoreBase {
   }
 }
 
-StoreBase[IS_STORE] = true;
 StoreBase.prototype[IS_STORE] = true;
 StoreBase.isStore = function(maybeStore) {
   return !!(maybeStore && maybeStore[IS_STORE]);

@@ -21,6 +21,25 @@ function genProxy(storePath, forwardStore, forwarder) {
   })
 }
 
+function genIndexProxy(storePath, forwardStore, forwarder) {
+  return new Proxy(forwarder, {
+    get: function(target, propName) {
+      if (!propName) return;
+      const retIndexFunc = function(index) {
+        storePath = [
+          ...storePath.slice(0, -1), 
+          { ...storePath[storePath.length - 1], index }
+        ];
+        return genProxy(storePath, forwardStore, forwarder);
+      }
+      if (propName === 'get') {
+        return retIndexFunc;
+      }
+      return retIndexFunc(parseInt(propName));
+    }
+  })
+}
+
 function proxyStores(parentStore, storeFilters, forwarder) {
   if (isEmpty(storeFilters)) return null;
   let stores = {};
@@ -66,17 +85,7 @@ function storeEnhancer(onGetAction, filter = true) {
     onGetAction(action);
   });
 
-  let stores = {};
-  storeFilters.forEach(name => {
-    stores[name] = new Proxy(forwarder, {
-      get: function(target, propName) {
-        if (!propName) return;
-        return function(...args) {
-          forwarder({ store: name, method: propName, args });
-        };
-      }
-    })
-  });
+  let stores = proxyStores(null, storeFilters, forwarder);
   return { stores, initialState };
 }
 

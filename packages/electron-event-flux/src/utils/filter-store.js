@@ -18,12 +18,10 @@ function filterOneStore(StoreClass) {
   let filters = {};
   for (let key in innerStores) {
     let value = innerStores[key];
-    if (StoreBase.isStore(value)) {
-      filters[key] = { 
-        type: 'Store',
-        filters: filterOneStore(value),
-      };
-    } else if (StoreListDeclarer.isStoreList(value)) {
+    if (!isObject(value)) {
+      throw new Error('The innerStores value must be Store or StoreList, StoreMap');
+    }
+    if (StoreListDeclarer.isStoreList(value)) {
       filters[key] = {
         type: 'StoreList',
         filters: filterOneStore(value.Store),
@@ -32,6 +30,11 @@ function filterOneStore(StoreClass) {
       filters[key] = {
         type: 'StoreMap',
         filters: filterOneStore(value.Store),
+      };
+    } else {
+      filters[key] = { 
+        type: 'Store',
+        filters: filterOneStore(value),
       };
     }
   }
