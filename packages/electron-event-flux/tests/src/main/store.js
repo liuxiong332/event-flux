@@ -14,6 +14,10 @@ class TodoStore extends StoreBase {
   decreaseTodo(num) {
     this.setState({ count: this.state.count - num });
   }
+
+  setComplete(isComplete) {
+    this.setState({ isComplete });
+  }
 }
 TodoStore.stateKey = 'todo';
 

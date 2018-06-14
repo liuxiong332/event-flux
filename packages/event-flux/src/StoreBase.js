@@ -1,6 +1,8 @@
 import { Emitter } from 'event-kit';
 import { buildStore } from './buildStore';
 
+const IS_STORE = '@@__FLUX_STORE__@@';
+
 export default class StoreBase {
   constructor() {
     this.state = {};
@@ -67,4 +69,10 @@ export default class StoreBase {
   getState() {
     return this.state;
   }
+}
+
+StoreBase[IS_STORE] = true;
+StoreBase.prototype[IS_STORE] = true;
+StoreBase.isStore = function(maybeStore) {
+  return !!(maybeStore && maybeStore[IS_STORE]);
 }

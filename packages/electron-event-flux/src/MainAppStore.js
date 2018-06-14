@@ -4,6 +4,8 @@ const { globalName } = require('./constants');
 const objectDifference = require('./utils/object-difference');
 const fillShape = require('./utils/fill-shape');
 const isEmpty = require('lodash/isEmpty');
+const { serialize, deserialize } = require('json-immutable');
+const filterStore = require('./utils/filter-store');
 
 function storeEnhancer(appStore, stores) {
   let clients = {}; // webContentsId -> {webContents, filter, clientId, windowId, active}
@@ -72,13 +74,13 @@ function storeEnhancer(appStore, stores) {
   // expose any remote objects. In other words, we need to rely exclusively on primitive
   // data types, Arrays, or Buffers. Refer to:
   // https://github.com/electron/electron/blob/master/docs/api/remote.md#remote-objects
-  global[globalName] = () => JSON.stringify(appStore.state);
+  global[globalName] = () => serialize(appStore.state);
 
-  const storeNames = Object.keys(stores);
+  const storeNames = filterStore(stores);
   global[globalName + 'Stores'] = () => storeNames;
 
   ipcMain.on(`${globalName}-renderer-dispatch`, (event, clientId, stringifiedAction) => {
-    const { store, method, args } = JSON.parse(stringifiedAction);
+    const { store, method, args } = deserialize(stringifiedAction);
     stores[store][method].apply(stores[store], args);
   });
   return forwarder;
