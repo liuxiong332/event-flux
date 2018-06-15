@@ -51,7 +51,7 @@ const storeBuilders = {
   }
 }
 
-function filterOneStore(StoreClass) {
+exports.filterOneStore = function filterOneStore(StoreClass) {
   if (!StoreClass) return null;
   let innerStores = StoreClass.innerStores;
   if (!innerStores) return null;
