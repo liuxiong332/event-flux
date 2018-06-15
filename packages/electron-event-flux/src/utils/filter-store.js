@@ -7,8 +7,7 @@
 
 const keys = require('lodash/keys');
 const isObject = require('lodash/isObject');
-import StoreBase from '../../../event-flux/src/StoreBase';
-import { StoreListDeclarer, StoreMapDeclarer } from '../StoreDeclarer';
+const { StoreListDeclarer, StoreMapDeclarer } = require('../StoreDeclarer');
 
 function filterOneStore(StoreClass) {
   if (!StoreClass) return null;

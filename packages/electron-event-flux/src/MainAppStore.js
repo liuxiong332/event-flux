@@ -91,6 +91,8 @@ function storeEnhancer(appStore, stores) {
   global[globalName] = () => serialize(appStore.state);
 
   const storeNames = filterStore(stores);
+  const util = require('util')
+  console.log(util.inspect(storeNames, {showHidden: false, depth: null}))
   global[globalName + 'Stores'] = () => storeNames;
 
   ipcMain.on(`${globalName}-renderer-dispatch`, (event, clientId, stringifiedAction) => {

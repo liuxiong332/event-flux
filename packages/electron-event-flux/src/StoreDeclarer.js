@@ -27,4 +27,4 @@ function declareStoreMap(Store) {
   return new StoreMapDeclarer(Store);
 }
 
-export { StoreListDeclarer, StoreMapDeclarer, declareStoreList, declareStoreMap };
+module.exports = { StoreListDeclarer, StoreMapDeclarer, declareStoreList, declareStoreMap };

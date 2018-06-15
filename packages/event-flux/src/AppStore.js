@@ -36,7 +36,7 @@ export default class AppStore {
     for (let key in stores) {
       let store = stores[key];
       store.batchUpdater = this.batchUpdater;
-      store._appStore = this._appStore;
+      store._appStore = this;
       injectDependencies(this, store);
     }
   }

@@ -4,60 +4,7 @@ const { globalName } = require('./constants');
 const objectMerge = require('./utils/object-merge');
 const fillShape = require('./utils/fill-shape');
 const { serialize, deserialize } = require('json-immutable');
-const isEmpty = require('lodash/isEmpty');
-
-/* Gen proxy for the storePath such as [todoMapStore, todoStore] 
-  forwardStore standard for the forward path
-*/
-function genProxy(storePath, forwardStore, forwarder) {
-  return new Proxy(forwarder, {
-    get: function(target, propName) {
-      if (!propName) return;
-      if (forwardStore && forwardStore[propName]) return forwardStore[name];
-      return function(...args) {
-        forwarder({ store: storePath, method: propName, args });
-      };
-    }
-  })
-}
-
-function genIndexProxy(storePath, forwardStore, forwarder) {
-  return new Proxy(forwarder, {
-    get: function(target, propName) {
-      if (!propName) return;
-      const retIndexFunc = function(index) {
-        storePath = [
-          ...storePath.slice(0, -1), 
-          { ...storePath[storePath.length - 1], index }
-        ];
-        return genProxy(storePath, forwardStore, forwarder);
-      }
-      if (propName === 'get') {
-        return retIndexFunc;
-      }
-      return retIndexFunc(parseInt(propName));
-    }
-  })
-}
-
-function proxyStores(parentStore, storeFilters, forwarder) {
-  if (isEmpty(storeFilters)) return null;
-  let stores = {};
-  for (let name in storeFilters) {
-    let { type, filters } = storeFilters[name];
-    let names;
-    if (type === 'Store') {
-      names = [...parentStore, name];
-    } else if (type === 'StoreList') {
-      names = [...parentStore, { name, type: 'List' }];
-    } else if (type === 'StoreMap') {
-      names = [...parentStore, { name, type: 'Map' }];
-    }
-    let childStores = proxyStores(names, filters, forwarder);
-    stores[name] = genProxy(names, childStores, forwarder);
-  }
-  return stores;
-}
+const proxyStores = require('./utils/proxy-store');
 
 function storeEnhancer(onGetAction, filter = true) {
   const rendererId = process.guestInstanceId || remote.getCurrentWindow().id;
@@ -85,7 +32,7 @@ function storeEnhancer(onGetAction, filter = true) {
     onGetAction(action);
   });
 
-  let stores = proxyStores(null, storeFilters, forwarder);
+  let stores = proxyStores(storeFilters, forwarder);
   return { stores, initialState };
 }
 
