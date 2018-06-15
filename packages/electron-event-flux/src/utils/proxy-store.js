@@ -7,7 +7,7 @@ function genProxy(storePath, forwardStore, forwarder) {
   return new Proxy(forwarder, {
     get: function(target, propName) {
       if (!propName) return;
-      if (forwardStore && forwardStore[propName]) return forwardStore[name];
+      if (forwardStore && forwardStore[propName]) return forwardStore[propName];
       return function(...args) {
         forwarder({ store: storePath, method: propName, args });
       };
@@ -61,6 +61,7 @@ function proxyStore(parentStore, storeFilters, forwarder) {
 }
 
 module.exports = function proxyStores(storeFilters, forwarder) {
+  console.log('storeFilters:', storeFilters)
   let stores = {};
   for (let name in storeFilters) {
     let names = [name];

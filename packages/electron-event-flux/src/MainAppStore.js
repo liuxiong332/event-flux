@@ -96,8 +96,9 @@ function storeEnhancer(appStore, stores) {
   global[globalName + 'Stores'] = () => storeNames;
 
   ipcMain.on(`${globalName}-renderer-dispatch`, (event, clientId, stringifiedAction) => {
-    const { store, method, args } = deserialize(stringifiedAction);
-    findStore(stores, store)[method].apply(stores[store], args);
+    const { store: storePath, method, args } = deserialize(stringifiedAction);
+    let store = findStore(stores, storePath);
+    store[method].apply(store, args);
   });
   return forwarder;
 }
