@@ -23,7 +23,7 @@ const storeBuilders = {
       disposable && disposable.dispose();
     };
   },
-  List: function (StoreClass, storeKey, stateKey) {
+  List: function (StoreClass, storeKey, stateKey, options) {
     let storeBuilder = () => this.buildStore(StoreClass);
     let storeObserver = (store, index) => {
       return store.observe(state => {
@@ -37,16 +37,16 @@ const storeBuilders = {
         });
       });
     }
-    this[storeKey] = new StoreList(storeBuilder, storeObserver);
+    this[storeKey] = new StoreList(options.size || 0, storeBuilder, storeObserver);
   },
-  Map: function (StoreClass, storeKey, stateKey) {
+  Map: function (StoreClass, storeKey, stateKey, options) {
     let storeBuilder = () => this.buildStore(StoreClass);
     let storeObserver = (store, index) => {
       return store.observe(state => this.setState({
         [stateKey]: { ...this.state[stateKey], [index]: state },
       }));
     }
-    this[storeKey] = new StoreMap(storeBuilder, storeObserver);
+    this[storeKey] = new StoreMap(options.keys, storeBuilder, storeObserver);
   }
 }
 
@@ -71,25 +71,25 @@ function filterOneStore(StoreClass) {
         type: 'Store',
         filters: filterOneStore(Store),
       };
-      subStoreInfos.push(['Item', Store, storeName, key]);
+      subStoreInfos.push(['Item', Store, storeName, key, options]);
     } else if (StoreListDeclarer.isStoreList(value)) {
       filters[storeName] = {
         type: 'StoreList',
         filters: filterOneStore(Store),
       }
-      subStoreInfos.push(['List', Store, storeName, key]);
+      subStoreInfos.push(['List', Store, storeName, key, options]);
     } else if (StoreMapDeclarer.isStoreMap(value)) {
       filters[storeName] = {
         type: 'StoreMap',
         filters: filterOneStore(Store),
       };
-      subStoreInfos.push(['Map', Store, storeName, key]);
+      subStoreInfos.push(['Map', Store, storeName, key, options]);
     }
   }
   StoreClass.prototype.buildStores = function() {
     console.log('buildStores this:', this.buildStore);
-    subStoreInfos.forEach(([type, StoreClass, storeKey, stateKey]) => {
-      storeBuilders[type].call(this, StoreClass, storeKey, stateKey);
+    subStoreInfos.forEach(([type, StoreClass, storeKey, stateKey, options]) => {
+      storeBuilders[type].call(this, StoreClass, storeKey, stateKey, options);
     });
   };
   StoreClass.prototype.disposeStores = function() {

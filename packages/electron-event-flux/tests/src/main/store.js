@@ -26,8 +26,8 @@ class Todo2Store extends StoreBase {
 
   init() {
     super.init();
-    this.todo3StoreList.setSize(1);
-    this.todo3StoreMap.add('myKey');
+    // this.todo3StoreList.setSize(1);
+    // this.todo3StoreMap.add('myKey');
     // this.todo3Store = this.buildStore(Todo3Store);
     // this.todo3Store.observe((state) => {
     //   this.setState({ todo3: state });
@@ -63,8 +63,8 @@ class Todo2Store extends StoreBase {
 Todo2Store.stateKey = 'todo2';
 Todo2Store.innerStores = {
   todo3: declareStore(Todo3Store),
-  todo3List: declareStoreList(Todo3Store, { storeKey: 'todo3StoreList' }),
-  todo3Map: declareStoreMap(Todo3Store, { storeKey: 'todo3StoreMap' }),
+  todo3List: declareStoreList(Todo3Store, { storeKey: 'todo3StoreList', size: 1 }),
+  todo3Map: declareStoreMap(Todo3Store, { storeKey: 'todo3StoreMap', keys: ['myKey'] }),
 };
 
 class TodoStore extends StoreBase {

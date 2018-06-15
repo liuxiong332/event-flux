@@ -1,10 +1,11 @@
 module.exports = class StoreList {
-  constructor(builder, observer) {
+  constructor(size, builder, observer) {
     this.length = 0;
     this.storeArray = [];
     this.disposables = [];
     this.builder = builder;
     this.observer = observer;
+    if (size) this.setSize(size);
   }
 
   setSize(count) {

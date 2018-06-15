@@ -1,10 +1,11 @@
 module.exports = class StoreMap {
-  constructor(builder, observer) {
+  constructor(keys, builder, observer) {
     this.length = 0;
     this.storeMap = new Map();
     this.disposables = new Map();
     this.builder = builder;
     this.observer = observer;
+    if (Array.isArray(keys)) keys.forEach(key => this.add(key));
   }
 
   add(key) {
