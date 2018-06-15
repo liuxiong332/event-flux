@@ -1,55 +1,19 @@
-import { Emitter } from 'event-kit';
 import StoreBase from './StoreBase';
 import BatchUpdateHost from './BatchUpdateHost';
-import { findInList } from './utils';
-import { parseStore, injectDependencies, getStoreKey, getStateKey } from './buildStore';
-
-export function parseStores(storeList) {
-  let stores = {};
-  if (!storeList) return stores;
-  storeList.forEach(store => {
-    let resStore = parseStore(store);
-    if (resStore) {
-      let storeKey = getStoreKey(resStore.constructor);
-      if (stores[storeKey]) console.error('The store ' + storeKey + ' has existed');
-      stores[storeKey] = resStore;
-    };
-  });
-  return stores;
-}
+import { buildStore } from './buildStore';
 
 export default class AppStore {
-  constructor(stores = [], onChange) {
+  constructor(onChange) {
     this._enableUpdate = true;  // 是否可以更新
     this._needUpdate = false;   // 是否需要更新
     this._init = false;         // 是否已经初始化
     this.onChange = onChange;
     this.batchUpdater = new BatchUpdateHost(this);  
     this.state = {};
-    this.stores = parseStores(stores);
-    this.observeStores();
-    this.injectStores();
   }
 
-  injectStores() {
-    let stores = this.stores;
-    for (let key in stores) {
-      let store = stores[key];
-      store.batchUpdater = this.batchUpdater;
-      store._appStore = this;
-      injectDependencies(this, store);
-    }
-  }
-
-  observeStores() {
-    let stores = this.stores;
-    for (let key in stores) {
-      let store = stores[key];
-      store.observe((state) => {
-        let key = getStateKey(store.constructor);
-        this.setState({ [key]: state });
-      });
-    }
+  buildStore(storeClass) {
+    return buildStore(this, storeClass);
   }
 
   setState(state) {
@@ -92,10 +56,6 @@ export default class AppStore {
   }
 
   init() {
-    let stores = this.stores;
-    for (let key in stores) {
-      stores[key]._initWrap();
-    }
     this._init = true;    
     this.prevState = this.state;
     return this;

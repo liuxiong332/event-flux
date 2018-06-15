@@ -44,7 +44,7 @@ export function buildStore(appStore, storeClass) {
   let store = parseStore(storeClass);
   store.batchUpdater = appStore.batchUpdater;
   store._appStore = appStore;
-  injectDependencies(appStore, store);
+  store.stores = appStore.stores;
   if (appStore._init) store._initWrap();  //appStore已经初始化，直接init store
   return store;
 }
@@ -56,28 +56,4 @@ export function buildObserveStore(appStore, storeClass) {
     appStore.setState({ [stateKey]: state });
   });
   return store;
-}
-
-// Inject the instances into the store by the dependencies static properties
-export function injectDependencies(appStore, store) {
-  let stores = appStore.stores;
-  let deps = store.constructor.dependencies;
-  if (!deps) return;
-  deps.forEach(dep => {
-    let depStore = null;
-    if (typeof dep === 'string') {
-      depStore = findInObject(stores, (s) => s.constructor.name === dep);
-      if (!depStore) {
-        return console.error(`The dep ${dep} cannot find in stores`);
-      }
-    } else {
-      depStore = findInObject(stores, (s) => s.constructor === dep);      
-      if (!depStore) {
-        depStore = buildObserveStore(appStore, dep);
-        stores[getStoreKey(depStore.constructor)] = depStore;
-      }
-    }
-    let injectKey = getStoreKey(depStore.constructor);
-    store[injectKey] = depStore;
-  });
 }

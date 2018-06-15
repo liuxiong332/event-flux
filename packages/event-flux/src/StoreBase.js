@@ -22,7 +22,7 @@ export default class StoreBase {
   buildStore(storeClass) {
     if (!this._appStore) return console.error('Can not invoke buildStore in constructor');
     let store = buildStore(this._appStore, storeClass);
-    store._initWrap();
+    // store._initWrap();
     return store;
   }
 

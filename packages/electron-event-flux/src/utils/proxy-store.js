@@ -40,14 +40,14 @@ function proxyStore(parentStore, storeFilters, forwarder) {
   for (let name in storeFilters) {
     let storeInfo = storeFilters[name];
     if (storeInfo) {
-      let { type, filters } = storeInfo;
+      let { type, filters, path = parentStore } = storeInfo;
       let names;
       if (type === 'Store') {
-        names = [...parentStore, name];
+        names = [...path, name];
       } else if (type === 'StoreList') {
-        names = [...parentStore, { name, type: 'List' }];
+        names = [...path, { name, type: 'List' }];
       } else if (type === 'StoreMap') {
-        names = [...parentStore, { name, type: 'Map' }];
+        names = [...path, { name, type: 'Map' }];
       }
       let childStores = proxyStore(names, filters, forwarder);
       if (type === 'Store') {
@@ -62,11 +62,5 @@ function proxyStore(parentStore, storeFilters, forwarder) {
 
 module.exports = function proxyStores(storeFilters, forwarder) {
   console.log('storeFilters:', storeFilters)
-  let stores = {};
-  for (let name in storeFilters) {
-    let names = [name];
-    let childStores = proxyStore(names, storeFilters[name], forwarder);
-    stores[name] = genProxy(names, childStores, forwarder);
-  }
-  return stores;
+  return proxyStore([], storeFilters, forwarder);
 }

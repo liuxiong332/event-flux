@@ -6,7 +6,8 @@
 */
 
 const keys = require('lodash/keys');
-const isObject = require('lodash/isObject');
+const isFunction = require('lodash/isFunction');
+const omit = require('lodash/omit');
 const { StoreDeclarer, StoreListDeclarer, StoreMapDeclarer } = require('../StoreDeclarer');
 const StoreList = require('./StoreList');
 const StoreMap = require('./StoreMap');
@@ -59,37 +60,48 @@ function filterOneStore(StoreClass) {
   let subStoreInfos = [];
   for (let key in innerStores) {
     let value = innerStores[key];
-    if (!isObject(value)) {
-      throw new Error('The innerStores value must be Store or StoreList, StoreMap');
-    }
-
-    let { options, Store } = value;
-    let storeName = options && options.storeKey || key + 'Store';
-
-    if (StoreDeclarer.isStore(value)) {
+    if (isFunction(value)) {
+      let storeName = key + 'Store';
       filters[storeName] = { 
         type: 'Store',
-        filters: filterOneStore(Store),
+        filters: filterOneStore(value),
       };
-      subStoreInfos.push(['Item', Store, storeName, key, options]);
-    } else if (StoreListDeclarer.isStoreList(value)) {
-      filters[storeName] = {
-        type: 'StoreList',
-        filters: filterOneStore(Store),
+      subStoreInfos.push(['Item', value, storeName, key]);
+    } else {
+      let { options, Store } = value;
+      let storeName = options && options.storeKey || key + 'Store';
+
+      if (StoreDeclarer.isStore(value)) {
+        filters[storeName] = { 
+          type: 'Store',
+          filters: filterOneStore(Store),
+        };
+        subStoreInfos.push(['Item', Store, storeName, key, options]);
+      } else if (StoreListDeclarer.isStoreList(value)) {
+        filters[storeName] = {
+          type: 'StoreList',
+          filters: filterOneStore(Store),
+        }
+        subStoreInfos.push(['List', Store, storeName, key, options]);
+      } else if (StoreMapDeclarer.isStoreMap(value)) {
+        filters[storeName] = {
+          type: 'StoreMap',
+          filters: filterOneStore(Store),
+        };
+        subStoreInfos.push(['Map', Store, storeName, key, options]);
       }
-      subStoreInfos.push(['List', Store, storeName, key, options]);
-    } else if (StoreMapDeclarer.isStoreMap(value)) {
-      filters[storeName] = {
-        type: 'StoreMap',
-        filters: filterOneStore(Store),
-      };
-      subStoreInfos.push(['Map', Store, storeName, key, options]);
     }
   }
   StoreClass.prototype.buildStores = function() {
     console.log('buildStores this:', this.buildStore);
     subStoreInfos.forEach(([type, StoreClass, storeKey, stateKey, options]) => {
       storeBuilders[type].call(this, StoreClass, storeKey, stateKey, options);
+    });
+  };
+  StoreClass.prototype.initStores = function() {
+    subStoreInfos.forEach((info) => {
+      let storeKey = info[2];
+      this[storeKey] && this[storeKey]._initWrap();
     });
   };
   StoreClass.prototype.disposeStores = function() {
@@ -105,7 +117,32 @@ module.exports = function filterStore(stores) {
   let storeFilters = {};
   for (let key in stores) {
     let store = stores[key];
-    storeFilters[key] = filterOneStore(store.constructor);
+    storeFilters[key] = { type: 'Store', filters: filterOneStore(store.constructor) };
   }
   return storeFilters;
 };
+
+exports.filterWindowStore = function(storeFilters, winStoreKey, winId) {
+  let winFilters = storeFilters[winStoreKey].filters;
+  if (!winFilters) return storeFilters;
+  winFilters = winFilters[winId].filters;
+  if (!winFilters) return storeFilters;
+  let winOnlyShape = {};
+  Object.keys(winFilters).forEach(storeKey => {
+    winOnlyShape[storeKey] = { ...winFilters[storeKey], path: [winStoreKey, winId] };
+  })
+  return { ...omit(storeFilters, [winStoreKey]), ...winOnlyShape };
+}
+
+exports.filterWindowState = function filterWindowState(allState, winStateKey, winId) {
+  if (!allState[winStateKey]) return allState;
+  let winState = allState[winStateKey][winId];
+  return { ...omit(allState, [winStateKey]), ...winState };
+}
+
+exports.filterWindowDelta = function filterWindowDelta(updated, deleted, winStateKey, winId) {
+  return [
+    filterWindowState(updated, winStateKey, winId),
+    filterWindowState(deleted, winStateKey, winId)
+  ];
+}

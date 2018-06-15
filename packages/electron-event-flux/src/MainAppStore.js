@@ -7,6 +7,9 @@ const isEmpty = require('lodash/isEmpty');
 const isObject = require('lodash/isObject');
 const { serialize, deserialize } = require('json-immutable');
 const filterStore = require('./utils/filter-store');
+const { filterOneStore, filterWindowStore, filterWindowState, filterWindowDelta } = filterStore;
+const { declareStore } = require('./StoreDeclarer');
+import MultiWinManagerStore from './MultiWinManagerStore';
 
 function findStore(stores, storePath) {
   return storePath.reduce((subStores, entry) => {
@@ -19,6 +22,9 @@ function findStore(stores, storePath) {
   }, stores);
 }
 
+const winManagerStoreName = '__WIN_MANAGER_STORE__';
+const winManagerKey = '__WIN_MANAGER__';
+
 function storeEnhancer(appStore, stores, storeShape) {
   let clients = {}; // webContentsId -> {webContents, filter, clientId, windowId, active}
 
@@ -29,11 +35,13 @@ function storeEnhancer(appStore, stores, storeShape) {
   // Cannot delete data, as events could still be sent after close
   // events when a BrowserWindow is created using remote
   let unregisterRenderer = (webContentsId) => {
+    appStore.stores[winManagerStoreName].deleteWin(clients[webContentsId].clientId);
     clients[webContentsId] = { active: false };
   };
 
   ipcMain.on(`${globalName}-register-renderer`, ({ sender }, { filter, clientId }) => {
     let webContentsId = sender.getId();
+    console.log('webcontentsid:', webContentsId)
     clients[webContentsId] = {
       webContents: sender,
       filter,
@@ -41,6 +49,7 @@ function storeEnhancer(appStore, stores, storeShape) {
       windowId: sender.getOwnerBrowserWindow().id,
       active: true
     };
+    appStore.stores[winManagerStoreName].addWin(clientId);
 
     if (!sender.isGuest()) { // For windowMap (not webviews)
       let browserWindow = sender.getOwnerBrowserWindow();
@@ -66,9 +75,10 @@ function storeEnhancer(appStore, stores, storeShape) {
         continue;
       }
 
-      let shape = clients[webContentsId].filter;
+      let { filter: shape, clientId } = clients[webContentsId];
       let updated = fillShape(payload.updated, shape);
       let deleted = fillShape(payload.deleted, shape);
+      [updated, deleted] = filterWindowDelta(updated, deleted, winManagerKey, clientId);
 
       if (isEmpty(updated) && isEmpty(deleted)) {
         continue;
@@ -89,10 +99,10 @@ function storeEnhancer(appStore, stores, storeShape) {
 
   const util = require('util')
   console.log(util.inspect(storeShape, {showHidden: false, depth: null}))
-  global[globalName + 'Stores'] = () => storeShape;
+  global[globalName + 'Stores'] = (clientId) => filterWindowStore(storeShape, winManagerStoreName, clientId);
 
   console.log(util.inspect(appStore.state, {showHidden: false, depth: null}))
-  global[globalName] = () => serialize(appStore.state);
+  global[globalName] = (clientId) => serialize(filterWindowState(appStore.state, winManagerKey, clientId));
 
   ipcMain.on(`${globalName}-renderer-dispatch`, (event, clientId, stringifiedAction) => {
     const { store: storePath, method, args } = deserialize(stringifiedAction);
@@ -102,7 +112,7 @@ function storeEnhancer(appStore, stores, storeShape) {
   return forwarder;
 }
 
-export default class MultiWindowAppStore extends AppStore {
+class MultiWindowAppStore extends AppStore {
   onWillChange(prevState, state) {
     const delta = objectDifference(prevState, state);
     if (isEmpty(delta.updated) && isEmpty(delta.deleted)) return;
@@ -110,8 +120,28 @@ export default class MultiWindowAppStore extends AppStore {
   };
 
   init() {
-    const storeShape = filterStore(this.stores);
+    this.buildStores();
+    this.initStores();
     super.init();
-    this.forwarder = storeEnhancer(this, this.stores, storeShape);
+    this.forwarder = storeEnhancer(this, this.stores, this.storeShape);
   }
+
+  dispose() {
+    this.disposeStores();
+    super();
+  }
+}
+
+export default function buildMultiWinAppStore(stores, winStores) {
+  MultiWinManagerStore.innerStores = winStores;
+  let allStores = {
+    ...stores, 
+    [winManagerStoreName]: declareStore(MultiWinManagerStore),
+  };
+  MultiWindowAppStore.innerStores = allStores;
+  const storeShape = filterOneStore(MultiWindowAppStore);
+  const appStore = new MultiWindowAppStore();
+  appStore.storeShape = storeShape;
+  appStore.init();
+  return appStore;
 }
