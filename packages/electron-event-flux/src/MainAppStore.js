@@ -13,15 +13,13 @@ function findStore(stores, storePath) {
     if (!isObject(entry)) return subStores[entry]
     let { name, type, index } = entry;
     let storeCol = subStores[name];
-    if (type === 'List') {
-      return storeCol[index];
-    } else if (type === 'Map') {
-      return storeCol.get ? storeCol.get(index) : storeCol[index];
+    if (type === 'List' || type === 'Map') {
+      return storeCol.get(index);      
     }
   }, stores);
 }
 
-function storeEnhancer(appStore, stores) {
+function storeEnhancer(appStore, stores, storeShape) {
   let clients = {}; // webContentsId -> {webContents, filter, clientId, windowId, active}
 
   // Need to keep track of windows, as when a window refreshes it creates a new
@@ -88,12 +86,13 @@ function storeEnhancer(appStore, stores) {
   // expose any remote objects. In other words, we need to rely exclusively on primitive
   // data types, Arrays, or Buffers. Refer to:
   // https://github.com/electron/electron/blob/master/docs/api/remote.md#remote-objects
-  global[globalName] = () => serialize(appStore.state);
 
-  const storeNames = filterStore(stores);
   const util = require('util')
-  console.log(util.inspect(storeNames, {showHidden: false, depth: null}))
-  global[globalName + 'Stores'] = () => storeNames;
+  console.log(util.inspect(storeShape, {showHidden: false, depth: null}))
+  global[globalName + 'Stores'] = () => storeShape;
+
+  console.log(util.inspect(appStore.state, {showHidden: false, depth: null}))
+  global[globalName] = () => serialize(appStore.state);
 
   ipcMain.on(`${globalName}-renderer-dispatch`, (event, clientId, stringifiedAction) => {
     const { store: storePath, method, args } = deserialize(stringifiedAction);
@@ -111,7 +110,8 @@ export default class MultiWindowAppStore extends AppStore {
   };
 
   init() {
+    const storeShape = filterStore(this.stores);
     super.init();
-    this.forwarder = storeEnhancer(this, this.stores);
+    this.forwarder = storeEnhancer(this, this.stores, storeShape);
   }
 }
