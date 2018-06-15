@@ -92,11 +92,11 @@ export default class AppStore {
   }
 
   init() {
-    this._init = true;    
     let stores = this.stores;
     for (let key in stores) {
       stores[key]._initWrap();
     }
+    this._init = true;    
     this.prevState = this.state;
     return this;
   }

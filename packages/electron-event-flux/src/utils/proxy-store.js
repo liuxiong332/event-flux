@@ -29,7 +29,7 @@ function genIndexProxy(storePath, forwardStore, forwarder) {
       if (propName === 'get') {
         return retIndexFunc;
       }
-      return retIndexFunc(parseInt(propName));
+      return retIndexFunc(propName);
     }
   })
 }
