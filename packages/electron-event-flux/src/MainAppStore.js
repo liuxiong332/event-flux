@@ -105,7 +105,11 @@ function storeEnhancer(appStore, stores, storeShape) {
   }
 
   console.log('all state:',util.inspect(appStore.state, {showHidden: false, depth: null}))
-  global[globalName] = (clientId) => serialize(filterWindowState(appStore.state, winManagerKey, clientId));
+  global[globalName] = (clientId) => {
+    let filterState = filterWindowState(appStore.state, winManagerKey, clientId);
+    console.log('filter state:',  util.inspect(filterState, {showHidden: false, depth: null}));
+    return serialize(filterState);
+  }
 
   ipcMain.on(`${globalName}-renderer-dispatch`, (event, clientId, stringifiedAction) => {
     const { store: storePath, method, args } = deserialize(stringifiedAction);

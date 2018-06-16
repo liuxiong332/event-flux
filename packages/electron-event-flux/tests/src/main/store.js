@@ -88,6 +88,7 @@ class TodoStore extends StoreBase {
   }
 
   setComplete(isComplete) {
+    console.log('set complete:', isComplete)
     this.setState({ isComplete });
   }
 }

@@ -165,14 +165,17 @@ exports.filterStore = function filterStore(stores) {
 };
 
 exports.filterWindowStore = function(storeFilters, winStoreKey, winId) {
+  console.log(storeFilters, winStoreKey, winId)
   let winFilters = storeFilters[winStoreKey].filters;
+  console.log('win filters:', winFilters);
   if (!winFilters) return storeFilters;
-  winFilters = winFilters[winId].filters;
-  if (!winFilters) return storeFilters;
+  winFilters = winFilters.winPackMapStore.filters;
+  if (!winFilters) return omit(storeFilters, [winStoreKey]);
   let winOnlyShape = {};
   Object.keys(winFilters).forEach(storeKey => {
     winOnlyShape[storeKey] = { ...winFilters[storeKey], path: [winStoreKey, winId] };
-  })
+  });
+  console.log('winonly shape:', winOnlyShape)
   return { ...omit(storeFilters, [winStoreKey]), ...winOnlyShape };
 }
 

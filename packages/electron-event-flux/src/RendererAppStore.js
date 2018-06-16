@@ -15,11 +15,13 @@ function storeEnhancer(onGetAction, filter = true) {
 
   // Get current from the electronEnhanced store in the browser through the global it creates
   let getStores = remote.getGlobal(globalName + 'Stores');
-  const storeFilters = getStores();
+  const storeFilters = getStores(clientId);
+  const util = require('util')
+  console.log(util.inspect(storeFilters, {showHidden: false, depth: null}))
 
   let getInitialState = remote.getGlobal(globalName);
   if (!getInitialState) throw new Error('Could not find electronEnhanced store in main process');
-  const storeData = deserialize(getInitialState());
+  const storeData = deserialize(getInitialState(clientId));
   const initialState = filter ? fillShape(storeData, filter) : storeData;
 
   // Forward update to the main process so that it can forward the update to all other renderers

@@ -19,7 +19,7 @@ window.rendererId = process.guestInstanceId || JSON.parse(url.parse(window.locat
 const rootElement = document.createElement('div');
 document.body.appendChild(rootElement);
 
-const store = new RendererStore(null, (state) => {
+const store = new RendererStore((state) => {
   console.log(state);
   ReactDOM.render(<MyView state={state}/>, rootElement);
 });
