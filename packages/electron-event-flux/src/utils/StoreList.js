@@ -1,3 +1,5 @@
+const { initStore, disposeStore } = require('./store-builder');
+
 module.exports = class StoreList {
   constructor(size, builder, observer) {
     this.length = 0;
@@ -9,7 +11,6 @@ module.exports = class StoreList {
   }
 
   _initWrap() {
-    this.storeArray.forEach(store => store._initWrap());
     this._isInit = true;
   }
 
@@ -18,14 +19,15 @@ module.exports = class StoreList {
     if (this.length < count) {
       for (let i = this.length; i < count; ++i) {
         let newStore = this.builder();
-        if (this._isInit) newStore._initWrap();
+        // if (this._isInit) initStore(newStore);
+        initStore(newStore);
         this.storeArray.push(newStore);
         this.disposables.push(this.observer(newStore, i));
       }
     } else {
       for (let i = count; i < this.length; ++i) {
         this.disposables[i].dispose();
-        this.storeArray[i].dispose();
+        disposeStore(this.storeArray[i]);
       }
       this.disposables.splice(count, this.length - count);
       this.storeArray.splice(count, this.length - count);

@@ -95,5 +95,5 @@ class TodoStore extends StoreBase {
 TodoStore.stateKey = 'todo';
 TodoStore.innerStores = { todo2: declareStore(Todo2Store) };
 
-const appStore = buildMultiWinAppStore({ todo: TodoStore });
+const appStore = buildMultiWinAppStore({ todo: TodoStore }, { winTodo: TodoStore });
 export default appStore;

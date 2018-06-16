@@ -12,6 +12,7 @@ const { ipcRenderer, remote } = require('electron');
 
 import TodoCountDemo from './views/TodoCount';
 import Todo2CountDemo from './views/Todo2Count';
+import Todo3CountDemo from './views/Todo3Count';
 let startDate = new Date();
 
 window.rendererId = process.guestInstanceId || JSON.parse(url.parse(window.location.href, true).query.windowParams).id;
@@ -35,6 +36,7 @@ function MyView({ state }) {
     <div>
       <OneDemoView {...TodoCountDemo} store={store} state={state}/>
       <OneDemoView {...Todo2CountDemo} store={store} state={state}/>
+      <OneDemoView {...Todo3CountDemo} store={store} state={state}/>
       <Button onClick={createNewWindow}>Create New Window</Button>
     </div>
   );

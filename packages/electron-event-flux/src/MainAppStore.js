@@ -12,6 +12,7 @@ import MultiWinManagerStore, { WinPackStore } from './MultiWinManagerStore';
 
 function findStore(stores, storePath) {
   return storePath.reduce((subStores, entry) => {
+    console.log(subStores, entry)
     if (!isObject(entry)) return subStores[entry]
     let { name, type, index } = entry;
     let storeCol = subStores[name];
@@ -107,12 +108,13 @@ function storeEnhancer(appStore, stores, storeShape) {
   console.log('all state:',util.inspect(appStore.state, {showHidden: false, depth: null}))
   global[globalName] = (clientId) => {
     let filterState = filterWindowState(appStore.state, winManagerKey, clientId);
-    console.log('filter state:',  util.inspect(filterState, {showHidden: false, depth: null}));
+    console.log('filter state:', util.inspect(filterState, {showHidden: false, depth: null}));
     return serialize(filterState);
   }
 
   ipcMain.on(`${globalName}-renderer-dispatch`, (event, clientId, stringifiedAction) => {
     const { store: storePath, method, args } = deserialize(stringifiedAction);
+    console.log('store path:', storePath)
     let store = findStore(stores, storePath);
     store[method].apply(store, args);
   });

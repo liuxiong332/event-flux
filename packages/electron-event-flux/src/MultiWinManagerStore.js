@@ -6,6 +6,7 @@ export class WinPackStore extends StoreBase {}
 export default class MultiWinManagerStore extends StoreBase {
 
   addWin(winId) {
+    console.log('add win', winId)
     this.winPackMapStore.add(winId);
   }
 

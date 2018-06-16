@@ -1,3 +1,5 @@
+const { initStore, disposeStore } = require('./store-builder');
+
 module.exports = class StoreMap {
   constructor(keys, builder, observer) {
     this.length = 0;
@@ -9,24 +11,23 @@ module.exports = class StoreMap {
   }
 
   _initWrap() {
-    let stores = this.storeMap.values(); 
-    for (let store of stores) {
-      store._initWrap();
-    }
+    console.log('init wrap')
     this._isInit = true;
   }
 
   add(key) {
+    console.log('has key:', this._isInit)
     if (this.storeMap.has(key)) return;
     let newStore = this.builder();
-    if (this._isInit) newStore._initWrap();
+    // if (this._isInit) initStore(newStore);
+    initStore(newStore);
     this.storeMap.set(key, newStore);
     this.disposables.set(key, this.observer(newStore, key));
   }
 
   delete(key) {
     let store = this.storeMap.get(key);
-    store && store.dispose();
+    store && disposeStore(store);
     this.storeMap.delete(key);
     let disposable = this.disposables.get(key);
     disposable && disposable.dispose();
@@ -36,7 +37,7 @@ module.exports = class StoreMap {
   clear() {
     let stores = this.storeMap.values();
     for (let store of stores) {
-      store.dispose();
+      disposeStore(store);
     }
     this.storeMap.clear();
     let disposables = this.disposables.values();

@@ -54,6 +54,7 @@ const storeObservers = {
   Item: function (storeKey, stateKey) {
     let store = this.getStore ? this.getStore(storeKey) : this[storeKey];
     let disposable = store.observe((state) => {
+      console.log('setstate:', storeKey, stateKey, state)
       this.setState({ [stateKey]: state });
     });
     let dispose = store.dispose;
@@ -71,11 +72,16 @@ const storeObservers = {
   },
   Map: function (storeKey, stateKey, options) {
     let keys = options && options.keys;
+    console.log('map keys:', keys)
     if (Array.isArray(keys)) {
       let store = this.getStore ? this.getStore(storeKey) : this[storeKey];            
       keys.forEach(key => store.add(key));
     }
   }
+}
+
+function extendClass(StoreClass) {
+  return class ExtendStoreClass extends StoreClass {};
 }
 
 exports.filterOneStore = function filterOneStore(StoreClass) {
@@ -89,14 +95,16 @@ exports.filterOneStore = function filterOneStore(StoreClass) {
     let value = innerStores[key];
     if (isFunction(value)) {
       let storeName = key + 'Store';
+      let Store = extendClass(value);
       filters[storeName] = { 
         type: 'Store',
-        filters: filterOneStore(value),
+        filters: filterOneStore(Store),
       };
-      subStoreInfos.push(['Item', value, storeName, key]);
+      subStoreInfos.push(['Item', Store, storeName, key]);
     } else {
       let { options, Store } = value;
       let storeName = options && options.storeKey || key + 'Store';
+      Store = extendClass(Store);
 
       if (StoreDeclarer.isStore(value)) {
         filters[storeName] = { 
@@ -138,6 +146,7 @@ exports.filterOneStore = function filterOneStore(StoreClass) {
   StoreClass.prototype.startObserve = function() {
     subStoreInfos.forEach(([type, StoreClass, storeKey, stateKey, options]) => {
       let store = this.getStore ? this.getStore(storeKey) : this[storeKey];
+      console.log('in observe:', storeKey, stateKey)
       store.startObserve && store.startObserve();
       storeObservers[type].call(this, storeKey, stateKey, options);
     });
@@ -172,8 +181,9 @@ exports.filterWindowStore = function(storeFilters, winStoreKey, winId) {
   winFilters = winFilters.winPackMapStore.filters;
   if (!winFilters) return omit(storeFilters, [winStoreKey]);
   let winOnlyShape = {};
+  let path = [winStoreKey, { type: 'Map', name: 'winPackMapStore', index: winId }];
   Object.keys(winFilters).forEach(storeKey => {
-    winOnlyShape[storeKey] = { ...winFilters[storeKey], path: [winStoreKey, winId] };
+    winOnlyShape[storeKey] = { ...winFilters[storeKey], path };
   });
   console.log('winonly shape:', winOnlyShape)
   return { ...omit(storeFilters, [winStoreKey]), ...winOnlyShape };
@@ -181,7 +191,7 @@ exports.filterWindowStore = function(storeFilters, winStoreKey, winId) {
 
 function filterWindowState(allState, winStateKey, winId) {
   if (!allState[winStateKey]) return allState;
-  let winState = allState[winStateKey][winId];
+  let winState = allState[winStateKey].winPackMap[winId];
   return { ...omit(allState, [winStateKey]), ...winState };
 }
 
