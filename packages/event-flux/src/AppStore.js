@@ -2,6 +2,8 @@ import StoreBase from './StoreBase';
 import BatchUpdateHost from './BatchUpdateHost';
 import { buildStore } from './buildStore';
 
+const IS_APP_STORE = '@@__APP_STORE__@@';
+
 export default class AppStore {
   constructor(onChange) {
     this._enableUpdate = true;  // 是否可以更新
@@ -10,6 +12,7 @@ export default class AppStore {
     this.onChange = onChange;
     this.batchUpdater = new BatchUpdateHost(this);  
     this.state = {};
+    this.stores = {};
   }
 
   buildStore(storeClass) {
@@ -70,4 +73,9 @@ export default class AppStore {
       }
     }
   }
+}
+
+AppStore.prototype[IS_APP_STORE] = true;
+AppStore.isAppStore = function(maybeAppStore) {
+  return !!(maybeAppStore && maybeAppStore[IS_APP_STORE]);
 }

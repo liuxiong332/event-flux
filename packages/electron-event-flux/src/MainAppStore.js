@@ -97,10 +97,14 @@ function storeEnhancer(appStore, stores, storeShape) {
   // https://github.com/electron/electron/blob/master/docs/api/remote.md#remote-objects
 
   const util = require('util')
-  console.log(util.inspect(storeShape, {showHidden: false, depth: null}))
-  global[globalName + 'Stores'] = (clientId) => filterWindowStore(storeShape, winManagerStoreName, clientId);
+  global[globalName + 'Stores'] = (clientId) => {
+    let result = filterWindowStore(storeShape, winManagerStoreName, clientId);
+    
+    console.log('for clientid:', util.inspect(result, {showHidden: false, depth: null}))
+    return result
+  }
 
-  console.log(util.inspect(appStore.state, {showHidden: false, depth: null}))
+  console.log('all state:',util.inspect(appStore.state, {showHidden: false, depth: null}))
   global[globalName] = (clientId) => serialize(filterWindowState(appStore.state, winManagerKey, clientId));
 
   ipcMain.on(`${globalName}-renderer-dispatch`, (event, clientId, stringifiedAction) => {
@@ -121,13 +125,22 @@ class MultiWindowAppStore extends AppStore {
   init() {
     this.buildStores();
     this.initStores();
+    this.startObserve();
     super.init();
     this.forwarder = storeEnhancer(this, this.stores, this.storeShape);
   }
 
+  getStore(key) {
+    return this.stores[key]
+  }
+
+  setStore(key, store) {
+    return this.stores[key] = store;
+  }
+
   dispose() {
-    super.dispose();    
     this.disposeStores();
+    super.dispose();        
   }
 }
 
@@ -138,11 +151,7 @@ export default function buildMultiWinAppStore(stores, winStores) {
     [winManagerKey]: declareStore(MultiWinManagerStore, { storeKey: winManagerStoreName }),
   };
   MultiWindowAppStore.innerStores = allStores;
-  const storeShape = filterOneStore(MultiWindowAppStore);
-
-  const util = require('util')
-  console.log(util.inspect(storeShape, {showHidden: false, depth: null}))
-
+  const storeShape = filterOneStore(MultiWindowAppStore, (instance) => instance.stores);
   const appStore = new MultiWindowAppStore();
   appStore.storeShape = storeShape;
   appStore.init();

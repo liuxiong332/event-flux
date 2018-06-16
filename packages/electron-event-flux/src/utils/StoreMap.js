@@ -8,9 +8,18 @@ module.exports = class StoreMap {
     if (Array.isArray(keys)) keys.forEach(key => this.add(key));
   }
 
+  _initWrap() {
+    let stores = this.storeMap.values(); 
+    for (let store of stores) {
+      store._initWrap();
+    }
+    this._isInit = true;
+  }
+
   add(key) {
     if (this.storeMap.has(key)) return;
     let newStore = this.builder();
+    if (this._isInit) newStore._initWrap();
     this.storeMap.set(key, newStore);
     this.disposables.set(key, this.observer(newStore, key));
   }

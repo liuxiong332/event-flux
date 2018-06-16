@@ -8,11 +8,17 @@ module.exports = class StoreList {
     if (size) this.setSize(size);
   }
 
+  _initWrap() {
+    this.storeArray.forEach(store => store._initWrap());
+    this._isInit = true;
+  }
+
   setSize(count) {
     if (this.length === count) return;
     if (this.length < count) {
       for (let i = this.length; i < count; ++i) {
         let newStore = this.builder();
+        if (this._isInit) newStore._initWrap();
         this.storeArray.push(newStore);
         this.disposables.push(this.observer(newStore, i));
       }

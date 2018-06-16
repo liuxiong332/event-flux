@@ -14,17 +14,12 @@ const StoreMap = require('./StoreMap');
 
 const storeBuilders = {
   Item: function (StoreClass, storeKey, stateKey) {
+    if (this.setStore) {
+      return this.setStore(storeKey, this.buildStore(StoreClass));
+    }  
     this[storeKey] = this.buildStore(StoreClass);
-    let disposable = this[storeKey].observe((state) => {
-      this.setState({ [stateKey]: state });
-    });
-    let dispose = this[storeKey].dispose;
-    this[storeKey].dispose = function() {
-      dispose();
-      disposable && disposable.dispose();
-    };
   },
-  List: function (StoreClass, storeKey, stateKey, options) {
+  List: function (StoreClass, storeKey, stateKey) {
     let storeBuilder = () => this.buildStore(StoreClass);
     let storeObserver = (store, index) => {
       return store.observe(state => {
@@ -38,7 +33,9 @@ const storeBuilders = {
         });
       });
     }
-    this[storeKey] = new StoreList(options && options.size || 0, storeBuilder, storeObserver);
+    let newStore = new StoreList(0, storeBuilder, storeObserver);
+    if (this.setStore) return this.setStore(storeKey, newStore);
+    this[storeKey] = newStore;
   },
   Map: function (StoreClass, storeKey, stateKey, options) {
     let storeBuilder = () => this.buildStore(StoreClass);
@@ -47,7 +44,37 @@ const storeBuilders = {
         [stateKey]: { ...this.state[stateKey], [index]: state },
       }));
     }
-    this[storeKey] = new StoreMap(options && options.keys, storeBuilder, storeObserver);
+    let newStore = new StoreMap(null, storeBuilder, storeObserver);
+    if (this.setStore) return this.setStore(storeKey, newStore);
+    this[storeKey] = newStore;    
+  }
+}
+
+const storeObservers = {
+  Item: function (storeKey, stateKey) {
+    let store = this.getStore ? this.getStore(storeKey) : this[storeKey];
+    let disposable = store.observe((state) => {
+      this.setState({ [stateKey]: state });
+    });
+    let dispose = store.dispose;
+    store.dispose = function() {
+      dispose();
+      disposable && disposable.dispose();
+    };
+  },
+  List: function (storeKey, stateKey, options) {
+    let count = options && options.size || 0;
+    if (count > 0) {
+      let store = this.getStore ? this.getStore(storeKey) : this[storeKey];      
+      store.setSize(count);
+    }
+  },
+  Map: function (storeKey, stateKey, options) {
+    let keys = options && options.keys;
+    if (Array.isArray(keys)) {
+      let store = this.getStore ? this.getStore(storeKey) : this[storeKey];            
+      keys.forEach(key => store.add(key));
+    }
   }
 }
 
@@ -93,21 +120,36 @@ exports.filterOneStore = function filterOneStore(StoreClass) {
     }
   }
   StoreClass.prototype.buildStores = function() {
-    console.log('buildStores this:', this.buildStore);
     subStoreInfos.forEach(([type, StoreClass, storeKey, stateKey, options]) => {
       storeBuilders[type].call(this, StoreClass, storeKey, stateKey, options);
+      let store = this.getStore ? this.getStore(storeKey) : this[storeKey];
+      store.buildStores && store.buildStores();
     });
   };
   StoreClass.prototype.initStores = function() {
     subStoreInfos.forEach((info) => {
       let storeKey = info[2];
-      this[storeKey] && this[storeKey]._initWrap();
+      let store = this.getStore ? this.getStore(storeKey) : this[storeKey];
+      
+      store.initStores && store.initStores();
+      store._initWrap();
+    });
+  };
+  StoreClass.prototype.startObserve = function() {
+    subStoreInfos.forEach(([type, StoreClass, storeKey, stateKey, options]) => {
+      let store = this.getStore ? this.getStore(storeKey) : this[storeKey];
+      store.startObserve && store.startObserve();
+      storeObservers[type].call(this, storeKey, stateKey, options);
     });
   };
   StoreClass.prototype.disposeStores = function() {
     subStoreInfos.forEach(info => {
       let storeKey = info[2];
-      this[storeKey] && this[storeKey].dispose();
+      let store = this.getStore ? this.getStore(storeKey) : this[storeKey];
+      if (store) {
+        store.disposeStores && store.disposeStores();
+        store.dispose();
+      }
     });
   };
   return filters;
@@ -134,7 +176,7 @@ exports.filterWindowStore = function(storeFilters, winStoreKey, winId) {
   return { ...omit(storeFilters, [winStoreKey]), ...winOnlyShape };
 }
 
-exports.filterWindowState = function filterWindowState(allState, winStateKey, winId) {
+function filterWindowState(allState, winStateKey, winId) {
   if (!allState[winStateKey]) return allState;
   let winState = allState[winStateKey][winId];
   return { ...omit(allState, [winStateKey]), ...winState };
@@ -146,3 +188,5 @@ exports.filterWindowDelta = function filterWindowDelta(updated, deleted, winStat
     filterWindowState(deleted, winStateKey, winId)
   ];
 }
+
+exports.filterWindowState = filterWindowState;

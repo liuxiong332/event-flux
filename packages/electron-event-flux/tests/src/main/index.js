@@ -22,6 +22,7 @@ function createMainWindow(params) {
   }
 
   if (isDevelopment) {
+    console.log('port:', process.env.ELECTRON_WEBPACK_WDS_PORT)
     window.loadURL(`http://localhost:${process.env.ELECTRON_WEBPACK_WDS_PORT}?windowParams=${JSON.stringify(params)}`)
   }
   else {
