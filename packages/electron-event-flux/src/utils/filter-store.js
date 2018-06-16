@@ -38,7 +38,7 @@ const storeBuilders = {
         });
       });
     }
-    this[storeKey] = new StoreList(options.size || 0, storeBuilder, storeObserver);
+    this[storeKey] = new StoreList(options && options.size || 0, storeBuilder, storeObserver);
   },
   Map: function (StoreClass, storeKey, stateKey, options) {
     let storeBuilder = () => this.buildStore(StoreClass);
@@ -47,7 +47,7 @@ const storeBuilders = {
         [stateKey]: { ...this.state[stateKey], [index]: state },
       }));
     }
-    this[storeKey] = new StoreMap(options.keys, storeBuilder, storeObserver);
+    this[storeKey] = new StoreMap(options && options.keys, storeBuilder, storeObserver);
   }
 }
 
@@ -113,7 +113,7 @@ exports.filterOneStore = function filterOneStore(StoreClass) {
   return filters;
 }
 
-module.exports = function filterStore(stores) {
+exports.filterStore = function filterStore(stores) {
   let storeFilters = {};
   for (let key in stores) {
     let store = stores[key];

@@ -1,5 +1,5 @@
-import StoreBase from '../../../src/FluxStoreBase';
-import MainAppStore from '../../../src/MainAppStore';
+import StoreBase from '../../../../event-flux/src/StoreBase';
+import buildMultiWinAppStore from '../../../src/MainAppStore';
 import { declareStore, declareStoreMap, declareStoreList } from '../../../src/StoreDeclarer';
 
 class Todo3Store extends StoreBase {
@@ -25,7 +25,6 @@ class Todo2Store extends StoreBase {
   }
 
   init() {
-    super.init();
     // this.todo3StoreList.setSize(1);
     // this.todo3StoreMap.add('myKey');
     // this.todo3Store = this.buildStore(Todo3Store);
@@ -78,7 +77,6 @@ class TodoStore extends StoreBase {
     // this.todo2Store.observe((state) => {
     //   this.setState({ todo2: state });
     // });
-    super.init();
   }
 
   addTodo(num) {
@@ -96,6 +94,5 @@ class TodoStore extends StoreBase {
 TodoStore.stateKey = 'todo';
 TodoStore.innerStores = { todo2: declareStore(Todo2Store) };
 
-const appStore = new MainAppStore([TodoStore]);
-appStore.init();
+const appStore = buildMultiWinAppStore({ todo: TodoStore });
 export default appStore;

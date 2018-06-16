@@ -1,17 +1,16 @@
 import StoreBase from './FluxStoreBase';
+const { declareStoreMap } = require('./StoreDeclarer');
 
-class MultiWinManagerStore extends StoreBase {
-  constructor() {
-    super();
-    this.winIds = [];
-  }
+export class WinPackStore extends StoreBase {}
+
+export default class MultiWinManagerStore extends StoreBase {
 
   addWin(winId) {
-    this.winIds.push(winId);
+    this.winPackMapStore.add(winId);
   }
 
   deleteWin(winId) {
-    let index = this.winIds.indexOf(winId);
-    if (index !== -1) this.winIds.splice(index, 1);
+    this.winPackMapStore.delete(winId);
   }
 }
+MultiWinManagerStore.innerStores = { winPackMap: declareStoreMap(WinPackStore) };

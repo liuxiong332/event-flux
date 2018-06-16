@@ -6,10 +6,9 @@ const fillShape = require('./utils/fill-shape');
 const isEmpty = require('lodash/isEmpty');
 const isObject = require('lodash/isObject');
 const { serialize, deserialize } = require('json-immutable');
-const filterStore = require('./utils/filter-store');
-const { filterOneStore, filterWindowStore, filterWindowState, filterWindowDelta } = filterStore;
+const { filterOneStore, filterWindowStore, filterWindowState, filterWindowDelta } = require('./utils/filter-store');
 const { declareStore } = require('./StoreDeclarer');
-import MultiWinManagerStore from './MultiWinManagerStore';
+import MultiWinManagerStore, { WinPackStore } from './MultiWinManagerStore';
 
 function findStore(stores, storePath) {
   return storePath.reduce((subStores, entry) => {
@@ -127,19 +126,23 @@ class MultiWindowAppStore extends AppStore {
   }
 
   dispose() {
+    super.dispose();    
     this.disposeStores();
-    super();
   }
 }
 
 export default function buildMultiWinAppStore(stores, winStores) {
-  MultiWinManagerStore.innerStores = winStores;
+  WinPackStore.innerStores = winStores;
   let allStores = {
     ...stores, 
-    [winManagerStoreName]: declareStore(MultiWinManagerStore),
+    [winManagerKey]: declareStore(MultiWinManagerStore, { storeKey: winManagerStoreName }),
   };
   MultiWindowAppStore.innerStores = allStores;
   const storeShape = filterOneStore(MultiWindowAppStore);
+
+  const util = require('util')
+  console.log(util.inspect(storeShape, {showHidden: false, depth: null}))
+
   const appStore = new MultiWindowAppStore();
   appStore.storeShape = storeShape;
   appStore.init();
