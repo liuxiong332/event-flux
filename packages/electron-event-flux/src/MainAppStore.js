@@ -9,6 +9,7 @@ const { serialize, deserialize } = require('json-immutable');
 const { filterOneStore, filterWindowStore, filterWindowState, filterWindowDelta } = require('./utils/filter-store');
 const { declareStore } = require('./StoreDeclarer');
 import MultiWinManagerStore, { WinPackStore } from './MultiWinManagerStore';
+import ElectronMainClient from './ElectronMainClient';
 
 function findStore(stores, storePath) {
   return storePath.reduce((subStores, entry) => {
@@ -26,98 +27,50 @@ const winManagerStoreName = '__WIN_MANAGER_STORE__';
 const winManagerKey = '__WIN_MANAGER__';
 
 function storeEnhancer(appStore, stores, storeShape) {
-  let clients = {}; // webContentsId -> {webContents, filter, clientId, windowId, active}
-
-  // Need to keep track of windows, as when a window refreshes it creates a new
-  // webContents, and the old one must be unregistered
-  let windowMap = {}; // windowId -> webContentsId
-
-  // Cannot delete data, as events could still be sent after close
-  // events when a BrowserWindow is created using remote
-  let unregisterRenderer = (webContentsId) => {
-    appStore.stores[winManagerStoreName].deleteWin(clients[webContentsId].clientId);
-    clients[webContentsId] = { active: false };
-  };
-
-  ipcMain.on(`${globalName}-register-renderer`, ({ sender }, { filter, clientId }) => {
-    let webContentsId = sender.getId();
-    console.log('webcontentsid:', webContentsId)
-    clients[webContentsId] = {
-      webContents: sender,
-      filter,
-      clientId,
-      windowId: sender.getOwnerBrowserWindow().id,
-      active: true
-    };
-    appStore.stores[winManagerStoreName].addWin(clientId);
-
-    if (!sender.isGuest()) { // For windowMap (not webviews)
-      let browserWindow = sender.getOwnerBrowserWindow();
-      if (windowMap[browserWindow.id] !== undefined) { // Occurs on window reload
-        unregisterRenderer(windowMap[browserWindow.id]);
-      }
-      windowMap[browserWindow.id] = webContentsId;
-
-      // Webcontents aren't automatically destroyed on window close
-      browserWindow.on('closed', () => unregisterRenderer(webContentsId));
+  const callbacks = {
+    addWin(clientId) {
+      stores[winManagerStoreName].addWin(clientId);
+    },
+    deleteWin(clientId) {
+      stores[winManagerStoreName].deleteWin(clientId);
+    },
+    getStores(clientId) {
+      let stores = filterWindowStore(storeShape, winManagerStoreName, clientId);
+      return JSON.stringify(stores);
+    },
+    getInitStates(clientId) {
+      console.log('state:', clientId, appStore.state);
+      let filterState = filterWindowState(appStore.state, winManagerKey, clientId);
+      return serialize(filterState);
+    },
+    handleRendererMessage(payload) {
+      const { store: storePath, method, args } = deserialize(payload);
+      let store = findStore(stores, storePath);
+      store[method].apply(store, args);
     }
-  });
-
+  }
+  
+  const mainClient = new ElectronMainClient(callbacks);
   const forwarder = (payload) => {
     // Forward all actions to the listening renderers
-    for (let webContentsId in clients) {
-      if (!clients[webContentsId].active) continue;
-
-      let webContents = clients[webContentsId].webContents;
-
-      if (webContents.isDestroyed() || webContents.isCrashed()) {
-        unregisterRenderer(webContentsId);
-        continue;
-      }
-
-      let { filter: shape, clientId } = clients[webContentsId];
+    let clientInfo = mainClient.getForwardClients();
+    clientInfo.forEach(client => {
+      let { filter: shape, clientId } = client;
       let updated = fillShape(payload.updated, shape);
       let deleted = fillShape(payload.deleted, shape);
       [updated, deleted] = filterWindowDelta(updated, deleted, winManagerKey, clientId);
 
       if (isEmpty(updated) && isEmpty(deleted)) {
-        continue;
+        return;
       }
 
       const action = { payload: { updated, deleted } };
 
       const util = require('util')
       console.log(util.inspect(action, {showHidden: false, depth: null}))
-      webContents.send(`${globalName}-browser-dispatch`, JSON.stringify(action));
-    }
+      mainClient.sendToRenderer(client, JSON.stringify(action));
+    });
   };
-
-  // Give renderers a way to sync the current state of the store, but be sure we don't
-  // expose any remote objects. In other words, we need to rely exclusively on primitive
-  // data types, Arrays, or Buffers. Refer to:
-  // https://github.com/electron/electron/blob/master/docs/api/remote.md#remote-objects
-
-  const util = require('util')
-  global[globalName + 'Stores'] = (clientId) => {
-    let result = filterWindowStore(storeShape, winManagerStoreName, clientId);
-    
-    console.log('for clientid:', util.inspect(result, {showHidden: false, depth: null}))
-    return result
-  }
-
-  console.log('all state:',util.inspect(appStore.state, {showHidden: false, depth: null}))
-  global[globalName] = (clientId) => {
-    let filterState = filterWindowState(appStore.state, winManagerKey, clientId);
-    console.log('filter state:', util.inspect(filterState, {showHidden: false, depth: null}));
-    return serialize(filterState);
-  }
-
-  ipcMain.on(`${globalName}-renderer-dispatch`, (event, clientId, stringifiedAction) => {
-    const { store: storePath, method, args } = deserialize(stringifiedAction);
-    console.log('store path:', storePath)
-    let store = findStore(stores, storePath);
-    store[method].apply(store, args);
-  });
   return forwarder;
 }
 

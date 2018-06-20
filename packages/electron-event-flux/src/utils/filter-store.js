@@ -59,7 +59,7 @@ const storeObservers = {
     });
     let dispose = store.dispose;
     store.dispose = function() {
-      dispose();
+      dispose.call(this);
       disposable && disposable.dispose();
     };
   },

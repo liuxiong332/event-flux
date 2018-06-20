@@ -15,7 +15,7 @@ function storeEnhancer(onGetAction, filter = true) {
 
   // Get current from the electronEnhanced store in the browser through the global it creates
   let getStores = remote.getGlobal(globalName + 'Stores');
-  const storeFilters = getStores(clientId);
+  const storeFilters = JSON.parse(getStores(clientId));
   const util = require('util')
   console.log(util.inspect(storeFilters, {showHidden: false, depth: null}))
 
@@ -49,6 +49,7 @@ export default class RendererAppStore extends AppStore {
   handleAction(action) {
     const { updated, deleted } = action.payload;
     // const withDeletions = filterObject(this.state, deleted);
+    if (!this.state) return;
     this.state = objectMerge(this.state, updated, deleted);
     const util = require('util')
     console.log(util.inspect(this.state, {showHidden: false, depth: null}))
