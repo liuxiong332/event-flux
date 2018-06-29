@@ -16,39 +16,11 @@ class Todo3Store extends StoreBase {
     this.setState({ size: this.state.size - 1 });
   }
 }
-Todo3Store.stateKey = 'todo3';
 
 class Todo2Store extends StoreBase {
   constructor() {
     super();
     this.state = { size: 0, todo3List: [], todo3Map: {} };
-  }
-
-  init() {
-    // this.todo3StoreList.setSize(1);
-    // this.todo3StoreMap.add('myKey');
-    // this.todo3Store = this.buildStore(Todo3Store);
-    // this.todo3Store.observe((state) => {
-    //   this.setState({ todo3: state });
-    // });
-
-    // this.todo3StoreList = [this.buildStore(Todo3Store)];
-    // this.todo3StoreList.map((store, i) => {
-    //   store.observe(state => this.setState({
-    //     todo3List: [
-    //       ...this.state.todo3List.slice(0, i), 
-    //       state,
-    //       ...this.state.todo3List.slice(i + 1), 
-    //     ]
-    //   }));
-    // });
-
-    // this.todo3StoreMap = { myKey: this.buildStore(Todo3Store) };
-    // Object.keys(this.todo3StoreMap).forEach(key => {
-    //   this.todo3StoreMap[key].observe(state => this.setState({
-    //     todo3Map: { ...this.state.todo3Map, [key]: state }
-    //   }));
-    // });
   }
 
   addSize() {
@@ -59,7 +31,6 @@ class Todo2Store extends StoreBase {
     this.setState({ size: this.state.size - 1 });
   }
 }
-Todo2Store.stateKey = 'todo2';
 Todo2Store.innerStores = {
   todo3: declareStore(Todo3Store),
   todo3List: declareStoreList(Todo3Store, { storeKey: 'todo3StoreList', size: 1 }),
@@ -70,13 +41,6 @@ class TodoStore extends StoreBase {
   constructor() {
     super();
     this.state = { count: 0 };
-  }
-
-  init() {
-    // this.todo2Store = this.buildStore(Todo2Store);
-    // this.todo2Store.observe((state) => {
-    //   this.setState({ todo2: state });
-    // });
   }
 
   addTodo(num) {
@@ -92,7 +56,6 @@ class TodoStore extends StoreBase {
     this.setState({ isComplete });
   }
 }
-TodoStore.stateKey = 'todo';
 TodoStore.innerStores = { todo2: declareStore(Todo2Store) };
 
 const appStore = buildMultiWinAppStore({ todo: TodoStore }, { winTodo: TodoStore });

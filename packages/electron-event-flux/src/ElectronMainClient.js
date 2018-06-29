@@ -1,7 +1,7 @@
 const { globalName } = require('./constants');
 const { ipcMain } = require('electron');
 
-export default class ElectronMainClient {
+module.exports = class ElectronMainClient {
   constructor(callbacks) {
     let clients = {}; // webContentsId -> {webContents, filter, clientId, windowId, active}
 

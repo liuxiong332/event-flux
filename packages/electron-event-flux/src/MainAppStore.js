@@ -1,5 +1,4 @@
 import AppStore from '../../event-flux/src/AppStore';
-const { ipcMain } = require('electron');
 const { globalName } = require('./constants');
 const objectDifference = require('./utils/object-difference');
 const fillShape = require('./utils/fill-shape');
@@ -9,7 +8,7 @@ const { serialize, deserialize } = require('json-immutable');
 const { filterOneStore, filterWindowStore, filterWindowState, filterWindowDelta } = require('./utils/filter-store');
 const { declareStore } = require('./StoreDeclarer');
 import MultiWinManagerStore, { WinPackStore } from './MultiWinManagerStore';
-import ElectronMainClient from './ElectronMainClient';
+const MainClient = window.process ? require('./ElectronMainClient') : require('./BrowserMainClient');
 
 function findStore(stores, storePath) {
   return storePath.reduce((subStores, entry) => {
@@ -50,7 +49,7 @@ function storeEnhancer(appStore, stores, storeShape) {
     }
   }
   
-  const mainClient = new ElectronMainClient(callbacks);
+  const mainClient = new MainClient(callbacks);
   const forwarder = (payload) => {
     // Forward all actions to the listening renderers
     let clientInfo = mainClient.getForwardClients();
