@@ -8,7 +8,7 @@ const { serialize, deserialize } = require('json-immutable');
 const { filterOneStore, filterWindowStore, filterWindowState, filterWindowDelta } = require('./utils/filter-store');
 const { declareStore } = require('./StoreDeclarer');
 import MultiWinManagerStore, { WinPackStore } from './MultiWinManagerStore';
-const MainClient = window.process ? require('./ElectronMainClient') : require('./BrowserMainClient');
+const MainClient = typeof window !== 'object' ? require('./ElectronMainClient') : require('./BrowserMainClient');
 
 function findStore(stores, storePath) {
   return storePath.reduce((subStores, entry) => {
