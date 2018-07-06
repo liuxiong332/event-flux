@@ -190,8 +190,11 @@ exports.filterWindowStore = function(storeFilters, winStoreKey, winId) {
 }
 
 function filterWindowState(allState, winStateKey, winId) {
+  console.log('allState', allState, winStateKey, winId);
   if (!allState[winStateKey]) return allState;
-  let winState = allState[winStateKey].winPackMap[winId];
+  let { winPackMap } = allState[winStateKey];
+  if (!winPackMap) return omit(allState, [winStateKey]);
+  let winState = winPackMap[winId];
   return { ...omit(allState, [winStateKey]), ...winState };
 }
 

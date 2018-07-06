@@ -10,8 +10,11 @@ export default class MultiWinManagerStore extends StoreBase {
   }
 
   addWin(winId) {
-    this.setState({ clientIds: [ ...this.state.clientIds, winId ] });
-    this.winPackMapStore.add(winId);
+    let { clientIds } = this.state;
+    if (clientIds.indexOf(winId) === -1) {
+      this.setState({ clientIds: [ ...clientIds, winId ] });
+      this.winPackMapStore.add(winId);
+    }
   }
 
   deleteWin(winId) {

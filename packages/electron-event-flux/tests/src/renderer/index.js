@@ -15,7 +15,7 @@ import Todo2CountDemo from './views/Todo2Count';
 import Todo3CountDemo from './views/Todo3Count';
 let startDate = new Date();
 
-window.rendererId = process.guestInstanceId || JSON.parse(url.parse(window.location.href, true).query.windowParams).id;
+window.clientId = process.guestInstanceId || JSON.parse(url.parse(window.location.href, true).query.windowParams).clientId;
 
 const rootElement = document.createElement('div');
 document.body.appendChild(rootElement);

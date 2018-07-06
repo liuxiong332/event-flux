@@ -4,7 +4,7 @@ const { serialize, deserialize } = require('json-immutable');
 
 module.exports = class ElectronRendererClient {
   constructor(filter, callback, onGetAction) {
-    let clientId = null; // window.clientId;
+    let clientId = window.clientId;
     if (!clientId) {
       const rendererId = process.guestInstanceId || remote.getCurrentWindow().id;
       clientId = process.guestInstanceId ? `webview ${rendererId}` : `window ${rendererId}`;

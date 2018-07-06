@@ -12,8 +12,8 @@ module.exports = class ElectronMainClient {
     // Cannot delete data, as events could still be sent after close
     // events when a BrowserWindow is created using remote
     let unregisterRenderer = (webContentsId) => {
-      callbacks.deleteWin(clients[webContentsId].clientId);
       clients[webContentsId] = { active: false };
+      callbacks.deleteWin(clients[webContentsId].clientId);
     };
     this.unregisterRenderer = unregisterRenderer;
   

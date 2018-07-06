@@ -13,7 +13,9 @@ function genBrowserUrl(url, clientId) {
 
 export default class MultiWinStore extends StoreBase {
   init() {
-    this.stores[winManagerStoreName].observe((state) => this.setState(state));
+    this.stores[winManagerStoreName].observe((state) => {
+      this.setState({ clientIds: state.clientIds });
+    });
     this.mainClient = this._appStore.mainClient;
   }
 
@@ -27,7 +29,7 @@ export default class MultiWinStore extends StoreBase {
   }
 
   genClientId() {
-    let clientId = Math.floor(Math.random() * 10000);
+    let clientId = 'win' + Math.floor(Math.random() * 10000);
     if (this.state.clientIds.indexOf(clientId) !== -1) {
       return this.genClientId();
     }
