@@ -27,8 +27,8 @@ const store = new RendererStore((state) => {
 store.init(); 
 
 function createNewWindow() {
-  let createMainWindow = remote.getGlobal('createMainWindow');
-  createMainWindow();
+  // let createMainWindow = remote.getGlobal('createMainWindow');
+  store.stores.multiWinStore.createWin();
 }
 
 function MyView({ state }) {

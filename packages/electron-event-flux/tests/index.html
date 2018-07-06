@@ -12,7 +12,7 @@
 
   <script>
     const url = require('url');
-    window.rendererId = process.guestInstanceId || JSON.parse(url.parse(window.location.href, true).query.windowParams).id;
+    window.rendererId = process.guestInstanceId || JSON.parse(url.parse(window.location.href, true).query.windowParams).clientId;
     require('./renderer.js')
   </script>
 </html>
