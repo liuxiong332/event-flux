@@ -1,7 +1,7 @@
 import StoreBase from '../../event-flux/src/StoreBase';
 const { winManagerStoreName } = require('./constants');
 
-function genBrowserUrl(url, clientId) {
+function genBrowserUrl(url = '', clientId) {
   let genUrl = new URL(url, location.href);
   if (genUrl.search) {
     genUrl.search += `&clientId=${clientId}`;

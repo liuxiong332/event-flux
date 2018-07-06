@@ -2,20 +2,27 @@
 
 // import React from 'react';
 // import ReactDOM from 'react-dom';
-import url from 'url';
 import RendererStore from '../../../src/RendererAppStore';
 import React from 'react';
 import ReactDOM from 'react-dom';
 import OneDemoView from './OneDemoView';
 import Button from '@material-ui/core/Button';
-const { ipcRenderer, remote } = require('electron');
 
 import TodoCountDemo from './views/TodoCount';
 import Todo2CountDemo from './views/Todo2Count';
 import Todo3CountDemo from './views/Todo3Count';
 let startDate = new Date();
 
-window.clientId = process.guestInstanceId || JSON.parse(url.parse(window.location.href, true).query.windowParams).clientId;
+function getQuery() {
+  let query = {};
+  location.search.slice(1).split('&').forEach(item => {
+    let [key, val] = item.split('=');
+    query[key] = val;
+  });
+  return query;
+}
+
+window.clientId = getQuery().clientId;
 
 const rootElement = document.createElement('div');
 document.body.appendChild(rootElement);
