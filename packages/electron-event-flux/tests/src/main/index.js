@@ -3,12 +3,18 @@
 import { app, BrowserWindow } from 'electron'
 import * as path from 'path'
 import { format as formatUrl } from 'url'
-import './store';
+import TodoStore from './store';
+import MultiWinStore from '../../../src/MultiWinStore';
+import buildMultiWinAppStore from '../../../src/MainAppStore';
 
 const isDevelopment = process.env.NODE_ENV !== 'production'
 
 // global reference to mainWindow (necessary to prevent window from being garbage collected)
 let mainWindow
+
+function createElectronWin(url, clientId) {
+  return createMainWindow({ url, clientId });
+}
 
 function createMainWindow(params) {
   const window = new BrowserWindow({ show: false });
@@ -48,6 +54,14 @@ function createMainWindow(params) {
   return window
 }
 
+class MyMultiWinStore extends MultiWinStore {
+  createElectronWin(url, clientId) {
+    createElectronWin(url, clientId);
+  }
+}
+
+const appStore = buildMultiWinAppStore({ todo: TodoStore, multiWin: MyMultiWinStore }, { winTodo: TodoStore });
+
 // quit application when all windows are closed
 app.on('window-all-closed', () => {
   // on macOS it is common for applications to stay open until the user explicitly quits
@@ -66,7 +80,5 @@ app.on('activate', () => {
 // create main BrowserWindow when electron is ready
 app.on('ready', () => {
   // mainWindow = createMainWindow()
-  let count = 0;
-  createMainWindow({ id: count++ });
-  global.createMainWindow = () => createMainWindow({ id: count++ });
+  createElectronWin(null, 0);
 })

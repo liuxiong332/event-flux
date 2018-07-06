@@ -1,5 +1,5 @@
 import AppStore from '../../event-flux/src/AppStore';
-const { globalName } = require('./constants');
+const { globalName, winManagerStoreName, winManagerKey, } = require('./constants');
 const objectDifference = require('./utils/object-difference');
 const fillShape = require('./utils/fill-shape');
 const isEmpty = require('lodash/isEmpty');
@@ -21,9 +21,6 @@ function findStore(stores, storePath) {
     }
   }, stores);
 }
-
-const winManagerStoreName = '__WIN_MANAGER_STORE__';
-const winManagerKey = '__WIN_MANAGER__';
 
 function storeEnhancer(appStore, stores, storeShape) {
   const callbacks = {
@@ -50,6 +47,7 @@ function storeEnhancer(appStore, stores, storeShape) {
   }
   
   const mainClient = new MainClient(callbacks);
+  appStore.mainClient = mainClient;
   const forwarder = (payload) => {
     // Forward all actions to the listening renderers
     let clientInfo = mainClient.getForwardClients();

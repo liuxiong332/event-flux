@@ -1,5 +1,4 @@
 import StoreBase from '../../../../event-flux/src/StoreBase';
-import buildMultiWinAppStore from '../../../src/MainAppStore';
 import { declareStore, declareStoreMap, declareStoreList } from '../../../src/StoreDeclarer';
 
 class Todo3Store extends StoreBase {
@@ -58,5 +57,4 @@ class TodoStore extends StoreBase {
 }
 TodoStore.innerStores = { todo2: declareStore(Todo2Store) };
 
-const appStore = buildMultiWinAppStore({ todo: TodoStore }, { winTodo: TodoStore });
-export default appStore;
+export default TodoStore;
