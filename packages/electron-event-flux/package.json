@@ -1,11 +1,12 @@
 {
-  "name": "redux-electron-store",
-  "version": "0.6.0",
+  "name": "electron-event-flux",
+  "version": "0.6.1",
   "description": "Redux store which synchronizes between instances in multiple process",
-  "main": "src/index.js",
+  "main": "lib/index.js",
   "scripts": {
     "lint": "eslint src/",
-    "start": "electron tests"
+    "start": "electron tests",
+    "prepublish": "gulp"
   },
   "repository": {
     "type": "git",
@@ -24,6 +25,10 @@
   "bugs": {
     "url": "https://github.com/samiskin/redux-electron-store/issues"
   },
+  "files": [
+    "src",
+    "lib"
+  ],
   "homepage": "https://github.com/samiskin/redux-electron-store#readme",
   "dependencies": {
     "immutable": "^3.8.2",
@@ -31,10 +36,17 @@
     "lodash": "^4.13.1"
   },
   "devDependencies": {
+    "babel-core": "^6.26.3",
+    "babel-preset-es2015": "^6.24.1",
+    "babel-preset-stage-0": "^6.24.1",
+    "del": "^3.0.0",
     "electron": "^1.4.15",
     "eslint": "^1.10.3",
     "eslint-config-airbnb": "^2.1.1",
     "eslint-plugin-react": "^5.1.1",
+    "gulp": "^3.9.1",
+    "gulp-babel": "^7.0.1",
+    "gulp-sequence": "^1.0.0",
     "redux": "^3.6.0",
     "tape": "^4.2.2"
   }

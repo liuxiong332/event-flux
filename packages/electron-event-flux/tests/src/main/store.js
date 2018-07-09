@@ -1,5 +1,5 @@
-import StoreBase from '../../../../event-flux/src/StoreBase';
-import { declareStore, declareStoreMap, declareStoreList } from '../../../src/StoreDeclarer';
+import StoreBase from 'event-flux/lib/StoreBase';
+import { declareStore, declareStoreMap, declareStoreList } from 'electron-event-flux/lib/StoreDeclarer';
 
 class Todo3Store extends StoreBase {
   constructor() {

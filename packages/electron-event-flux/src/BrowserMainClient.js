@@ -1,6 +1,4 @@
 const { renderRegisterName, renderDispatchName, mainDispatchName, mainInitName } = require('./constants');
-const { ipcMain } = require('electron');
-const RendererAppStore = require('./RendererAppStore');
 
 module.exports = class ElectronMainClient {
   constructor(callbacks) {

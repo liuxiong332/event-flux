@@ -1,4 +1,4 @@
-const { globalName } = require('./constants');
+const { globalName, mainReturnName, renderDispatchName } = require('./constants');
 const { ipcMain } = require('electron');
 
 module.exports = class ElectronMainClient {
@@ -17,7 +17,7 @@ module.exports = class ElectronMainClient {
     };
     this.unregisterRenderer = unregisterRenderer;
   
-    ipcMain.on(`${globalName}-register-renderer`, ({ sender }, { filter, clientId }) => {
+    ipcMain.on(renderRegisterName, ({ sender }, { filter, clientId }) => {
       let webContentsId = sender.getId();
       clients[webContentsId] = {
         webContents: sender,
@@ -53,8 +53,9 @@ module.exports = class ElectronMainClient {
       return callbacks.getInitStates(clientId);
     }
   
-    ipcMain.on(`${globalName}-renderer-dispatch`, (event, clientId, stringifiedAction) => {
-      callbacks.handleRendererMessage(stringifiedAction);
+    ipcMain.on(renderDispatchName, (event, clientId, stringifiedAction) => {
+      let result = callbacks.handleRendererMessage(stringifiedAction);
+      // ipcMain.send(mainReturnName, result);
     });
     this.clients = clients;
   }
@@ -78,6 +79,6 @@ module.exports = class ElectronMainClient {
 
   sendToRenderer(client, payload) {
     let webContents = client.webContents;
-    webContents.send(`${globalName}-browser-dispatch`, payload);
+    webContents.send(mainDispatchName, payload);
   }
 }

@@ -1,4 +1,4 @@
-import AppStore from '../../event-flux/src/AppStore';
+import AppStore from 'event-flux/lib/AppStore';
 const { globalName, winManagerStoreName, winManagerKey, } = require('./constants');
 const objectDifference = require('./utils/object-difference');
 const fillShape = require('./utils/fill-shape');
@@ -42,7 +42,7 @@ function storeEnhancer(appStore, stores, storeShape) {
     handleRendererMessage(payload) {
       const { store: storePath, method, args } = deserialize(payload);
       let store = findStore(stores, storePath);
-      store[method].apply(store, args);
+      return JSON.stringify(store[method].apply(store, args));
     }
   }
   

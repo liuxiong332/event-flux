@@ -1,4 +1,4 @@
-import AppStore from '../../event-flux/src/AppStore';
+import AppStore from 'event-flux/lib/AppStore';
 const { ipcRenderer, remote } = require('electron');
 const { globalName } = require('./constants');
 const objectMerge = require('./utils/object-merge');

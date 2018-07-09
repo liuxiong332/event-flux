@@ -1,4 +1,4 @@
-import StoreBase from '../../event-flux/src/StoreBase';
+import StoreBase from 'event-flux/lib/StoreBase';
 
 const IS_WINDOW_STORE = '@@__FLUX_WIN_STORE__@@';
 

@@ -1,6 +1,4 @@
 const { renderDispatchName, renderRegisterName, mainDispatchName, mainInitName } = require('./constants');
-const { ipcRenderer, remote } = require('electron');
-const { serialize, deserialize } = require('json-immutable');
 
 module.exports = class BrowserRendererClient {
   constructor(filter, callback, onGetAction) {

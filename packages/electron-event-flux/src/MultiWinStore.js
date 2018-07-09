@@ -1,4 +1,4 @@
-import StoreBase from '../../event-flux/src/StoreBase';
+import StoreBase from 'event-flux/lib/StoreBase';
 const { winManagerStoreName } = require('./constants');
 
 function genBrowserUrl(url = '', clientId) {
