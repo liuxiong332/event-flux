@@ -3692,9 +3692,9 @@ electron-download@^3.0.1:
     semver "^5.3.0"
     sumchecker "^1.2.0"
 
-electron-event-flux@^0.7.2:
-  version "0.7.2"
-  resolved "https://registry.yarnpkg.com/electron-event-flux/-/electron-event-flux-0.7.2.tgz#9651f844c271d7fef5ce3b25b4d138cb349acf7e"
+electron-event-flux@^0.7.5:
+  version "0.7.5"
+  resolved "https://registry.yarnpkg.com/electron-event-flux/-/electron-event-flux-0.7.5.tgz#d4f03a36719619b3df145946deae79f6004a0e81"
   dependencies:
     event-flux "^0.7.0"
     immutable "^3.8.2"

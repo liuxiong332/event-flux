@@ -16,7 +16,7 @@ let startDate = new Date();
 
 function getQuery() {
   let query = {};
-  location.search.slice(1).split('&').forEach(item => {
+  window.location.search.slice(1).split('&').forEach(item => {
     let [key, val] = item.split('=');
     query[key] = val;
   });

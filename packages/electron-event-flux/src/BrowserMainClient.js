@@ -11,7 +11,7 @@ module.exports = class ElectronMainClient {
   
   addWin(clientId, window) {
     window.addEventListener("message", (event) => {
-      let { action, data } = JSON.parse(event.data);
+      let { action, data } = event.data || {};
       if (action === renderDispatchName) {
         callbacks.handleRendererMessage(data);
       } else if (action === 'close') {       // Child window has closed
@@ -24,10 +24,10 @@ module.exports = class ElectronMainClient {
         callbacks.addWin(clientId);
         this.clients[clientId] = window;
         this.clientIds.push(clientId);
-        window.postMessage(JSON.stringify({
+        window.postMessage({
           action: mainInitName,
           data: [callbacks.getStores(clientId), callbacks.getInitStates(clientId)],
-        }));
+        }, '*');
       }
     });
   }
@@ -38,6 +38,6 @@ module.exports = class ElectronMainClient {
 
   sendToRenderer(clientId, payload) {
     let window = this.clients[clientId];
-    window && window.postMessage(JSON.stringify({ action: mainDispatchName, data: payload }));
+    window && window.postMessage({ action: mainDispatchName, data: payload }, '*');
   }
 }

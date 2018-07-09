@@ -11,7 +11,7 @@
   },
   "dependencies": {
     "@material-ui/core": "^1.2.1",
-    "electron-event-flux": "^0.7.2",
+    "electron-event-flux": "^0.7.5",
     "event-flux": "^0.7.0",
     "react": "^16.4.0",
     "react-dom": "^16.4.0",
