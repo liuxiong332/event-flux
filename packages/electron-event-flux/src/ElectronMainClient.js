@@ -1,4 +1,4 @@
-const { globalName, mainReturnName, renderDispatchName } = require('./constants');
+const { globalName, mainDispatchName, mainReturnName, renderDispatchName, renderRegisterName } = require('./constants');
 const { ipcMain } = require('electron');
 
 module.exports = class ElectronMainClient {

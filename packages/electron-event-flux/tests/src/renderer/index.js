@@ -2,6 +2,7 @@
 
 // import React from 'react';
 // import ReactDOM from 'react-dom';
+// import RendererStore from 'electron-event-flux/lib/RendererAppStore';
 import RendererStore from '../../../src/RendererAppStore';
 import React from 'react';
 import ReactDOM from 'react-dom';
@@ -27,12 +28,6 @@ window.clientId = getQuery().clientId;
 const rootElement = document.createElement('div');
 document.body.appendChild(rootElement);
 
-const store = new RendererStore((state) => {
-  console.log(state);
-  ReactDOM.render(<MyView state={state}/>, rootElement);
-});
-store.init(); 
-
 function createNewWindow() {
   // let createMainWindow = remote.getGlobal('createMainWindow');
   store.stores.multiWinStore.createWin();
@@ -49,7 +44,13 @@ function MyView({ state }) {
   );
 }
 
-ReactDOM.render(<MyView state={store.state}/>, rootElement);
+const store = new RendererStore((state) => {
+  console.log(state);
+  ReactDOM.render(<MyView state={state}/>, rootElement);
+});
+store.init().then(() => {
+  ReactDOM.render(<MyView state={store.state}/>, rootElement);
+});
 
 window.onload = () => {
   let endDate = new Date();

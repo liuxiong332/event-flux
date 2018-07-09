@@ -81,7 +81,18 @@ const storeObservers = {
 }
 
 function extendClass(StoreClass) {
-  return class ExtendStoreClass extends StoreClass {};
+  // return class ExtendStoreClass extends StoreClass {};
+  function ExtendStoreClass() {
+    const obj = new StoreClass();
+    Object.setPrototypeOf(obj, new.target.prototype); 
+    // or B.prototype, but if you derive from B you'll have to do this dance again
+  
+    // use obj instead of this
+    return obj;
+  }
+  Object.setPrototypeOf(ExtendStoreClass.prototype, StoreClass.prototype);
+  Object.setPrototypeOf(ExtendStoreClass, StoreClass);
+  return ExtendStoreClass;
 }
 
 exports.filterOneStore = function filterOneStore(StoreClass) {
@@ -195,6 +206,8 @@ function filterWindowState(allState, winStateKey, winId) {
   let { winPackMap } = allState[winStateKey];
   if (!winPackMap) return omit(allState, [winStateKey]);
   let winState = winPackMap[winId];
+  
+  console.log('winState:', winState);
   return { ...omit(allState, [winStateKey]), ...winState };
 }
 

@@ -1,4 +1,4 @@
-const { globalName } = require('./constants');
+const { globalName, renderRegisterName, renderDispatchName, mainDispatchName } = require('./constants');
 const { ipcRenderer, remote } = require('electron');
 const { serialize, deserialize } = require('json-immutable');
 
@@ -12,7 +12,7 @@ module.exports = class ElectronRendererClient {
     this.clientId = clientId;
     
     // Allows the main process to forward updates to this renderer automatically
-    ipcRenderer.send(`${globalName}-register-renderer`, { filter: filter, clientId });
+    ipcRenderer.send(renderRegisterName, { filter: filter, clientId });
   
     // Get current from the electronEnhanced store in the browser through the global it creates
     let getStores = remote.getGlobal(globalName + 'Stores');
@@ -27,13 +27,13 @@ module.exports = class ElectronRendererClient {
     callback(stateData, storeFilters);
     
     // Dispatches from other processes are forwarded using this ipc message
-    ipcRenderer.on(`${globalName}-browser-dispatch`, (event, stringifiedAction) => {
+    ipcRenderer.on(mainDispatchName, (event, stringifiedAction) => {
       onGetAction(stringifiedAction);
     });
   }
 
   // Forward update to the main process so that it can forward the update to all other renderers
   forward(action) {
-    ipcRenderer.send(`${globalName}-renderer-dispatch`, this.clientId, action);
+    ipcRenderer.send(renderDispatchName, this.clientId, action);
   }
 }

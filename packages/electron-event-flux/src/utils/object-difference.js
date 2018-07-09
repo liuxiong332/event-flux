@@ -22,9 +22,9 @@ function checkUpdateVal(key, oldVal, currVal, updated, deleted) {
   if (currVal === oldVal) return;
   
   if (isShallow(currVal) || isShallow(oldVal)) {
-    updated[key] = serialize(currVal);
+    updated[key] = currVal;
   } else if (isDiffType(currVal, oldVal)) {
-    updated[key] = serialize(currVal);
+    updated[key] = currVal;
   } else {
     const diff = objectDifference(oldVal, currVal);
     !isEmpty(diff.updated) && (updated[key] = diff.updated);

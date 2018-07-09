@@ -7,7 +7,7 @@ const isShallow = (val) => Array.isArray(val) || !isObject(val) || List.isList(v
 
 module.exports = function objectMerge(origin, updated, deleted) {
   if (isShallow(origin) || isShallow(updated)) {
-    return deserialize(updated);
+    return updated;
   }
   if (Map.isMap(origin)) {
     let merged;

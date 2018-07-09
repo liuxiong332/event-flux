@@ -11,15 +11,18 @@
   },
   "dependencies": {
     "@material-ui/core": "^1.2.1",
+    "electron-event-flux": "^0.7.1",
+    "event-flux": "^0.7.0",
     "react": "^16.4.0",
     "react-dom": "^16.4.0",
     "source-map-support": "^0.5.5"
   },
   "devDependencies": {
     "@babel/preset-react": "^7.0.0-beta.51",
+    "babel-preset-react": "^6.24.1",
     "electron": "2.0.0",
     "electron-builder": "^20.11.1",
-    "electron-webpack": "^2.0.1",
+    "electron-webpack": "^2.1.2",
     "react-scripts": "^1.1.4",
     "webpack": "^4.8.1"
   },
