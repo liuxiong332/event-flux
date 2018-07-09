@@ -1,5 +1,4 @@
 import AppStore from 'event-flux/lib/AppStore';
-const { ipcRenderer, remote } = require('electron');
 const objectMerge = require('./utils/object-merge');
 const fillShape = require('./utils/fill-shape');
 const { serialize, deserialize } = require('json-immutable');

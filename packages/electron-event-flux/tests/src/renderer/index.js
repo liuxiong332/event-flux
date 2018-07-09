@@ -2,8 +2,8 @@
 
 // import React from 'react';
 // import ReactDOM from 'react-dom';
-// import RendererStore from 'electron-event-flux/lib/RendererAppStore';
-import RendererStore from '../../../src/RendererAppStore';
+import RendererStore from 'electron-event-flux/lib/RendererAppStore';
+// import RendererStore from '../../../src/RendererAppStore';
 import React from 'react';
 import ReactDOM from 'react-dom';
 import OneDemoView from './OneDemoView';
