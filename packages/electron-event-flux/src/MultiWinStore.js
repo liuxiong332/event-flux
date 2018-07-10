@@ -8,6 +8,7 @@ function genBrowserUrl(url = '', clientId) {
   } else {
     genUrl.search = `?clientId=${clientId}`;
   }
+  genUrl.search += '&isSlave=1';
   return genUrl.toString();
 }
 
@@ -16,14 +17,13 @@ export default class MultiWinStore extends StoreBase {
     this.stores[winManagerStoreName].observe((state) => {
       this.setState({ clientIds: state.clientIds });
     });
-    this.mainClient = this._appStore.mainClient;
   }
 
   createWin(url, clientId) {
     clientId = clientId || this.genClientId();
     if (typeof window === 'object') {
       let win = this.createBrowserWin(genBrowserUrl(url, clientId));
-      return this.mainClient.addWin(clientId, win);
+      return this._appStore.mainClient.addWin(clientId, win);
     }
     return this.createElectronWin(url, clientId);
   }

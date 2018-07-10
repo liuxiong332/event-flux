@@ -51,9 +51,7 @@ function storeEnhancer(appStore, stores, storeShape) {
   const forwarder = (payload) => {
     // Forward all actions to the listening renderers
     let clientInfo = mainClient.getForwardClients();
-    const util = require('util')
-    console.log('all payload:', util.inspect(payload, {showHidden: false, depth: null}))
-
+   
     clientInfo.forEach(client => {
       let { filter: shape, clientId } = client;
       let updated = fillShape(payload.updated, shape);
@@ -66,7 +64,6 @@ function storeEnhancer(appStore, stores, storeShape) {
 
       const action = { payload: { updated, deleted } };
 
-      console.log(util.inspect(action, {showHidden: false, depth: null}))
       mainClient.sendToRenderer(client, JSON.stringify(action));
     });
   };

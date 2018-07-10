@@ -29,8 +29,6 @@ export default class RendererAppStore extends AppStore {
     // const withDeletions = filterObject(this.state, deleted);
     if (!this.state) return;
     this.state = objectMerge(this.state, updated, deleted);
-    const util = require('util')
-    console.log(util.inspect(this.state, {showHidden: false, depth: null}))
     this.sendUpdate();
   }
 }

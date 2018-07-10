@@ -2,7 +2,7 @@ const { renderDispatchName, renderRegisterName, mainDispatchName, mainInitName }
 
 module.exports = class BrowserRendererClient {
   constructor(filter, callback, onGetAction) {
-    let clientId = window.clientId;
+    let clientId = window.clientId || 'mainClient';
         
     let mainWin = window.isMainClient ? window : window.parent;
     mainWin.postMessage({ action: renderRegisterName, data: { filter, clientId } }, '*');

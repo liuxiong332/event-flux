@@ -12,18 +12,10 @@ import Button from '@material-ui/core/Button';
 import TodoCountDemo from './views/TodoCount';
 import Todo2CountDemo from './views/Todo2Count';
 import Todo3CountDemo from './views/Todo3Count';
+import query from './parseQuery';
 let startDate = new Date();
 
-function getQuery() {
-  let query = {};
-  window.location.search.slice(1).split('&').forEach(item => {
-    let [key, val] = item.split('=');
-    query[key] = val;
-  });
-  return query;
-}
-
-window.clientId = getQuery().clientId;
+window.clientId = query.clientId;
 
 const rootElement = document.createElement('div');
 document.body.appendChild(rootElement);
