@@ -17,7 +17,11 @@ function Todo2Demo({ state, store, classes }) {
   let { size: todo3MyKeySize } = state.todo.todo2.todo3Map['myKey'];
   const onClick = () => store.stores.todoStore.todo2Store.addSize();
   const onClick2 = () => store.stores.todoStore.todo2Store.decreaseSize();
-  const onClick3 = () => store.stores.todoStore.todo2Store.todo3Store.addSize();
+  const onClick3 = () => {
+    store.stores.todoStore.todo2Store.todo3Store.addSize().then((result) => {
+      console.log('todo3 size:', result);
+    });
+  };
   const onClick4 = () => store.stores.todoStore.todo2Store.todo3StoreList.get(0).addSize();
   const onClick5 = () => store.stores.todoStore.todo2Store.todo3StoreMap.myKey.addSize();
   return (

@@ -8,11 +8,15 @@ class Todo3Store extends StoreBase {
   }
 
   addSize() {
-    this.setState({ size: this.state.size + 1 });
+    let newSize = this.state.size + 1;
+    this.setState({ size: newSize });
+    return newSize;
   }
 
   decreaseSize() {
-    this.setState({ size: this.state.size - 1 });
+    let newSize = this.state.size - 1;
+    this.setState({ size: newSize });
+    return newSize;
   }
 }
 
