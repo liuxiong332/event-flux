@@ -7,6 +7,10 @@ class Todo3Store extends StoreBase {
     this.state = { size: 0 };
   }
 
+  init() {
+    console.log('todo3Store this.parent:', this.parentStore);
+  }
+
   addSize() {
     let newSize = this.state.size + 1;
     this.setState({ size: newSize });
@@ -24,6 +28,10 @@ class Todo2Store extends StoreBase {
   constructor() {
     super();
     this.state = { size: 0, todo3List: [], todo3Map: {} };
+  }
+
+  init() {
+    console.log('todo2Store this.parent:', this.parentStore);
   }
 
   addSize() {
@@ -44,6 +52,10 @@ class TodoStore extends StoreBase {
   constructor() {
     super();
     this.state = { count: 0 };
+  }
+
+  init() {
+    console.log('todoStore this.parent:', this.parentStore);
   }
 
   addTodo(num) {
