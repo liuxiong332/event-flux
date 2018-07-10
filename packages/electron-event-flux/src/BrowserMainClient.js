@@ -43,4 +43,11 @@ module.exports = class ElectronMainClient {
     let window = this.clients[clientId];
     window && window.postMessage({ action: mainDispatchName, data: payload }, '*');
   }
+
+  closeAllWindows() {
+    Object.keys(this.clients).forEach(clientId => {
+      let window = this.clients[clientId];
+      window && window.close()
+    });
+  }
 }

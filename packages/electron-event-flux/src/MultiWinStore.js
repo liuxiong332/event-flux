@@ -36,6 +36,10 @@ export default class MultiWinStore extends StoreBase {
     return clientId;
   }
 
+  closeAllWindows() {
+    this._appStore.mainClient.closeAllWindows();
+  }
+
   createBrowserWin(url) {
     return window.open(url);
   }

@@ -14,6 +14,9 @@ module.exports = class BrowserRendererClient {
         onGetAction(data);
       }
     });
+    window.addEventListener('unload', () => {
+      mainWin.postMessage({ action: 'close' });
+    });
   }
 
   // Forward update to the main process so that it can forward the update to all other renderers

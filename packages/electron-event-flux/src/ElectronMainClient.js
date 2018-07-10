@@ -1,42 +1,45 @@
 const { globalName, mainDispatchName, mainReturnName, renderDispatchName, renderRegisterName } = require('./constants');
 const { ipcMain } = require('electron');
+const findIndex = require('lodash/findIndex');
 
 module.exports = class ElectronMainClient {
   constructor(callbacks) {
-    let clients = {}; // webContentsId -> {webContents, filter, clientId, windowId, active}
+    let clientInfos = []; // webContentsId -> {webContents, filter, clientId, windowId, active}
 
     // Need to keep track of windows, as when a window refreshes it creates a new
     // webContents, and the old one must be unregistered
-    let windowMap = {}; // windowId -> webContentsId
   
     // Cannot delete data, as events could still be sent after close
     // events when a BrowserWindow is created using remote
-    let unregisterRenderer = (webContentsId) => {
-      clients[webContentsId] = { active: false };
-      callbacks.deleteWin(clients[webContentsId].clientId);
+    let unregisterRenderer = (clientId) => {
+      let existIndex = findIndex(clientInfos, (item) => item.clientId === clientId);
+      if (existIndex !== -1) {
+        clientInfos.splice(existIndex, 1);
+        callbacks.deleteWin(clientId);
+      }
     };
     this.unregisterRenderer = unregisterRenderer;
   
     ipcMain.on(renderRegisterName, ({ sender }, { filter, clientId }) => {
-      let webContentsId = sender.getId();
-      clients[webContentsId] = {
+      let existIndex = findIndex(clientInfos, (item) => item.clientId === clientId);
+      if (existIndex !== -1) {
+        unregisterRenderer(clientId);        
+      }
+  
+      clientInfos.push({
         webContents: sender,
         filter,
         clientId,
-        windowId: sender.getOwnerBrowserWindow().id,
+        window: sender.getOwnerBrowserWindow(),
         active: true
-      };
+      });
       callbacks.addWin(clientId);
-  
+
       if (!sender.isGuest()) { // For windowMap (not webviews)
         let browserWindow = sender.getOwnerBrowserWindow();
-        if (windowMap[browserWindow.id] !== undefined) { // Occurs on window reload
-          unregisterRenderer(windowMap[browserWindow.id]);
-        }
-        windowMap[browserWindow.id] = webContentsId;
-  
+        
         // Webcontents aren't automatically destroyed on window close
-        browserWindow.on('closed', () => unregisterRenderer(webContentsId));
+        browserWindow.on('closed', () => unregisterRenderer(clientId));
       }
     });
   
@@ -57,28 +60,22 @@ module.exports = class ElectronMainClient {
       let result = callbacks.handleRendererMessage(stringifiedAction);
       // ipcMain.send(mainReturnName, result);
     });
-    this.clients = clients;
+    this.clientInfos = clientInfos;
   }
   
   getForwardClients() {
-    let clients = this.clients;
-    let clientInfo = [];
-    for (let webContentsId in clients) {
-      if (!clients[webContentsId].active) continue;
-
-      let webContents = clients[webContentsId].webContents;
-
-      if (webContents.isDestroyed() || webContents.isCrashed()) {
-        this.unregisterRenderer(webContentsId);
-        continue;
-      }
-      clientInfo.push(clients[webContentsId]);
-    }
-    return clientInfo;
+    return this.clientInfos;
   }
 
   sendToRenderer(client, payload) {
     let webContents = client.webContents;
+    if (webContents.isDestroyed() || webContents.isCrashed()) {
+      return this.unregisterRenderer(client.clientId);
+    }
     webContents.send(mainDispatchName, payload);
+  }
+
+  closeAllWindows() {
+    this.clientInfos.forEach(client => client.window.close());
   }
 }
