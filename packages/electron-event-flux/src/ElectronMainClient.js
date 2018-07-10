@@ -5,7 +5,7 @@ const findIndex = require('lodash/findIndex');
 module.exports = class ElectronMainClient {
   constructor(callbacks) {
     let clientInfos = []; // webContentsId -> {webContents, filter, clientId, windowId, active}
-
+    let clientMap = {};
     // Need to keep track of windows, as when a window refreshes it creates a new
     // webContents, and the old one must be unregistered
   
@@ -15,6 +15,7 @@ module.exports = class ElectronMainClient {
       let existIndex = findIndex(clientInfos, (item) => item.clientId === clientId);
       if (existIndex !== -1) {
         clientInfos.splice(existIndex, 1);
+        clientMap[clientId] = null;
         callbacks.deleteWin(clientId);
       }
     };
@@ -26,13 +27,15 @@ module.exports = class ElectronMainClient {
         unregisterRenderer(clientId);        
       }
   
-      clientInfos.push({
+      let clientInfo = {
         webContents: sender,
         filter,
         clientId,
         window: sender.getOwnerBrowserWindow(),
         active: true
-      });
+      };
+      clientInfos.push(clientInfo);
+      clientMap[clientId] = clientInfo;
       callbacks.addWin(clientId);
 
       if (!sender.isGuest()) { // For windowMap (not webviews)
@@ -56,8 +59,9 @@ module.exports = class ElectronMainClient {
       return callbacks.getInitStates(clientId);
     }
   
-    ipcMain.on(renderDispatchName, (event, clientId, stringifiedAction) => {
+    ipcMain.on(renderDispatchName, (event, clientId, invokeId, stringifiedAction) => {
       let result = callbacks.handleRendererMessage(stringifiedAction);
+      clientMap[clientId].webContents.send(mainReturnName, invokeId, result);
       // ipcMain.send(mainReturnName, result);
     });
     this.clientInfos = clientInfos;

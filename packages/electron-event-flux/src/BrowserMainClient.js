@@ -1,4 +1,4 @@
-const { renderRegisterName, renderDispatchName, mainDispatchName, mainInitName } = require('./constants');
+const { renderRegisterName, renderDispatchName, mainDispatchName, mainInitName, mainReturnName } = require('./constants');
 const findIndex = require('lodash/findIndex');
 
 module.exports = class ElectronMainClient {
@@ -14,9 +14,14 @@ module.exports = class ElectronMainClient {
   addWin(clientId, window) {
     window.addEventListener("message", (event) => {
       let callbacks = this.callbacks;
-      let { action, data } = event.data || {};
+      let { action, data, invokeId } = event.data || {};
       if (action === renderDispatchName) {
-        callbacks.handleRendererMessage(data);
+        let result = callbacks.handleRendererMessage(data);
+        window.postMessage({
+          action: mainReturnName,
+          invokeId,
+          data: result,
+        }, '*');
       } else if (action === 'close') {       // Child window has closed
         let index = findIndex(this.clientInfos, (item) => item.clientId === clientId);
         if (index !== -1) this.clientInfos.splice(index, 1);

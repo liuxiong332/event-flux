@@ -1,9 +1,9 @@
-const { globalName, renderRegisterName, renderDispatchName, mainDispatchName } = require('./constants');
+const { globalName, renderRegisterName, renderDispatchName, mainDispatchName, mainReturnName } = require('./constants');
 const { ipcRenderer, remote } = require('electron');
 const { serialize, deserialize } = require('json-immutable');
 
 module.exports = class ElectronRendererClient {
-  constructor(filter, callback, onGetAction) {
+  constructor(filter, callback, onGetAction, onGetResult) {
     let clientId = window.clientId;
     if (!clientId) {
       const rendererId = process.guestInstanceId || remote.getCurrentWindow().id;
@@ -30,10 +30,13 @@ module.exports = class ElectronRendererClient {
     ipcRenderer.on(mainDispatchName, (event, stringifiedAction) => {
       onGetAction(stringifiedAction);
     });
+    ipcRenderer.on(mainReturnName, (event, invokeId, result) => {
+      onGetResult(invokeId, result);
+    });
   }
 
   // Forward update to the main process so that it can forward the update to all other renderers
-  forward(action) {
-    ipcRenderer.send(renderDispatchName, this.clientId, action);
+  forward(invokeId, action) {
+    ipcRenderer.send(renderDispatchName, this.clientId, invokeId, action);
   }
 }

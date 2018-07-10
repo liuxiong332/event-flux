@@ -9,7 +9,7 @@ function genProxy(storePath, forwardStore, forwarder) {
       if (!propName) return;
       if (forwardStore && forwardStore[propName]) return forwardStore[propName];
       return function(...args) {
-        forwarder({ store: storePath, method: propName, args });
+        return forwarder({ store: storePath, method: propName, args });
       };
     }
   })
