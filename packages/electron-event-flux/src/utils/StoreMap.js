@@ -11,18 +11,18 @@ module.exports = class StoreMap {
   }
 
   _initWrap() {
-    console.log('init wrap')
     this._isInit = true;
   }
 
-  add(key) {
-    console.log('has key:', this._isInit)
+  add(key, prevInit) {
     if (this.storeMap.has(key)) return;
     let newStore = this.builder();
+    prevInit && prevInit(newStore);
     // if (this._isInit) initStore(newStore);
-    initStore(newStore);
+    initStore(newStore, this.parentStore);
     this.storeMap.set(key, newStore);
     this.disposables.set(key, this.observer(newStore, key));
+    return newStore;
   }
 
   delete(key) {

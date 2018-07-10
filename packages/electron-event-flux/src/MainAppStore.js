@@ -79,7 +79,7 @@ class MultiWindowAppStore extends AppStore {
 
   init() {
     this.buildStores();
-    this.initStores();
+    this.initStores(this);
     this.startObserve();
     super.init();
     this.forwarder = storeEnhancer(this, this.stores, this.storeShape);

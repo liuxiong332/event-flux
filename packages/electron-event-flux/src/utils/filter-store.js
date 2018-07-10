@@ -145,12 +145,13 @@ exports.filterOneStore = function filterOneStore(StoreClass) {
       store.buildStores && store.buildStores();
     });
   };
-  StoreClass.prototype.initStores = function() {
+  StoreClass.prototype.initStores = function(parentStore) {
     subStoreInfos.forEach((info) => {
       let storeKey = info[2];
       let store = this.getStore ? this.getStore(storeKey) : this[storeKey];
       
-      store.initStores && store.initStores();
+      store.parentStore = parentStore;
+      store.initStores && store.initStores(parentStore);
       store._initWrap();
     });
   };
@@ -206,7 +207,7 @@ function filterWindowState(allState, winStateKey, winId) {
   let { winPackMap } = allState[winStateKey];
   if (!winPackMap) return omit(allState, [winStateKey]);
   let winState = winPackMap[winId];
-  
+
   console.log('winState:', winState);
   return { ...omit(allState, [winStateKey]), ...winState };
 }

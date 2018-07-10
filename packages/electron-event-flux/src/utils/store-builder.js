@@ -1,7 +1,7 @@
-exports.initStore = function(store) {
-  console.log('initStore', store)
+exports.initStore = function(store, parentStore) {
   store.buildStores && store.buildStores();
-  store.initStores && store.initStores();
+  store.parentStore = parentStore;
+  store.initStores && store.initStores(store);
   store._initWrap();
   store.startObserve && store.startObserve();
 }

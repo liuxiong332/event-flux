@@ -20,7 +20,7 @@ module.exports = class StoreList {
       for (let i = this.length; i < count; ++i) {
         let newStore = this.builder();
         // if (this._isInit) initStore(newStore);
-        initStore(newStore);
+        initStore(newStore, this.parentStore);
         this.storeArray.push(newStore);
         this.disposables.push(this.observer(newStore, i));
       }
