@@ -54,6 +54,7 @@ export default class RendererAppStore extends AppStore {
 
   handleResult(invokeId, result) {
     this.idGenerator.dispose(invokeId);
-    this.resolveMap[invokeId](JSON.parse(result));
+    if (result !== undefined) result = JSON.parse(result);
+    this.resolveMap[invokeId](result);
   }
 }

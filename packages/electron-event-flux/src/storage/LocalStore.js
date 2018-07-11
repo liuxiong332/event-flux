@@ -1,14 +1,13 @@
 module.exports = class AsyncStorage {
   // Update the version when the storage is obsolete
   constructor(version, ns) {
-    this.version = version;
-    if (version) this.init();
+    if (version) this.init(version);
     this.ns = ns;
   }
 
-  init() {
+  init(version) {
     if (version) {
-      const curVersion = parseInt(this.getItem('version'));
+      const curVersion = localStorage.getItem('version');
       if (version !== curVersion) {
         localStorage.clear();
         localStorage.setItem('version', version);

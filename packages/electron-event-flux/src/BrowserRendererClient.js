@@ -3,9 +3,10 @@ const { renderDispatchName, renderRegisterName, mainDispatchName, mainInitName, 
 module.exports = class BrowserRendererClient {
   constructor(filter, callback, onGetAction, onGetResult) {
     let clientId = window.clientId || 'mainClient';
+    this.clientId = clientId;
         
-    let mainWin = window.isMainClient ? window : window.parent;
-    mainWin.postMessage({ action: renderRegisterName, data: { filter, clientId } }, '*');
+    let mainWin = window.isMainClient ? window : window.opener;
+    mainWin.postMessage({ action: renderRegisterName, clientId, data: { filter } }, '*');
     window.addEventListener('message', (event) => {
       let { action, data, invokeId } = event.data || {};
       if (action === mainInitName) {
@@ -17,13 +18,14 @@ module.exports = class BrowserRendererClient {
       }
     });
     window.addEventListener('unload', () => {
-      mainWin.postMessage({ action: 'close' });
+      mainWin.postMessage({ action: 'close', clientId });
     });
   }
 
   // Forward update to the main process so that it can forward the update to all other renderers
   forward(invokeId, action) {
-    let mainWin = window.isMainClient ? window : window.parent;
-    mainWin.postMessage({ action: renderDispatchName, data: action, invokeId }, '*');
+    let clientId = this.clientId;
+    let mainWin = window.isMainClient ? window : window.opener;
+    mainWin.postMessage({ action: renderDispatchName, data: action, invokeId, clientId }, '*');
   }
 }

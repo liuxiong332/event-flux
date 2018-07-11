@@ -8,16 +8,12 @@ module.exports = class ElectronMainClient {
     this.clientInfos = [];
     window.isMainClient = true;
 
-    this.addWin('mainClient', window);
-  }
-  
-  addWin(clientId, window) {
     window.addEventListener("message", (event) => {
       let callbacks = this.callbacks;
-      let { action, data, invokeId } = event.data || {};
+      let { action, data, invokeId, clientId } = event.data || {};
       if (action === renderDispatchName) {
         let result = callbacks.handleRendererMessage(data);
-        window.postMessage({
+        this.clients[clientId].postMessage({
           action: mainReturnName,
           invokeId,
           data: result,
@@ -28,16 +24,21 @@ module.exports = class ElectronMainClient {
         this.clients[clientId] = null;
         callbacks.deleteWin(clientId);
       } else if (action === renderRegisterName) {
-        let { filter, clientId } = data;
+        let { filter } = data;
         callbacks.addWin(clientId);
-        this.clients[clientId] = window;
         this.clientInfos.push({ clientId, filter });
-        window.postMessage({
+        this.clients[clientId].postMessage({
           action: mainInitName,
           data: [callbacks.getInitStates(clientId), callbacks.getStores(clientId)],
         }, '*');
       }
     });
+
+    this.addWin('mainClient', window);
+  }
+  
+  addWin(clientId, newWin) {
+    this.clients[clientId] = newWin;
   }
 
   getForwardClients() {
@@ -52,7 +53,7 @@ module.exports = class ElectronMainClient {
   closeAllWindows() {
     Object.keys(this.clients).forEach(clientId => {
       let window = this.clients[clientId];
-      window && window.close()
+      window && window.close();
     });
   }
 }
