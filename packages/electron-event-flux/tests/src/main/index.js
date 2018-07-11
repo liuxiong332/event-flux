@@ -8,6 +8,8 @@ import TodoStore from './store';
 // import buildMultiWinAppStore from 'electron-event-flux/lib/MainAppStore';
 import MultiWinStore from '../../../src/MultiWinStore';
 import buildMultiWinAppStore from '../../../src/MainAppStore';
+import { winManagerStoreName } from '../../../src/constants';
+import storage from './storage';
 
 const isDevelopment = process.env.NODE_ENV !== 'production'
 
@@ -19,14 +21,14 @@ function createElectronWin(url, clientId) {
 }
 
 function createMainWindow(url, clientId) {
-  const window = new BrowserWindow({ show: false });
+  const window = new BrowserWindow({ show: true });
 
   window.on('ready-to-show', function() {
     window.show();
   });
 
   if (isDevelopment) {
-    window.webContents.openDevTools()
+    // window.webContents.openDevTools()
   }
 
   if (isDevelopment) {
@@ -57,7 +59,29 @@ function createMainWindow(url, clientId) {
 }
 
 class MyMultiWinStore extends MultiWinStore {
+  init() {
+    this.clientUrlMap = {};
+    let clients = storage.get('clients');
+    if (!clients || clients.length <= 1) {
+      clients = [{ clientId: 'mainClient', url: 'main' }];
+    }
+    app.on('ready', () => {
+      clients.forEach(item => this.createElectronWin(item.url, item.clientId));
+    });
+
+    this.disposable = this.stores[winManagerStoreName].onDidUpdate((state) => {
+      this.setState({ clientIds: state.clientIds });
+      let clients = state.clientIds.map(id => ({ clientId: id, url: this.clientUrlMap[id] }));
+      storage.set('clients', clients);
+    });
+
+    app.on('before-quit', () => {
+      this.disposable.dispose();
+    });
+  }
+
   createElectronWin(url, clientId) {
+    this.clientUrlMap[clientId] = url;
     createElectronWin(url, clientId);
   }
 }
@@ -80,7 +104,7 @@ app.on('activate', () => {
 })
 
 // create main BrowserWindow when electron is ready
-app.on('ready', () => {
-  // mainWindow = createMainWindow()
-  createElectronWin(null, 'mainWin');
-})
+// app.on('ready', () => {
+//   // mainWindow = createMainWindow()
+//   createElectronWin(null, 'mainWin');
+// })

@@ -1,8 +1,6 @@
 import StoreBase from 'event-flux/lib/StoreBase';
 import { declareStore, declareStoreMap, declareStoreList } from 'electron-event-flux/lib/StoreDeclarer';
-import Storage from '../../../src/storage';
-
-const storage = new Storage('1.0');
+import storage from './storage';
 
 function isDefined(s) {
   return typeof s !== 'undefined';

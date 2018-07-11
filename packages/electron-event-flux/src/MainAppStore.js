@@ -99,11 +99,11 @@ class MultiWindowAppStore extends AppStore {
   }
 }
 
-export default function buildMultiWinAppStore(stores, winStores) {
+export default function buildMultiWinAppStore(stores, winStores, WindowsManagerStore = MultiWinManagerStore) {
   WinPackStore.innerStores = winStores;
   let allStores = {
     ...stores, 
-    [winManagerKey]: declareStore(MultiWinManagerStore, { storeKey: winManagerStoreName }),
+    [winManagerKey]: declareStore(WindowsManagerStore, { storeKey: winManagerStoreName }),
   };
   MultiWindowAppStore.innerStores = allStores;
   const storeShape = filterOneStore(MultiWindowAppStore, (instance) => instance.stores);
