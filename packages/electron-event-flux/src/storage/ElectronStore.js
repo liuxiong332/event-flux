@@ -1,7 +1,6 @@
 const Store = require('electron-store');
-const store = new Store();
 
-export default class ElectronStore {
+module.exports = class ElectronStore {
   constructor(version, store, ns) {
     this.store = store || new Store();
     this.ns = ns;
@@ -15,6 +14,7 @@ export default class ElectronStore {
   }
 
   getNSStore(ns) {
+    ns = this.ns ? this.ns + '.' + ns : ns;
     return new ElectronStore(null, this.store, ns);
   }
 
@@ -41,6 +41,12 @@ export default class ElectronStore {
     let ns = this.ns;
     if (!ns) return this.store.delete(key);
     return this.store.delete(ns + '.' + key);
+  }
+
+  deleteAll() {
+    let ns = this.ns;
+    if (!ns) return this.store.clear();
+    return this.store.delete(ns);
   }
 
   clear() {

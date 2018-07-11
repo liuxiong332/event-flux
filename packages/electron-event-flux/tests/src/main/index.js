@@ -15,10 +15,10 @@ const isDevelopment = process.env.NODE_ENV !== 'production'
 let mainWindow
 
 function createElectronWin(url, clientId) {
-  return createMainWindow({ url, clientId });
+  return createMainWindow(url, clientId);
 }
 
-function createMainWindow(params) {
+function createMainWindow(url, clientId) {
   const window = new BrowserWindow({ show: false });
 
   window.on('ready-to-show', function() {
@@ -31,7 +31,7 @@ function createMainWindow(params) {
 
   if (isDevelopment) {
     console.log('port:', process.env.ELECTRON_WEBPACK_WDS_PORT)
-    window.loadURL(`http://localhost:${process.env.ELECTRON_WEBPACK_WDS_PORT}?windowParams=${JSON.stringify(params)}`)
+    window.loadURL(`http://localhost:${process.env.ELECTRON_WEBPACK_WDS_PORT}?url=${url}&clientId=${clientId}`);
   }
   else {
     window.loadURL(formatUrl({

@@ -17,7 +17,9 @@ module.exports = class StoreMap {
   add(key, prevInit) {
     if (this.storeMap.has(key)) return;
     let newStore = this.builder();
+    newStore.mapStoreKey = key;
     prevInit && prevInit(newStore);
+
     // if (this._isInit) initStore(newStore);
     initStore(newStore, this.parentStore);
     this.storeMap.set(key, newStore);

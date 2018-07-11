@@ -151,6 +151,7 @@ exports.filterOneStore = function filterOneStore(StoreClass) {
       let store = this.getStore ? this.getStore(storeKey) : this[storeKey];
       
       store.parentStore = parentStore;
+      store.willInit && store.willInit();
       store.initStores && store.initStores(store);
       store._initWrap();
     });

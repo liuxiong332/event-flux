@@ -1,4 +1,4 @@
-export default class AsyncStorage {
+module.exports = class AsyncStorage {
   // Update the version when the storage is obsolete
   constructor(version, ns) {
     this.version = version;
@@ -17,17 +17,24 @@ export default class AsyncStorage {
   }
 
   set(key, value) {
+    if (typeof key === 'object') {
+      for (let k in key) {
+        this.set(k, key[k]);
+      }
+      return;
+    }
     key = this.ns ? this.ns + '.' + key : key;
-    if (value === null || value === undefined) {
+    if (value === undefined) {
       localStorage.removeItem(key);
     } else {
-      localStorage.setItem(key, value);
+      localStorage.setItem(key, JSON.stringify(value));
     }
   }
 
   get(key, defaultValue) {
     key = this.ns ? this.ns + '.' + key : key;
-    return localStorage.getItem(key) || defaultValue;
+    let value = localStorage.getItem(key);
+    return value ? JSON.parse(value) : defaultValue;
   }
 
   delete(key) {
@@ -36,6 +43,7 @@ export default class AsyncStorage {
   }
 
   getNSStore(namespace) {
+    namespace = this.ns ? this.ns + '.' + namespace : namespace;
     return new AsyncStorage(null, namespace);
   }
 }

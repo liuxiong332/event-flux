@@ -1,0 +1,1 @@
+module.exports = typeof window === 'object' ? require('./LocalStore') : require('./ElectronStore'); 

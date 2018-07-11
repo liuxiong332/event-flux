@@ -19,6 +19,8 @@ module.exports = class StoreList {
     if (this.length < count) {
       for (let i = this.length; i < count; ++i) {
         let newStore = this.builder();
+        newStore.listStoreKey = i;
+
         // if (this._isInit) initStore(newStore);
         initStore(newStore, this.parentStore);
         this.storeArray.push(newStore);
@@ -44,4 +46,5 @@ module.exports = class StoreList {
   filter(callback) { return this.storeArray.filter(callback); }
   get(index) { return this.storeArray[index]; }
   slice(begin, end) { return this.storeArray.slice(begin, end); }
+  indexOf(item) { return this.storeArray.indexOf(item); }
 }
