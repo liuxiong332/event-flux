@@ -19,13 +19,13 @@ export default class MultiWinStore extends StoreBase {
     });
   }
 
-  createWin(url, clientId) {
+  createWin(url, clientId, params) {
     clientId = clientId || this.genClientId();
     if (typeof window === 'object') {
-      let win = this.createBrowserWin(genBrowserUrl(url, clientId));
+      let win = this.createBrowserWin(genBrowserUrl(url, clientId), params);
       return this._appStore.mainClient.addWin(clientId, win);
     }
-    return this.createElectronWin(url, clientId);
+    return this.createElectronWin(url, clientId, params);
   }
 
   genClientId() {
@@ -40,11 +40,14 @@ export default class MultiWinStore extends StoreBase {
     this._appStore.mainClient.closeAllWindows();
   }
 
-  createBrowserWin(url) {
-    return window.open(url);
+  createBrowserWin(url, params = {}) {
+    if (!params.width) params.width = 400;
+    if (!params.height) params.height = 400;
+    let featureStr = Object.keys(params).map(key => `${key}=${params[key]}`).join(',');
+    return window.open(url, "newwindow", featureStr + ", toolbar=no, menubar=no, scrollbars=no, resizable=no, location=no, status=no, titlebar=no");
   }
 
-  createElectronWin(url, clientId) {
+  createElectronWin(url, clientId, params) {
     console.error('Please provide the createElectronWin');
   }
 }

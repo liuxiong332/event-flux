@@ -10,18 +10,23 @@ import MultiWinStore from '../../../src/MultiWinStore';
 import buildMultiWinAppStore from '../../../src/MainAppStore';
 import { winManagerStoreName } from '../../../src/constants';
 import storage from './storage';
+const ElectronWindowState = require('./ElectronWindowState');
 
 const isDevelopment = process.env.NODE_ENV !== 'production'
 
 // global reference to mainWindow (necessary to prevent window from being garbage collected)
 let mainWindow
 
-function createElectronWin(url, clientId) {
-  return createMainWindow(url, clientId);
+function createElectronWin(url, clientId, params) {
+  return createMainWindow(url, clientId, params);
 }
 
-function createMainWindow(url, clientId) {
-  const window = new BrowserWindow({ show: true });
+function createMainWindow(url, clientId, params = {}) {
+  const window = new BrowserWindow({ 
+    show: true,
+    x: params.x, y: params.y,
+    width: params.width, height: params.height, 
+  });
 
   window.on('ready-to-show', function() {
     window.show();
@@ -61,18 +66,19 @@ function createMainWindow(url, clientId) {
 class MyMultiWinStore extends MultiWinStore {
   init() {
     this.clientUrlMap = {};
+    this.clientStateMap = {};
+
     let clients = storage.get('clients');
-    if (!clients || clients.length <= 1) {
+    if (!clients || clients.length === 0) {
       clients = [{ clientId: 'mainClient', url: 'main' }];
     }
     app.on('ready', () => {
-      clients.forEach(item => this.createElectronWin(item.url, item.clientId));
+      clients.forEach(item => this.createElectronWin(item.url, item.clientId, item.winState));
     });
 
     this.disposable = this.stores[winManagerStoreName].onDidUpdate((state) => {
       this.setState({ clientIds: state.clientIds });
-      let clients = state.clientIds.map(id => ({ clientId: id, url: this.clientUrlMap[id] }));
-      storage.set('clients', clients);
+      this.saveClients(state.clientIds);
     });
 
     app.on('before-quit', () => {
@@ -80,9 +86,27 @@ class MyMultiWinStore extends MultiWinStore {
     });
   }
 
-  createElectronWin(url, clientId) {
+  saveClients(clientIds) {
+    let clients = clientIds.map(id => ({ 
+      clientId: id, url: this.clientUrlMap[id], winState: this.clientStateMap[id],
+    }));
+    storage.set('clients', clients);
+  }
+
+  saveWinState(clientId, winState) {
+    this.clientStateMap[clientId] = winState;
+    this.saveClients(this.state.clientIds || []);
+  }
+
+  createElectronWin(url, clientId, params) {
     this.clientUrlMap[clientId] = url;
-    createElectronWin(url, clientId);
+    let winState = new ElectronWindowState(null, params, (state) => {
+      this.saveWinState(clientId, state);
+    });
+    this.clientStateMap[clientId] = winState.state;
+    let win = createElectronWin(url, clientId, winState.state);
+    winState.manage(win);
+    return win;
   }
 }
 
