@@ -23,8 +23,9 @@ module.exports = class ElectronWindowState {
     // Set state fallback values
     this.state = Object.assign({
       width: config.defaultWidth || 800,
-      height: config.defaultHeight || 600
-    }, this.state);
+      height: config.defaultHeight || 600,
+      useContentSize: config.useContentSize || false,
+    }, state);
   }
 
   isNormal(win) {
@@ -79,13 +80,12 @@ module.exports = class ElectronWindowState {
   updateState() {
     let state = this.state;
     let win = this.winRef;
-    console.log('winRef:', this.winRef);
     if (!win) {
       return;
     }
     // don't throw an error when window was closed
     try {
-      var winBounds = win.getBounds();
+      var winBounds = state.useContentSize ? win.getContentBounds() : win.getBounds();
       if (this.isNormal(win)) {
         state.x = winBounds.x;
         state.y = winBounds.y;
@@ -95,7 +95,6 @@ module.exports = class ElectronWindowState {
       state.isMaximized = win.isMaximized();
       state.isFullScreen = win.isFullScreen();
       state.displayBounds = electron.screen.getDisplayMatching(winBounds).bounds;
-      console.log('update state:', state);
     } catch (err) {
       console.error(err);
     }
@@ -103,7 +102,6 @@ module.exports = class ElectronWindowState {
 
   stateChangeHandler() {
     // Handles both 'resize' and 'move'
-    console.log('state change!!');
     clearTimeout(this.stateChangeTimer);
     this.stateChangeTimer = setTimeout(() => this.updateState(), eventHandlingDelay);
   }

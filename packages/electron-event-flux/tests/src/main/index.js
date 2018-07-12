@@ -22,11 +22,16 @@ function createElectronWin(url, clientId, params) {
 }
 
 function createMainWindow(url, clientId, params = {}) {
+  console.log('window state:', params)
   const window = new BrowserWindow({ 
     show: true,
     x: params.x, y: params.y,
     width: params.width, height: params.height, 
+    useContentSize: params.useContentSize,
   });
+
+  // if (params.isMaximized) window.maximize();
+  // if (params.isFullScreen) window.setFullScreen(true);
 
   window.on('ready-to-show', function() {
     window.show();
@@ -70,7 +75,7 @@ class MyMultiWinStore extends MultiWinStore {
 
     let clients = storage.get('clients');
     if (!clients || clients.length === 0) {
-      clients = [{ clientId: 'mainClient', url: 'main' }];
+      clients = [{ clientId: 'mainClient', url: '/', winState: { isMaximized: true } }];
     }
     app.on('ready', () => {
       clients.forEach(item => this.createElectronWin(item.url, item.clientId, item.winState));
@@ -104,6 +109,7 @@ class MyMultiWinStore extends MultiWinStore {
       this.saveWinState(clientId, state);
     });
     this.clientStateMap[clientId] = winState.state;
+    console.log('win state:', winState.state);
     let win = createElectronWin(url, clientId, winState.state);
     winState.manage(win);
     return win;
