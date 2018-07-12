@@ -31,37 +31,63 @@ function getAction() {
 
 window.action = getAction();
 
-function NewButton({ sizes: { width, outerHeight, demo1Height, demo2Height, demo3Height } }) {
-  const createNewWindow = () => {
-    console.log('create new window:', width, outerHeight);
+class NewButton extends React.PureComponent {
+  constructor(props) {
+    super(props);
+    this.createNewWindow = this.createNewWindow.bind(this);
+    this.createDemo1 = this.createDemo1.bind(this);
+    this.createDemo2 = this.createDemo2.bind(this);
+    this.createDemo3 = this.createDemo3.bind(this);
+  }
+
+  createNewWindow() {
+    let { sizes: { width, outerHeight, demo1Height, demo2Height, demo3Height } } = this.props;
+
     store.stores.multiWinStore.createWin('/', null, { 
       width, height: outerHeight, useContentSize: true,
     });
   }
-  const createDemo1 = () => {
-    console.log('create demo1:', width, outerHeight - demo2Height - demo3Height);
-    store.stores.multiWinStore.createWin('/demo1', null, { 
+  
+  mergePos(size, pos) {
+    if (!pos) return size;
+    return { ...size, x: pos.midX - size.width / 2, y: pos.midY - size.height / 2 };
+  }
+
+  createDemo1(pos) {
+    let { sizes: { width, outerHeight, demo1Height, demo2Height, demo3Height } } = this.props;
+
+    let params = { 
       width, height: outerHeight - demo2Height - demo3Height, useContentSize: true,
-    });
+    };
+    store.stores.multiWinStore.createWin('/demo1', null, this.mergePos(params, pos));
   }
-  const createDemo2 = () => {
-    store.stores.multiWinStore.createWin('/demo2', null, {
+  createDemo2(pos) {
+    let { sizes: { width, outerHeight, demo1Height, demo2Height, demo3Height } } = this.props;
+
+    let params = {
       width: width, height: outerHeight - demo1Height - demo3Height, useContentSize: true,
-    });
+    }
+    store.stores.multiWinStore.createWin('/demo2', null, this.mergePos(params, pos));
   }
-  const createDemo3 = () => {
-    store.stores.multiWinStore.createWin('/demo3', null, {
+  createDemo3(pos) {
+    let { sizes: { width, outerHeight, demo1Height, demo2Height, demo3Height } } = this.props;
+
+    let params = {
       width: width, height: outerHeight - demo1Height - demo2Height, useContentSize: true,
-    });
+    };
+    store.stores.multiWinStore.createWin('/demo3', null, this.mergePos(params, pos));
   }
-  return (
-    <div>
-      <Button onClick={createNewWindow}>Create New Window</Button>
-      <Button onClick={createDemo1}>Create Demo1</Button>
-      <Button onClick={createDemo2}>Create Demo2</Button>
-      <Button onClick={createDemo3}>Create Demo3</Button>
-    </div>
-  );
+
+  render() {
+    return (
+      <div>
+        <Button onClick={this.createNewWindow}>Create New Window</Button>
+        <Button onClick={this.createDemo1}>Create Demo1</Button>
+        <Button onClick={this.createDemo2}>Create Demo2</Button>
+        <Button onClick={this.createDemo3}>Create Demo3</Button>
+      </div>
+    );
+  }
 }
 
 class MyView extends React.PureComponent {
@@ -82,6 +108,24 @@ class MyView extends React.PureComponent {
     };
   }
  
+  handleDragStart(item) {
+    return (event) => {
+      event.dataTransfer.setData("text/html", item);
+    };
+  }
+
+  handleDragEnd(item) {
+    return (event) => {
+      if (!this.buttons) return;
+      let pos = { midX: event.screenX, midY: event.screenY };
+      switch (item) {
+        case 'demo1': this.buttons.createDemo1(pos);
+        case 'demo2': this.buttons.createDemo2(pos);
+        case 'demo3': this.buttons.createDemo3(pos);
+      }
+    };
+  }
+
   render() {
     let { state } = this.props;
     let sizes = { 
@@ -92,10 +136,25 @@ class MyView extends React.PureComponent {
       case '/':
         return (
           <div ref={this.divGetter('outerHeight')}>
-            <OneDemoView ref={this.divGetter('demo1Height')} {...TodoCountDemo} store={store} state={state}/>
-            <OneDemoView ref={this.divGetter('demo2Height')} {...Todo2CountDemo} store={store} state={state}/>
-            <OneDemoView ref={this.divGetter('demo3Height')} {...Todo3CountDemo} store={store} state={state}/>
-            <NewButton sizes={sizes}/>
+            <OneDemoView 
+              ref={this.divGetter('demo1Height')} {...TodoCountDemo} store={store} state={state}
+              onDragStart={this.handleDragStart('demo1')} 
+              onDragEnd={this.handleDragEnd('demo1')} 
+              draggable={true}
+            />
+            <OneDemoView 
+              ref={this.divGetter('demo2Height')} {...Todo2CountDemo} store={store} state={state}
+              onDragStart={this.handleDragStart('demo2')} 
+              onDragEnd={this.handleDragEnd('demo2')}
+              draggable={true}
+            />
+            <OneDemoView 
+              ref={this.divGetter('demo3Height')} {...Todo3CountDemo} store={store} state={state}
+              onDragStart={this.handleDragStart('demo3')} 
+              onDragEnd={this.handleDragEnd('demo3')}
+              draggable={true}
+            />
+            <NewButton ref={(ref) => this.buttons = ref} sizes={sizes}/>
           </div>
         );
       case '/demo1': 

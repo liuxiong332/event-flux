@@ -12,11 +12,17 @@ const styles = theme => ({
     textAlign: 'center',
     padding: 8,
   },
+  bar: {
+    height: 36,
+    width: '100%',
+    background: '#2196f3',
+  }
 });
 
-function OneDemoView({ title, Component, state, store, classes }) {
+function OneDemoView({ title, Component, state, store, classes, ...otherProps }) {
   return (
     <div>
+      <div className={classes.bar} {...otherProps}/>
       <Typography variant="title" color="inherit" className={classes.title}>
         {title}
       </Typography>
