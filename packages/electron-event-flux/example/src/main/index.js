@@ -109,7 +109,6 @@ class MyMultiWinStore extends MultiWinStore {
       this.saveWinState(clientId, state);
     });
     this.clientStateMap[clientId] = winState.state;
-    console.log('win state:', winState.state);
     let win = createElectronWin(url, clientId, winState.state);
     winState.manage(win);
     return win;
