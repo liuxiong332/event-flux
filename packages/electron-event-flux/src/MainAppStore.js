@@ -64,7 +64,7 @@ function storeEnhancer(appStore, stores, storeShape) {
 
       const action = { payload: { updated, deleted } };
 
-      mainClient.sendToRenderer(client, JSON.stringify(action));
+      mainClient.sendToRenderer(client, serialize(action));
     });
   };
   return forwarder;

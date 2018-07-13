@@ -44,7 +44,7 @@ export default class RendererAppStore extends AppStore {
   }
 
   handleAction(action) {
-    action = JSON.parse(action);
+    action = deserialize(action);
     const { updated, deleted } = action.payload;
     // const withDeletions = filterObject(this.state, deleted);
     if (!this.state) return;

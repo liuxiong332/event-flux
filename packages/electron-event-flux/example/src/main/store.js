@@ -1,9 +1,29 @@
 import StoreBase from 'event-flux/lib/StoreBase';
 import { declareStore, declareStoreMap, declareStoreList } from 'electron-event-flux/lib/StoreDeclarer';
 import storage from './storage';
+const { Map, List } = require('immutable')
 
 function isDefined(s) {
   return typeof s !== 'undefined';
+}
+
+class Todo4Store extends StoreBase {
+  constructor() {
+    super();
+    this.state = { todo4Map: new Map(), todo4List: new List() };
+  }
+
+  addKey(key, val) {
+    this.setState({ todo4Map: this.state.todo4Map.set(key, val) });
+  }
+
+  increase() {
+    this.setState({ todo4List: this.state.todo4List.push(1) });
+  }
+
+  removeKey(key) {
+    this.setState({ todo4Map: this.state.todo4Map.delete(key) });
+  }
 }
 
 class Todo3Store extends StoreBase {
@@ -67,6 +87,7 @@ class Todo2Store extends StoreBase {
 }
 Todo2Store.innerStores = {
   todo3: declareStore(Todo3Store),
+  todo4: declareStore(Todo4Store),
   todo3List: declareStoreList(Todo3Store, { storeKey: 'todo3StoreList', size: 1 }),
   todo3Map: declareStoreMap(Todo3Store, { storeKey: 'todo3StoreMap', keys: ['myKey'] }),
 };

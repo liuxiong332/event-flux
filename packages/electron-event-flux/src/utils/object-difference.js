@@ -12,7 +12,6 @@ const isObject = require('lodash/isObject');
 const isEmpty = require('lodash/isEmpty');
 const keys = require('lodash/keys');
 const { Map, List } = require('immutable');
-const { serialize } = require('json-immutable');
 
 const isShallow = val => Array.isArray(val) || !isObject(val) || List.isList(val);
 
@@ -36,9 +35,9 @@ function objectDifference(old, curr) {
   const updated = {};
   const deleted = {};
 
-  if (Map.isMap(curr)) {
-    curr.forEach(key => checkUpdateVal(key, old.get(key), curr.get(key), updated, deleted));
-    old.forEach(key => curr.get(key) === undefined && (deleted[key] = true));
+  if (Map.isMap(old) && Map.isMap(curr)) {
+    curr.forEach((val, key) => checkUpdateVal(key, old.get(key), val, updated, deleted));
+    old.forEach((val, key) => curr.get(key) === undefined && (deleted[key] = true));
   } else {
     keys(curr).forEach(key => checkUpdateVal(key, old[key], curr[key], updated, deleted));
     keys(old).forEach(key => curr[key] === undefined && (deleted[key] = true));

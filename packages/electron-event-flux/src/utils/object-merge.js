@@ -17,7 +17,7 @@ module.exports = function objectMerge(origin, updated, deleted) {
         if (deleted[key] !== true) merged[key] = val;
       });
     } else {
-      merged = { ...origin };
+      merged = origin.toObject();
     }
     keys(updated).forEach(key => {
       merged[key] = objectMerge(origin.get(key), updated[key], deleted && deleted[key])
