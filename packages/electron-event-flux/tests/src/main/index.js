@@ -10,6 +10,7 @@ import MultiWinStore from '../../../src/MultiWinStore';
 import buildMultiWinAppStore from '../../../src/MainAppStore';
 import { winManagerStoreName } from '../../../src/constants';
 import storage from './storage';
+const electron = require('electron');
 const ElectronWindowState = require('./ElectronWindowState');
 
 const isDevelopment = process.env.NODE_ENV !== 'production'
@@ -22,10 +23,9 @@ function createElectronWin(url, clientId, params) {
 }
 
 function createMainWindow(url, clientId, params = {}) {
-  console.log('window state:', params)
   const window = new BrowserWindow({ 
     show: true,
-    x: params.x, y: params.y,
+    x: parseInt(params.x), y: parseInt(params.y),
     width: params.width, height: params.height, 
     useContentSize: params.useContentSize,
   });

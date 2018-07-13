@@ -17,7 +17,7 @@ module.exports = class ElectronWindowState {
   }
 
   loadState(state, config) {
-    this.state = state;
+    this.state = this.normState(state);
     // Check state validity
     this.validateState();
     // Set state fallback values
@@ -25,7 +25,15 @@ module.exports = class ElectronWindowState {
       width: config.defaultWidth || 800,
       height: config.defaultHeight || 600,
       useContentSize: config.useContentSize || false,
-    }, state);
+    }, this.state);
+  }
+
+  normState(state) {
+    state.x = Math.floor(state.x);
+    state.y = Math.floor(state.y);
+    state.width = Math.floor(state.width);
+    state.height = Math.floor(state.height);
+    return state;
   }
 
   isNormal(win) {
@@ -45,7 +53,6 @@ module.exports = class ElectronWindowState {
     let state = this.state;
     var isValid = state && (this.hasBounds() || state.isMaximized || state.isFullScreen);
     if (!isValid) {
-      this.state = null;
       return;
     }
 

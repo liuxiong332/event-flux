@@ -102,6 +102,11 @@ class TodoStore extends StoreBase {
     this.setState({ isComplete });
     this.storage.set('isComplete', isComplete);
   }
+
+  dispose() {
+    super.dispose();
+    this.storage.deleteAll();
+  }
 }
 TodoStore.innerStores = { todo2: declareStore(Todo2Store) };
 

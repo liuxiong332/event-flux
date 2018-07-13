@@ -49,7 +49,9 @@ class NewButton extends React.PureComponent {
   }
   
   mergePos(size, pos) {
-    if (!pos) return size;
+    if (!pos) {
+      pos = { midX: window.screenX + window.outerWidth / 2, midY: window.screenY + window.outerHeight / 2 };
+    }
     return { ...size, x: pos.midX - size.width / 2, y: pos.midY - size.height / 2 };
   }
 
@@ -119,9 +121,9 @@ class MyView extends React.PureComponent {
       if (!this.buttons) return;
       let pos = { midX: event.screenX, midY: event.screenY };
       switch (item) {
-        case 'demo1': this.buttons.createDemo1(pos);
-        case 'demo2': this.buttons.createDemo2(pos);
-        case 'demo3': this.buttons.createDemo3(pos);
+        case 'demo1': this.buttons.createDemo1(pos); break;
+        case 'demo2': this.buttons.createDemo2(pos); break;
+        case 'demo3': this.buttons.createDemo3(pos); break;
       }
     };
   }
