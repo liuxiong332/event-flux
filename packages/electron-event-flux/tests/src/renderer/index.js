@@ -80,13 +80,21 @@ class NewButton extends React.PureComponent {
     store.stores.multiWinStore.createWin('/demo3', null, this.mergePos(params, pos));
   }
 
+  buttonGet(name) {
+    return (ref) => this[name] = ref;
+  }
+
+  click(name) {
+    ReactDOM.findDOMNode(this[name]).click();
+  }
+
   render() {
     return (
       <div>
         <Button onClick={this.createNewWindow}>Create New Window</Button>
-        <Button onClick={this.createDemo1}>Create Demo1</Button>
-        <Button onClick={this.createDemo2}>Create Demo2</Button>
-        <Button onClick={this.createDemo3}>Create Demo3</Button>
+        <Button ref={this.buttonGet('demo1')} onClick={this.createDemo1}>Create Demo1</Button>
+        <Button ref={this.buttonGet('demo2')} onClick={this.createDemo2}>Create Demo2</Button>
+        <Button ref={this.buttonGet('demo3')} onClick={this.createDemo3}>Create Demo3</Button>
       </div>
     );
   }
@@ -120,10 +128,14 @@ class MyView extends React.PureComponent {
     return (event) => {
       if (!this.buttons) return;
       let pos = { midX: event.screenX, midY: event.screenY };
-      switch (item) {
-        case 'demo1': this.buttons.createDemo1(pos); break;
-        case 'demo2': this.buttons.createDemo2(pos); break;
-        case 'demo3': this.buttons.createDemo3(pos); break;
+      if (window.process) {
+        switch (item) {
+          case 'demo1': this.buttons.createDemo1(pos); break;
+          case 'demo2': this.buttons.createDemo2(pos); break;
+          case 'demo3': this.buttons.createDemo3(pos); break;
+        }
+      } else {
+        this.buttons.click(item);
       }
     };
   }

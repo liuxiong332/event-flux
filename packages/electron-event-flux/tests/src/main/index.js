@@ -9,9 +9,9 @@ import TodoStore from './store';
 import MultiWinStore from '../../../src/MultiWinStore';
 import buildMultiWinAppStore from '../../../src/MainAppStore';
 import { winManagerStoreName } from '../../../src/constants';
+import ElectronWindowState from '../../../src/ElectronWindowState';
 import storage from './storage';
 const electron = require('electron');
-const ElectronWindowState = require('./ElectronWindowState');
 
 const isDevelopment = process.env.NODE_ENV !== 'production'
 
