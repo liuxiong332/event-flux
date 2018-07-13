@@ -7,8 +7,8 @@ const isObject = require('lodash/isObject');
 const { serialize, deserialize } = require('json-immutable');
 const { filterOneStore, filterWindowStore, filterWindowState, filterWindowDelta } = require('./utils/filter-store');
 const { declareStore } = require('./StoreDeclarer');
+const MainClient = require('./MainClient');
 import MultiWinManagerStore, { WinPackStore } from './MultiWinManagerStore';
-const MainClient = typeof window !== 'object' ? require('./ElectronMainClient') : require('./BrowserMainClient');
 
 function findStore(stores, storePath) {
   return storePath.reduce((subStores, entry) => {

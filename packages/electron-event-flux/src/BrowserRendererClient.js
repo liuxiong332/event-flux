@@ -12,7 +12,7 @@ module.exports = class BrowserRendererClient {
       if (action === mainInitName) {
         callback(data[0], data[1]);
       } else if (action === mainDispatchName) {
-        setTimeout(() => onGetAction(data));
+        onGetAction(data);
       } else if (action === mainReturnName) {
         onGetResult(invokeId, data);
       }

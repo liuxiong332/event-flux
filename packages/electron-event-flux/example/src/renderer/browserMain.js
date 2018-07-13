@@ -9,7 +9,6 @@ class MyMultiWinStore extends MultiWinStore {
   }
 }
 
-console.log('isSlave:', query.isSlave)
 if (!query.isSlave) {
   const appStore = buildMultiWinAppStore({ todo: TodoStore, multiWin: MyMultiWinStore }, { winTodo: TodoStore });
 }

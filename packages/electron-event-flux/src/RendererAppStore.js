@@ -3,7 +3,7 @@ const objectMerge = require('./utils/object-merge');
 const fillShape = require('./utils/fill-shape');
 const { serialize, deserialize } = require('json-immutable');
 const proxyStores = require('./utils/proxy-store');
-const ElectronRendererClient = window.process ? require('./ElectronRendererClient') : require('./BrowserRendererClient');
+const RendererClient = require('./RendererClient');
 
 class IDGenerator {
   constructor() {
@@ -26,7 +26,7 @@ export default class RendererAppStore extends AppStore {
 
     let filter = true;
     return new Promise((resolve) => {
-      this.client = new ElectronRendererClient(filter, (state, store) => {
+      this.client = new RendererClient(filter, (state, store) => {
         const storeData = deserialize(state);
         const initialState = filter ? fillShape(storeData, filter) : storeData;
         this.state = initialState;
