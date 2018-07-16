@@ -86,6 +86,144 @@ store.init().then(() => {
 
 ```
 
+## Store 
+
+继承`StoreBase`，设置Store的State，写下用户或者UI可以调用的Action方法，一个内省的Store就创建好了。就这么简单。
+
+```js
+import StoreBase from 'event-flux/lib/StoreBase';
+const { Map, List } = require('immutable');
+
+class TodoStore extends StoreBase {
+  constructor() {
+    super();
+    this.state = { todo4Map: new Map(), todo4List: new List() };
+  }
+
+  addKey(key, val) {
+    this.setState({ todo4Map: this.state.todo4Map.set(key, val) });
+  }
+
+  increase() {
+    this.setState({ todo4List: this.state.todo4List.push(1) });
+  }
+
+  removeKey(key) {
+    this.setState({ todo4Map: this.state.todo4Map.delete(key) });
+  }
+}
+```
+
+## State
+
+如上代码片段，我们的State那日不对象是不变的！类似`Redux`，我们不允许将State内部的对象直接操作改变。**只能通过setState来更新状态。**
+
+event-flux拥抱Immutable.js!。我们的State内部状态值除了可以是普通Object，同时也可以是Immutable Map和Immutable List。Immutable能大大减少操作对象的成本，并且也能避免直接改变State对象的误操作。
+
+## 订阅和反订阅
+
+在我们的使用场景中，很多情况下需要订阅和取消订阅Store的状态变化。由于Store和订阅函数可能运行在不同进程中，因此我们需要使用如下方式来进行订阅。
+
+Store需要继承自`SubStoreBase`，Store的返回值必须是`getSubId`的返回值（一个代表订阅的ID)。当使用方进行订阅操作时，需要保存返回的ID，然后当不在使用的时候unsubscribe。
+
+```js
+import StoreBase from 'electron-event-flux/lib/SubStoreBase';
+
+class TodoStore extends StoreBase {
+  constructor() {
+    super();
+    this.state = { count: 0 };
+  }
+
+  subscribeCount() {
+    let intervalId = setInterval(() => this.setState({ count: this.state.count + 1 }), 1000);
+    return this.genSubId({ dispose: () => clearInterval(intervalId) });
+  }
+}
+
+/// invoke in Renderer process, subscribe the store event
+let subId = await todoStore.subscribeCount()
+
+/// unsubscribe the store event
+todoStore.unsubscribe(subId)
+```
+
+## 嵌套Store
+
+Store是通过声明的方式来表达不同Store之间的关系。Store里面可以嵌套子Store，也可以嵌套Store数组(StoreList)，还可以嵌套Store Map。
+
+StoreList可以在运行中调用`setSize`来动态改变StoreList的大小。StoreMap可以在运行中通过`add`和`delete`来动态添加和删除key。
+
+```js
+class Todo3Store extends StoreBase {
+  constructor() {
+    super();
+    this.state = { size: 0 };
+  }
+
+  addSize() {
+    let newSize = this.state.size + 1;
+    this.setState({ size: newSize });
+  }
+
+  decreaseSize() {
+    let newSize = this.state.size - 1;
+    this.setState({ size: newSize });
+  }
+}
+
+class Todo2Store extends StoreBase {
+  constructor() {
+    super();
+    this.state = { size: 0, todo3List: [], todo3Map: {} };
+  }
+
+  addSize() {
+    this.setState({ size: this.state.size + 1 });
+  }
+
+  decreaseSize() {
+    this.setState({ size: this.state.size - 1 });
+  }
+}
+Todo2Store.innerStores = {
+  todo3: declareStore(Todo3Store),
+  todo3List: declareStoreList(Todo3Store, { storeKey: 'todo3StoreList', size: 1 }),
+  todo3Map: declareStoreMap(Todo3Store, { storeKey: 'todo3StoreMap', keys: ['myKey'] }),
+};
+```
+
+## 监听Store
+
+很多情况下，我们需要监听其他Store的变化，这时候我们需要使用Store的事件接口来监听各种事件。
+
+```js
+class UserStore extends StoreBase {
+  constructor() {
+    super();
+    this.state = { isLogin: false };
+  }
+
+  login(username) {
+    this.setState({ isLogin: true, username });
+    this.emitter.emit('did-login', username);
+  }
+
+  onDidLogin(callback) {
+    this.emitter.on('did-login', callback);
+  }
+}
+
+class OtherStore extends StoreBase {
+  init() {
+    this.stores.userStore.onDidLogin(() => {
+      console.log('user has login, do something...');
+    });
+  }
+}
+
+```
+
 ## License
 
 MIT
