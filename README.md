@@ -52,7 +52,7 @@ electron-event-flux提供了一个简单的中间层来进行透明的转发。�
 
 初始化Main Process：
 
-···js
+```js
 import TodoStore from '../main/store';
 import MultiWinStore from 'electron-event-flux/lib/MultiWinStore';
 import buildMultiWinAppStore from 'electron-event-flux/lib/MainAppStore';
