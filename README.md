@@ -2,9 +2,9 @@
 
 
 event-flux是一个用于Javascript App的状态管理框架。它是为强交互的大型应用而生。
-凭借着event-flux的强大数据流，加上诸如React的声明式组件式视图库，我们能打造可沉浸的，强交互性的，令人印象深刻的阔平台App。
+凭借着event-flux的强大数据流，加上诸如React的声明式组件式视图库，我们能打造可沉浸的，强交互性的，令人印象深刻的跨平台App。
 
-electron-event-flux针对
+electron-event-flux是event-flux的升级版本，增加了对多窗口支持的能力。
 
 ## 为什么选择event-flux
 
