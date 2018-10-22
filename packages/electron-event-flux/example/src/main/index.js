@@ -58,6 +58,7 @@ function createMainWindow(url, clientId, params = {}) {
     mainWindow = null
   })
 
+  window.webContents.openDevTools();
   window.webContents.on('devtools-opened', () => {
     window.focus()
     setImmediate(() => {
