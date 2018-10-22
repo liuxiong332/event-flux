@@ -11,16 +11,96 @@ import buildMultiWinAppStore from '../../../src/MainAppStore';
 import { winManagerStoreName } from '../../../src/constants';
 import ElectronWindowState from '../../../src/ElectronWindowState';
 import storage from './storage';
+import WindowManager from './WindowManager';
+
 const electron = require('electron');
 
 const isDevelopment = process.env.NODE_ENV !== 'production'
 
 // global reference to mainWindow (necessary to prevent window from being garbage collected)
-let mainWindow
+
+class MyMultiWinStore extends MultiWinStore {
+  init() {
+    this.clientUrlMap = {};
+    this.clientStateMap = {};
+    this.clientIds = [];
+
+    let clients = storage.get('clients');
+    if (!clients || clients.length === 0) {
+      clients = [{ clientId: 'mainClient', url: '/', winState: { isMaximized: true } }];
+    }
+    app.on('ready', () => {
+      clients.forEach(item => this.createElectronWin(item.url, item.clientId, item.winState));
+    });
+
+    this.disposable = this.stores[winManagerStoreName].onDidUpdate((state) => {
+      this.saveClients(this.clientIds);
+    });
+
+    app.on('before-quit', () => {
+      this.disposable.dispose();
+    });
+  }
+
+  saveClients(clientIds) {
+    let clients = clientIds.map(id => ({ 
+      clientId: id, url: this.clientUrlMap[id], winState: this.clientStateMap[id],
+    }));
+    storage.set('clients', clients);
+  }
+
+  saveWinState(clientId, winState) {
+    this.clientStateMap[clientId] = winState;
+    this.saveClients(this.clientIds || []);
+  }
+
+  createElectronWin(url, clientId, params) {
+    let winState = new ElectronWindowState(null, params);
+
+    let winInfo = createElectronWin(url, clientId, winState.state);
+    if (!clientId) clientId = winInfo.clientId; 
+    this.clientIds.push(clientId);
+
+    this.clientUrlMap[clientId] = url;
+
+    let win = winInfo.win;
+
+    winState.onSave = (state) => {
+      this.saveWinState(clientId, state);
+    };
+    this.clientStateMap[clientId] = winState.state;
+    winState.manage(win);
+    return win;
+  }
+}
+
+const appStore = buildMultiWinAppStore({ todo: TodoStore, multiWin: MyMultiWinStore }, { winTodo: TodoStore });
+
+const windowManager = new WindowManager();
 
 function createElectronWin(url, clientId, params) {
-  return createMainWindow(url, clientId, params);
+  // return createMainWindow(url, clientId, params);
+  let win;
+  if (clientId) {
+    win = createMainWindow(url, clientId, params);
+  } else {
+    let winInfo = windowManager.getWin();
+    clientId = winInfo.clientId;
+    win = winInfo.window;
+    
+    appStore.mainClient.sendMessage(win, JSON.stringify({ url: '/' }));
+    win.show();
+
+    win.setContentBounds({ 
+      x: parseInt(params.x), y: parseInt(params.y),
+      width: params.width, height: params.height,     
+    });
+    
+  }
+  return { clientId, win };
 }
+
+let mainWindow;
 
 function createMainWindow(url, clientId, params = {}) {
   const window = new BrowserWindow({ 
@@ -58,7 +138,7 @@ function createMainWindow(url, clientId, params = {}) {
     mainWindow = null
   })
 
-  window.webContents.openDevTools();
+  // window.webContents.openDevTools();
   window.webContents.on('devtools-opened', () => {
     window.focus()
     setImmediate(() => {
@@ -68,55 +148,6 @@ function createMainWindow(url, clientId, params = {}) {
 
   return window
 }
-
-class MyMultiWinStore extends MultiWinStore {
-  init() {
-    this.clientUrlMap = {};
-    this.clientStateMap = {};
-
-    let clients = storage.get('clients');
-    if (!clients || clients.length === 0) {
-      clients = [{ clientId: 'mainClient', url: '/', winState: { isMaximized: true } }];
-    }
-    app.on('ready', () => {
-      clients.forEach(item => this.createElectronWin(item.url, item.clientId, item.winState));
-    });
-
-    this.disposable = this.stores[winManagerStoreName].onDidUpdate((state) => {
-      this.setState({ clientIds: state.clientIds });
-      this.saveClients(state.clientIds);
-    });
-
-    app.on('before-quit', () => {
-      this.disposable.dispose();
-    });
-  }
-
-  saveClients(clientIds) {
-    let clients = clientIds.map(id => ({ 
-      clientId: id, url: this.clientUrlMap[id], winState: this.clientStateMap[id],
-    }));
-    storage.set('clients', clients);
-  }
-
-  saveWinState(clientId, winState) {
-    this.clientStateMap[clientId] = winState;
-    this.saveClients(this.state.clientIds || []);
-  }
-
-  createElectronWin(url, clientId, params) {
-    this.clientUrlMap[clientId] = url;
-    let winState = new ElectronWindowState(null, params, (state) => {
-      this.saveWinState(clientId, state);
-    });
-    this.clientStateMap[clientId] = winState.state;
-    let win = createElectronWin(url, clientId, winState.state);
-    winState.manage(win);
-    return win;
-  }
-}
-
-const appStore = buildMultiWinAppStore({ todo: TodoStore, multiWin: MyMultiWinStore }, { winTodo: TodoStore });
 
 // quit application when all windows are closed
 app.on('window-all-closed', () => {

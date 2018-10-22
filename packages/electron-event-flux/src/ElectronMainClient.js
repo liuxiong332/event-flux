@@ -79,6 +79,10 @@ module.exports = class ElectronMainClient {
     webContents.send(mainDispatchName, payload);
   }
 
+  sendMessage(win, message) {
+    win.webContents.send('message', message);
+  }
+
   closeAllWindows() {
     this.clientInfos.forEach(client => client.window.close());
   }

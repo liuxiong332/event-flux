@@ -19,8 +19,10 @@ class IDGenerator {
 }
 
 export default class RendererAppStore extends AppStore {
-  init() {
+  init(onMessage) {
     super.init();
+    this.onMessage = onMessage;
+
     this.idGenerator = new IDGenerator();
     this.resolveMap = {};
 
@@ -39,7 +41,7 @@ export default class RendererAppStore extends AppStore {
         });
         this.stores = stores;
         resolve();
-      }, this.handleAction.bind(this), this.handleResult.bind(this));
+      }, this.handleAction.bind(this), this.handleResult.bind(this), this.handleMessage.bind(this));
     });
   }
 
@@ -56,5 +58,9 @@ export default class RendererAppStore extends AppStore {
     this.idGenerator.dispose(invokeId);
     if (result !== undefined) result = JSON.parse(result);
     this.resolveMap[invokeId](result);
+  }
+
+  handleMessage(message) {
+    this.onMessage && this.onMessage(message);
   }
 }

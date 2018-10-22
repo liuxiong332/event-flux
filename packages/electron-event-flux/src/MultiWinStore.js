@@ -20,8 +20,8 @@ export default class MultiWinStore extends StoreBase {
   }
 
   createWin(url, clientId, params) {
-    clientId = clientId || this.genClientId();
     if (typeof window === 'object') {
+      clientId = clientId || this.genClientId();
       let win = this.createBrowserWin(genBrowserUrl(url, clientId), params);
       return this._appStore.mainClient.addWin(clientId, win);
     }

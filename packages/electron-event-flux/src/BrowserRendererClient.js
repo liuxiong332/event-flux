@@ -1,7 +1,7 @@
 const { renderDispatchName, renderRegisterName, mainDispatchName, mainInitName, mainReturnName } = require('./constants');
 
 module.exports = class BrowserRendererClient {
-  constructor(filter, callback, onGetAction, onGetResult) {
+  constructor(filter, callback, onGetAction, onGetResult, onGetMessage) {
     let clientId = window.clientId || 'mainClient';
     this.clientId = clientId;
         
@@ -15,6 +15,8 @@ module.exports = class BrowserRendererClient {
         onGetAction(data);
       } else if (action === mainReturnName) {
         onGetResult(invokeId, data);
+      } else if (action === 'message') {
+        onGetMessage(data);
       }
     });
     window.addEventListener('unload', () => {

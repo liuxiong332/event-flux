@@ -197,7 +197,12 @@ const store = new RendererStore((state) => {
   console.log(state);
   ReactDOM.render(<MyView state={state}/>, rootElement);
 });
-store.init().then(() => {
+
+const onGetMessage = (message) => {
+  console.log('get message:', message);
+};
+
+store.init(onGetMessage).then(() => {
   ReactDOM.render(<MyView state={store.state}/>, rootElement);
 });
 
