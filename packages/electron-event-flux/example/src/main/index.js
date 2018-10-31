@@ -35,27 +35,27 @@ class MyMultiWinStore extends MultiWinStore {
       clients.forEach(item => this.createElectronWin(item.url, item.clientId, item.winState));
     });
 
-    let prevClientIds = [];
-    this.disposable = this.stores[winManagerStoreName].onDidUpdate((state) => {
-      if (!this.willQuit) return;
+    // let prevClientIds = [];
 
-      let existClientIds = state.clientIds;
-      if (prevClientIds.indexOf('mainClient') !== -1 && existClientIds.indexOf('mainClient') === -1) {
-        // 主窗口被关闭
-        this.willQuit = true;
-        this.closeAllWindows();
-      }
+    // this.disposable = this.stores[winManagerStoreName].onDidUpdate((state) => {
+    //   let existClientIds = state.clientIds;
+    //   if (prevClientIds.indexOf('mainClient') !== -1 && existClientIds.indexOf('mainClient') === -1) {
+    //     // 主窗口被关闭
+    //     this.disposable.dispose();
+    //     this.closeAllWindows();
+    //   }
 
-      prevClientIds = existClientIds;
-      console.log('now clientIds:', existClientIds, this.clientIds);
+    //   prevClientIds = existClientIds;
 
-      this.clientIds = this.clientIds.filter(id => existClientIds.indexOf(id) !== -1);
-      this.saveClients(this.clientIds);
-     });
+    //   let saveClientIds = this.clientIds.filter(id => existClientIds.indexOf(id) !== -1);
+    //   console.log('now clientIds:', existClientIds, this.clientIds, saveClientIds);
 
-    app.on('before-quit', () => {
-      this.disposable.dispose();
-    });
+    //   this.saveClients(saveClientIds);
+    //  });
+
+    // app.on('before-quit', () => {
+    //   this.disposable.dispose();
+    // });
   }
 
   closeAllWindows() {
@@ -90,7 +90,21 @@ class MyMultiWinStore extends MultiWinStore {
     };
     this.clientStateMap[clientId] = winState.state;
     winState.manage(win);
+
+    this.saveClients(this.clientIds);   // Save clients into Storage
   
+    win.on('closed', () => {
+      if (this.willQuit) return;
+      if (clientId === 'mainClient') {
+        this.willQuit = true;
+        return this.closeAllWindows();
+      }
+      let index = this.clientIds.indexOf(clientId);
+      if (index !== -1) {
+        this.clientIds.splice(index, 1);
+      }
+      this.saveClients(this.clientIds);
+    });
     return win;
   }
 }

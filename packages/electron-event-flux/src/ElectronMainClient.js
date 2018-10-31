@@ -84,6 +84,10 @@ module.exports = class ElectronMainClient {
   }
 
   closeAllWindows() {
-    this.clientInfos.forEach(client => client.window.close());
+    this.clientInfos.forEach(client => {
+      if (!client.window.isDestroyed()) {
+        client.window.close()
+      }
+    });
   }
 }
