@@ -7,7 +7,6 @@ jest.useFakeTimers();
 let eventListeners = [];
 window.addEventListener = (name, callback) => eventListeners.push(callback);
 window.postMessage = (message) => {
-  console.log('get messages', message);
   eventListeners.forEach(listener => listener({ data: message }));
 }
 

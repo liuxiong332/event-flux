@@ -13,17 +13,17 @@ export default class WindowManager {
     return clientId;
   }
   
-  createWin() {
+  createWin(clientId) {
     const window = new BrowserWindow({ 
       show: false,
       x: 0, y: 0,
-      width: 0, height: 0, 
+      width: 1280, height: 800, 
       useContentSize: true,
+      backgroundColor: '#FFF',
     });
 
     if (isDevelopment) {
-      console.log('port:', process.env.ELECTRON_WEBPACK_WDS_PORT)
-      window.loadURL(`http://localhost:${process.env.ELECTRON_WEBPACK_WDS_PORT}?url=/`);
+      window.loadURL(`http://localhost:${process.env.ELECTRON_WEBPACK_WDS_PORT}?url=/&clientId=${clientId}`);
     }
     else {
       window.loadURL(formatUrl({
@@ -38,7 +38,8 @@ export default class WindowManager {
 
   ensureWindows() {
     while (this.windows.length < 2) {
-      this.windows.push({ clientId: this.genClientId(), window: this.createWin() });
+      let clientId = this.genClientId()
+      this.windows.push({ clientId, window: this.createWin(clientId) });
     }
   }
 

@@ -54,7 +54,6 @@ const storeObservers = {
   Item: function (storeKey, stateKey) {
     let store = this.getStore ? this.getStore(storeKey) : this[storeKey];
     let disposable = store.observe((state) => {
-      console.log('setstate:', storeKey, stateKey, state)
       this.setState({ [stateKey]: state });
     });
     let dispose = store.dispose;
@@ -72,7 +71,6 @@ const storeObservers = {
   },
   Map: function (storeKey, stateKey, options) {
     let keys = options && options.keys;
-    console.log('map keys:', keys)
     if (Array.isArray(keys)) {
       let store = this.getStore ? this.getStore(storeKey) : this[storeKey];            
       keys.forEach(key => store.add(key));
@@ -159,7 +157,6 @@ exports.filterOneStore = function filterOneStore(StoreClass) {
   StoreClass.prototype.startObserve = function() {
     subStoreInfos.forEach(([type, StoreClass, storeKey, stateKey, options]) => {
       let store = this.getStore ? this.getStore(storeKey) : this[storeKey];
-      console.log('in observe:', storeKey, stateKey)
       store.startObserve && store.startObserve();
       storeObservers[type].call(this, storeKey, stateKey, options);
     });
@@ -187,9 +184,7 @@ exports.filterStore = function filterStore(stores) {
 };
 
 exports.filterWindowStore = function(storeFilters, winStoreKey, winId) {
-  console.log(storeFilters, winStoreKey, winId)
   let winFilters = storeFilters[winStoreKey].filters;
-  console.log('win filters:', winFilters);
   if (!winFilters) return storeFilters;
   winFilters = winFilters.winPackMapStore.filters;
   if (!winFilters) return omit(storeFilters, [winStoreKey]);
@@ -198,18 +193,15 @@ exports.filterWindowStore = function(storeFilters, winStoreKey, winId) {
   Object.keys(winFilters).forEach(storeKey => {
     winOnlyShape[storeKey] = { ...winFilters[storeKey], path };
   });
-  console.log('winonly shape:', winOnlyShape)
   return { ...omit(storeFilters, [winStoreKey]), ...winOnlyShape };
 }
 
 function filterWindowState(allState, winStateKey, winId) {
-  console.log('allState', allState, winStateKey, winId);
   if (!allState[winStateKey]) return allState;
   let { winPackMap } = allState[winStateKey];
   if (!winPackMap) return omit(allState, [winStateKey]);
   let winState = winPackMap[winId];
 
-  console.log('winState:', winState);
   return { ...omit(allState, [winStateKey]), ...winState };
 }
 

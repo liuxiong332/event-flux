@@ -17,6 +17,8 @@ const electron = require('electron');
 
 const isDevelopment = process.env.NODE_ENV !== 'production'
 
+var appStore;
+
 // global reference to mainWindow (necessary to prevent window from being garbage collected)
 
 class MyMultiWinStore extends MultiWinStore {
@@ -33,13 +35,31 @@ class MyMultiWinStore extends MultiWinStore {
       clients.forEach(item => this.createElectronWin(item.url, item.clientId, item.winState));
     });
 
+    let prevClientIds = [];
     this.disposable = this.stores[winManagerStoreName].onDidUpdate((state) => {
+      if (!this.willQuit) return;
+
+      let existClientIds = state.clientIds;
+      if (prevClientIds.indexOf('mainClient') !== -1 && existClientIds.indexOf('mainClient') === -1) {
+        // 主窗口被关闭
+        this.willQuit = true;
+        this.closeAllWindows();
+      }
+
+      prevClientIds = existClientIds;
+      console.log('now clientIds:', existClientIds, this.clientIds);
+
+      this.clientIds = this.clientIds.filter(id => existClientIds.indexOf(id) !== -1);
       this.saveClients(this.clientIds);
-    });
+     });
 
     app.on('before-quit', () => {
       this.disposable.dispose();
     });
+  }
+
+  closeAllWindows() {
+    global.appStore.mainClient.closeAllWindows();
   }
 
   saveClients(clientIds) {
@@ -70,17 +90,22 @@ class MyMultiWinStore extends MultiWinStore {
     };
     this.clientStateMap[clientId] = winState.state;
     winState.manage(win);
+  
     return win;
   }
 }
 
-const appStore = buildMultiWinAppStore({ todo: TodoStore, multiWin: MyMultiWinStore }, { winTodo: TodoStore });
+global.appStore = buildMultiWinAppStore({ todo: TodoStore, multiWin: MyMultiWinStore }, { winTodo: TodoStore });
 
 const windowManager = new WindowManager();
 
 function createElectronWin(url, clientId, params) {
   // return createMainWindow(url, clientId, params);
   let win;
+  // clientId = Math.random() * 1000 % 1000;
+  // console.log('set bound params:', params)
+  // win = createMainWindow(url, clientId, params);
+  // return { win, clientId };
   if (clientId) {
     win = createMainWindow(url, clientId, params);
   } else {
@@ -88,13 +113,25 @@ function createElectronWin(url, clientId, params) {
     clientId = winInfo.clientId;
     win = winInfo.window;
     
-    appStore.mainClient.sendMessage(win, JSON.stringify({ url: '/' }));
-    win.show();
+    global.appStore.mainClient.sendMessage(win, JSON.stringify({ url: '/' }));
 
-    win.setContentBounds({ 
+    win.setBounds({ 
       x: parseInt(params.x), y: parseInt(params.y),
       width: params.width, height: params.height,     
     });
+
+    win.setBounds({ 
+      x: parseInt(params.x), y: parseInt(params.y),
+      width: params.width, height: params.height,     
+    });
+
+    win.show();
+    // setTimeout(() => {
+    //   win.setBounds({ 
+    //     x: parseInt(params.x), y: parseInt(params.y),
+    //     width: params.width, height: params.height,     
+    //   });
+    // }, 0);
     
   }
   return { clientId, win };
@@ -104,7 +141,7 @@ let mainWindow;
 
 function createMainWindow(url, clientId, params = {}) {
   const window = new BrowserWindow({ 
-    show: true,
+    show: false,
     x: parseInt(params.x), y: parseInt(params.y),
     width: params.width, height: params.height, 
     useContentSize: params.useContentSize,

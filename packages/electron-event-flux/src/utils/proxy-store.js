@@ -61,6 +61,5 @@ function proxyStore(parentStore, storeFilters, forwarder) {
 }
 
 module.exports = function proxyStores(storeFilters, forwarder) {
-  console.log('storeFilters:', storeFilters)
   return proxyStore([], storeFilters, forwarder);
 }

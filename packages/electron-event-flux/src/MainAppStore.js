@@ -12,7 +12,6 @@ import MultiWinManagerStore, { WinPackStore } from './MultiWinManagerStore';
 
 function findStore(stores, storePath) {
   return storePath.reduce((subStores, entry) => {
-    console.log(subStores, entry)
     if (!isObject(entry)) return subStores[entry]
     let { name, type, index } = entry;
     let storeCol = subStores[name];
@@ -35,7 +34,6 @@ function storeEnhancer(appStore, stores, storeShape) {
       return JSON.stringify(stores);
     },
     getInitStates(clientId) {
-      console.log('state:', clientId, appStore.state);
       let filterState = filterWindowState(appStore.state, winManagerKey, clientId);
       return serialize(filterState);
     },
