@@ -17,6 +17,12 @@ export default class MultiWinStore extends StoreBase {
     this.stores[winManagerStoreName].observe((state) => {
       this.setState({ clientIds: state.clientIds });
     });
+
+    if (typeof window === 'object') {
+      window.addEventListener("beforeunload", (event) => {
+        this.closeAllWindows();
+      });
+    }
   }
 
   createWin(url, clientId, params) {
