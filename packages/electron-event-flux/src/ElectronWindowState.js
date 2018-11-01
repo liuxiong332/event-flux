@@ -1,9 +1,6 @@
 'use strict';
 
-var path = require('path');
 var electron = require('electron');
-var jsonfile = require('jsonfile');
-var mkdirp = require('mkdirp');
 var deepEqual = require('deep-equal');
 
 const eventHandlingDelay = 100;

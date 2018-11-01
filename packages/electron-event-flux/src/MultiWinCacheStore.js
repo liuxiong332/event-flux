@@ -1,8 +1,7 @@
-import StoreBase from 'event-flux/lib/StoreBase';
 import MultiWinStore from './MultiWinStore';
 import ElectronWindowState from './ElectronWindowState';
  
-import { app, BrowserWindow } from 'electron'
+import { app, BrowserWindow } from 'electron';
 
 const isDevelopment = process.env.NODE_ENV !== 'production'
 
