@@ -43,7 +43,7 @@ class NewButton extends React.PureComponent {
   createNewWindow() {
     let { sizes: { width, outerHeight, demo1Height, demo2Height, demo3Height } } = this.props;
 
-    store.stores.multiWinStore.createWin('/', null, { 
+    store.stores.multiWinStore.createWin('/', window.clientId, { 
       width, height: outerHeight, useContentSize: true,
     });
   }
@@ -61,7 +61,7 @@ class NewButton extends React.PureComponent {
     let params = { 
       width, height: outerHeight - demo2Height - demo3Height, useContentSize: true,
     };
-    store.stores.multiWinStore.createWin('/demo1', null, this.mergePos(params, pos));
+    store.stores.multiWinStore.createWin('/demo1', window.clientId, this.mergePos(params, pos));
   }
   createDemo2(pos) {
     let { sizes: { width, outerHeight, demo1Height, demo2Height, demo3Height } } = this.props;
@@ -69,7 +69,7 @@ class NewButton extends React.PureComponent {
     let params = {
       width: width, height: outerHeight - demo1Height - demo3Height, useContentSize: true,
     }
-    store.stores.multiWinStore.createWin('/demo2', null, this.mergePos(params, pos));
+    store.stores.multiWinStore.createWin('/demo2', window.clientId, this.mergePos(params, pos));
   }
   createDemo3(pos) {
     let { sizes: { width, outerHeight, demo1Height, demo2Height, demo3Height } } = this.props;
@@ -77,7 +77,7 @@ class NewButton extends React.PureComponent {
     let params = {
       width: width, height: outerHeight - demo1Height - demo2Height, useContentSize: true,
     };
-    store.stores.multiWinStore.createWin('/demo3', null, this.mergePos(params, pos));
+    store.stores.multiWinStore.createWin('/demo3', window.clientId, this.mergePos(params, pos));
   }
 
   buttonGet(name) {

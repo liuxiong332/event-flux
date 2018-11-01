@@ -33,7 +33,7 @@ class WindowManager {
         pathname: path.join(__dirname, 'index.html'),
         protocol: 'file',
         slashes: true,
-        query: { windowParams: JSON.stringify(params) }
+        query: { url: '/', clientId },
       }));
     }
     return window;
@@ -86,7 +86,7 @@ class MultiWinCacheStore extends MultiWinStore {
 
   saveClients(clientIds) {
     let clients = clientIds.map(id => ({ 
-      clientId: id, ...this.clientUrlMap[id], winState: this.clientStateMap[id],
+      clientId: id, ...this.clientInfoMap[id], winState: this.clientStateMap[id],
     }));
     this.getStorage().set('clients', clients);
   }
@@ -103,7 +103,7 @@ class MultiWinCacheStore extends MultiWinStore {
     if (!clientId) clientId = winInfo.clientId; 
     this.clientIds.push(clientId);
 
-    this.clientUrlMap[clientId] = {url, parentId};
+    this.clientInfoMap[clientId] = {url, parentId};
 
     let win = winInfo.win;
 
@@ -134,7 +134,7 @@ class MultiWinCacheStore extends MultiWinStore {
     // return createMainWindow(url, clientId, params);
     let win;
     if (clientId) {
-      win = this.createMainWindow(url, clientId, params);
+      win = this.createMainWindow(url, clientId, parentId, params);
     } else {
       let winInfo = global.windowManager.getWin();
       clientId = winInfo.clientId;
@@ -158,7 +158,7 @@ class MultiWinCacheStore extends MultiWinStore {
     return { clientId, win };
   }
 
-  createMainWindow(url, clientId, params = {}) {
+  createMainWindow(url, clientId, parentId, params = {}) {
     const window = new BrowserWindow({ 
       show: false,
       x: parseInt(params.x), y: parseInt(params.y),
@@ -174,18 +174,14 @@ class MultiWinCacheStore extends MultiWinStore {
     });
   
     if (isDevelopment) {
-      // window.webContents.openDevTools()
-    }
-  
-    if (isDevelopment) {
-      window.loadURL(`http://localhost:${process.env.ELECTRON_WEBPACK_WDS_PORT}?url=${url}&clientId=${clientId}`);
+      window.loadURL(`http://localhost:${process.env.ELECTRON_WEBPACK_WDS_PORT}?url=${url}&clientId=${clientId}&parentId=${parentId}`);
     }
     else {
       window.loadURL(formatUrl({
         pathname: path.join(__dirname, 'index.html'),
         protocol: 'file',
         slashes: true,
-        query: { windowParams: JSON.stringify(params) }
+        query: { url, clientId, parentId },
       }));
     }
 
