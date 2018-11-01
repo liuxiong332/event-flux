@@ -1,4 +1,6 @@
-const { renderDispatchName, renderRegisterName, mainDispatchName, mainInitName, mainReturnName } = require('./constants');
+const { 
+  renderDispatchName, renderRegisterName, mainDispatchName, mainInitName, mainReturnName, winMessageName, messageName 
+} = require('./constants');
 
 module.exports = class BrowserRendererClient {
   constructor(filter, callback, onGetAction, onGetResult, onGetMessage) {
@@ -15,7 +17,7 @@ module.exports = class BrowserRendererClient {
         onGetAction(data);
       } else if (action === mainReturnName) {
         onGetResult(invokeId, error, data);
-      } else if (action === 'message') {
+      } else if (action === messageName) {
         onGetMessage(data);
       }
     });
@@ -29,5 +31,15 @@ module.exports = class BrowserRendererClient {
     let clientId = this.clientId;
     let mainWin = window.isMainClient ? window : window.opener;
     mainWin.postMessage({ action: renderDispatchName, data: action, invokeId, clientId }, '*');
+  }
+
+  sendMessage(args) {
+    let mainWin = window.isMainClient ? window : window.opener;
+    mainWin.postMessage({ action: messageName, data: args }, '*');
+  }
+
+  sendWindowMessage(clientId, args) {
+    let mainWin = window.isMainClient ? window : window.opener;
+    mainWin.postMessage({ action: winMessageName, clientId, data: args }, '*');
   }
 }

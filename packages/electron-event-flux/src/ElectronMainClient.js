@@ -1,4 +1,6 @@
-const { globalName, mainDispatchName, mainReturnName, renderDispatchName, renderRegisterName } = require('./constants');
+const { 
+  globalName, mainDispatchName, mainReturnName, renderDispatchName, renderRegisterName, messageName, winMessageName
+} = require('./constants');
 const { ipcMain } = require('electron');
 const findIndex = require('lodash/findIndex');
 
@@ -68,6 +70,11 @@ module.exports = class ElectronMainClient {
         webContents.send(mainReturnName, invokeId, errInfo, undefined);
       });
     });
+
+    ipcMain.on(winMessageName, (event, clientId, data) => {
+      let webContents = clientMap[clientId].webContents;
+      webContents.send(winMessageName, data);
+    });
     this.clientInfos = clientInfos;
   }
   
@@ -84,7 +91,7 @@ module.exports = class ElectronMainClient {
   }
 
   sendMessage(win, message) {
-    win.webContents.send('message', message);
+    win.webContents.send(messageName, message);
   }
 
   closeAllWindows() {

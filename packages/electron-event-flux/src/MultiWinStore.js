@@ -1,7 +1,7 @@
 import StoreBase from 'event-flux/lib/StoreBase';
 const { winManagerStoreName } = require('./constants');
 
-function genBrowserUrl(url = '', clientId) {
+function genBrowserUrl(url = '', clientId, parentId) {
   let genUrl = new URL(url, location.href);
   if (genUrl.search) {
     genUrl.search += `&clientId=${clientId}`;
@@ -9,6 +9,7 @@ function genBrowserUrl(url = '', clientId) {
     genUrl.search = `?clientId=${clientId}`;
   }
   genUrl.search += '&isSlave=1';
+  if (parentId) genUrl.search += `&parentId=${parentId}`;
   return genUrl.toString();
 }
 
@@ -25,13 +26,16 @@ export default class MultiWinStore extends StoreBase {
     }
   }
 
-  createWin(url, clientId, params) {
+  createWin(url, parentClientId, params) {
+    let clientId;
     if (typeof window === 'object') {
-      clientId = clientId || this.genClientId();
-      let win = this.createBrowserWin(genBrowserUrl(url, clientId), params);
-      return this._appStore.mainClient.addWin(clientId, win);
+      clientId = this.genClientId();
+      let win = this.createBrowserWin(genBrowserUrl(url, clientId, parentClientId), params);
+      this._appStore.mainClient.addWin(clientId, win);
+    } else {
+      clientId = this.createElectronWin(url, clientId, parentClientId, params);
     }
-    return this.createElectronWin(url, clientId, params);
+    return clientId;
   }
 
   genClientId() {
@@ -53,7 +57,7 @@ export default class MultiWinStore extends StoreBase {
     return window.open(url, "newwindow", featureStr + ", toolbar=no, menubar=no, scrollbars=no, resizable=no, location=no, status=no, titlebar=no");
   }
 
-  createElectronWin(url, clientId, params) {
+  createElectronWin(url, clientId, parentClientId, params) {
     console.error('Please provide the createElectronWin');
   }
 }

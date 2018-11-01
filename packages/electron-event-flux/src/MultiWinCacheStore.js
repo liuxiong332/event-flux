@@ -62,7 +62,7 @@ global.windowManager = new WindowManager();
 
 class MultiWinCacheStore extends MultiWinStore {
   init() {
-    this.clientUrlMap = {};
+    this.clientInfoMap = {};
     this.clientStateMap = {};
     this.clientIds = [];
 
@@ -71,7 +71,7 @@ class MultiWinCacheStore extends MultiWinStore {
       clients = [{ clientId: 'mainClient', url: '/', winState: { isMaximized: true } }];
     }
     app.on('ready', () => {
-      clients.forEach(item => this.createElectronWin(item.url, item.clientId, item.winState));
+      clients.forEach(item => this.createElectronWin(item.url, item.clientId, item.parentId, item.winState));
     });
   }
 
@@ -86,7 +86,7 @@ class MultiWinCacheStore extends MultiWinStore {
 
   saveClients(clientIds) {
     let clients = clientIds.map(id => ({ 
-      clientId: id, url: this.clientUrlMap[id], winState: this.clientStateMap[id],
+      clientId: id, ...this.clientUrlMap[id], winState: this.clientStateMap[id],
     }));
     this.getStorage().set('clients', clients);
   }
@@ -96,14 +96,14 @@ class MultiWinCacheStore extends MultiWinStore {
     this.saveClients(this.clientIds || []);
   }
 
-  createElectronWin(url, clientId, params) {
+  createElectronWin(url, clientId, parentId, params) {
     let winState = new ElectronWindowState(null, params);
 
-    let winInfo = this.getElectronWin(url, clientId, winState.state);
+    let winInfo = this.getElectronWin(url, clientId, parentId, winState.state);
     if (!clientId) clientId = winInfo.clientId; 
     this.clientIds.push(clientId);
 
-    this.clientUrlMap[clientId] = url;
+    this.clientUrlMap[clientId] = {url, parentId};
 
     let win = winInfo.win;
 
@@ -127,10 +127,10 @@ class MultiWinCacheStore extends MultiWinStore {
       }
       this.saveClients(this.clientIds);
     });
-    return win;
+    return clientId;
   }
 
-  getElectronWin(url, clientId, params) {
+  getElectronWin(url, clientId, parentId, params) {
     // return createMainWindow(url, clientId, params);
     let win;
     if (clientId) {
@@ -140,7 +140,7 @@ class MultiWinCacheStore extends MultiWinStore {
       clientId = winInfo.clientId;
       win = winInfo.window;
       
-      this._appStore.mainClient.sendMessage(win, JSON.stringify({ url: '/' }));
+      this._appStore.mainClient.sendMessage(win, { action: 'change-props', url: '/', parentId });
   
       let setBoundsFunc = params.useContentSize ? 'setContentBounds' : 'setBounds';
       win[setBoundsFunc]({ 
@@ -178,7 +178,6 @@ class MultiWinCacheStore extends MultiWinStore {
     }
   
     if (isDevelopment) {
-      console.log('port:', process.env.ELECTRON_WEBPACK_WDS_PORT)
       window.loadURL(`http://localhost:${process.env.ELECTRON_WEBPACK_WDS_PORT}?url=${url}&clientId=${clientId}`);
     }
     else {
