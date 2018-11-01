@@ -12,18 +12,19 @@ module.exports = class ElectronMainClient {
       let callbacks = this.callbacks;
       let { action, data, invokeId, clientId } = event.data || {};
       if (action === renderDispatchName) {
-        let result, errInfo;
-        try {
-          result = callbacks.handleRendererMessage(data);
-        } catch (err) {
-          errInfo = { name: err.name, message: err.message };
-        }
-        this.clients[clientId].postMessage({
-          action: mainReturnName,
-          invokeId,
-          error: errInfo,
-          data: result,
-        }, '*');
+        callbacks.handleRendererMessage(data).then((result) => {
+          this.clients[clientId].postMessage({
+            action: mainReturnName,
+            invokeId,
+            data: result,
+          }, '*');
+        }, (err) => {
+          this.clients[clientId].postMessage({
+            action: mainReturnName,
+            invokeId,
+            error: { name: err.name, message: err.message },
+          }, '*');
+        });
       } else if (action === 'close') {       // Child window has closed
         let index = findIndex(this.clientInfos, (item) => item.clientId === clientId);
         if (index !== -1) this.clientInfos.splice(index, 1);

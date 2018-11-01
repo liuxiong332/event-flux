@@ -40,7 +40,13 @@ function storeEnhancer(appStore, stores, storeShape) {
     handleRendererMessage(payload) {
       const { store: storePath, method, args } = deserialize(payload);
       let store = findStore(stores, storePath);
-      return JSON.stringify(store[method].apply(store, args));
+      try {
+        let result = store[method].apply(store, args);
+        console.log('result:', result, JSON.stringify(result));
+        return Promise.resolve(JSON.stringify(result));
+      } catch (err) {
+        return Promise.reject(err);
+      }
     }
   }
   

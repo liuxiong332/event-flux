@@ -124,6 +124,23 @@ class TodoStore extends StoreBase {
     this.storage.set('isComplete', isComplete);
   }
 
+  getObject() {
+    console.log('will get object clientId');
+    return { clientId: 'hello' };
+  }
+
+  getAsyncObject() {
+    console.log('will get object clientId');
+    return new Promise((resolve) => {
+      setTimeout(() => resolve({clientId: 'hello'}), 100);
+    });
+  }
+
+  getObjectThrow() {
+    console.log('will throw object');
+    throw new Error('throw object error');
+  }
+
   dispose() {
     super.dispose();
     this.storage.deleteAll();

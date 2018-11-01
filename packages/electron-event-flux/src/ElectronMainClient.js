@@ -60,14 +60,15 @@ module.exports = class ElectronMainClient {
     }
   
     ipcMain.on(renderDispatchName, (event, clientId, invokeId, stringifiedAction) => {
-      var errInfo, result;
-      try {
-        result = callbacks.handleRendererMessage(stringifiedAction);
-      } catch (err) {
+      let webContents = clientMap[clientId].webContents;
+      callbacks.handleRendererMessage(stringifiedAction).then(result => {
+        console.log('gen result:', result)
+        webContents.send(mainReturnName, invokeId, undefined, result);
+      }, (err) => {
         errInfo = { name: err.name, message: err.message };
-      }
-      clientMap[clientId].webContents.send(mainReturnName, invokeId, errInfo, result);
-      // ipcMain.send(mainReturnName, result);
+        console.log('gen error info:', errInfo)
+        webContents.send(mainReturnName, invokeId, errInfo, undefined);
+      });
     });
     this.clientInfos = clientInfos;
   }
