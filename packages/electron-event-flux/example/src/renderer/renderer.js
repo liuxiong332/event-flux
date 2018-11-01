@@ -206,35 +206,53 @@ class ChildWindowProxy {
         this.send(clientId, message);
       });
     });
-    this.store.onWinMessage = this.handleWinMessage.bind(this);
+    this.store.onDidWinMessage(this.handleWinMessage.bind(this));
   }
 
-  send(clientId, message) {
+  send(message) {
     if (!this.childId) {
-      this.messages.push({clientId, message});
+      this.messages.push(message);
     } else {
-      this.store.sendWindowMessage(clientId, message);
+      this.store.sendWindowMessage(this.childId, message);
     }
   }
 
-  handleWinMessage(message) {
-    this.emitter.emit('message', message);
+  handleWinMessage({senderId, message}) {
+    if (senderId === this.childId) {
+      this.emitter.emit('message', message);
+    }
   }
 
   onDidReceiveMsg(callback) {
-    this.emitter.on('message', callback);
+    return this.emitter.on('message', callback);
   }
 }
 
 class ParentWindowProxy {
   constructor(store, parentId) {
     this.store = store;
+    this.parentId = parentId;
+    this.emitter = new Emitter();
+
+    this.store.onDidWinMessage(this.handleWinMessage.bind(this));
   }
 
+  send(message) {
+    this.store.sendWindowMessage(this.parentId, message);
+  }
 
+  handleWinMessage({senderId, message}) {
+    if (senderId === this.parentId) {
+      this.emitter.emit('message', message);
+    }
+  }
+
+  onDidReceiveMsg(callback) {
+    return this.emitter.on('message', callback);
+  }
 }
 
-function rendererInit() {
+function rendererInit(renderHandler, actionHandler) {
   window.clientId = query.clientId;
   window.parentId = query.parentId;
 
@@ -244,10 +262,7 @@ function rendererInit() {
   }
   window.action = getAction();
 
-  const store = new RendererStore((state) => {
-    console.log(state);
-    ReactDOM.render(<MyView state={state}/>, rootElement);
-  });
+  const store = new RendererStore(renderHandler);
 
   const genProxy = (multiWinStore) => {
     return new Proxy(multiWinStore, {
@@ -263,20 +278,51 @@ function rendererInit() {
       }
     })
   }
+
+  store.init().then((state) => {
+    store.stores.multiWinStore = genProxy(store.stores.multiWinStore);
+    if (window.parentId) {
+      window.parentWin = new ParentWindowProxy(store, window.parentId);
+    }
+    store.onDidMessage((message) => {
+      console.log('message', message);
+      let {action, url, parentId} = message;
+      if (action === 'change-props') {
+        window.action = url;
+        window.parentId = parentId;
+        if (!window.parentWin) {
+          window.parentWin = new ParentWindowProxy(store, window.parentId);
+        } else {
+          window.parentWin.parentId = parentId;
+        }
+        actionHandler(window.action);
+      }
+    });
+    actionHandler(window.action);
+    renderHandler(state);
+  });
+  
+  return store;
 }
 
-const store = new RendererStore((state) => {
-  console.log(state);
+const store = rendererInit((state) => {
   ReactDOM.render(<MyView state={state}/>, rootElement);
+}, (action) => {
+  ReactDOM.render(<MyView state={window.store.state}/>, rootElement);
 });
 
-const onGetMessage = (message) => {
-  console.log('get message:', message);
-};
+// const store = new RendererStore((state) => {
+//   console.log(state);
+//   ReactDOM.render(<MyView state={state}/>, rootElement);
+// });
 
-store.init(onGetMessage).then(() => {
-  ReactDOM.render(<MyView state={store.state}/>, rootElement);
-});
+// const onGetMessage = (message) => {
+//   console.log('get message:', message);
+// };
+
+// store.init(onGetMessage).then(() => {
+//   ReactDOM.render(<MyView state={store.state}/>, rootElement);
+// });
 
 window.store = store;
 

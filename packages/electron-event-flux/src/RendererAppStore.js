@@ -4,6 +4,7 @@ const fillShape = require('./utils/fill-shape');
 const { serialize, deserialize } = require('json-immutable');
 const proxyStores = require('./utils/proxy-store');
 const RendererClient = require('./RendererClient');
+const { Emitter } = require('event-kit');
 
 class IDGenerator {
   constructor() {
@@ -19,10 +20,9 @@ class IDGenerator {
 }
 
 export default class RendererAppStore extends AppStore {
-  init(onMessage, onWinMessage) {
+  init() {
     super.init();
-    this.onMessage = onMessage;
-    this.onWinMessage = onWinMessage;
+    this.emitter = new Emitter();
 
     this.idGenerator = new IDGenerator();
     this.resolveMap = {};
@@ -77,14 +77,22 @@ export default class RendererAppStore extends AppStore {
   }
 
   handleMessage(message) {
-    this.onMessage && this.onMessage(message);
+    this.emitter.emit('did-message', message);
   }
 
-  handleWinMessage(message) {
-    this.onWinMessage && this.onWinMessage(message);
+  handleWinMessage(senderId, message) {
+    this.emitter.emit('did-win-message', {senderId, message});
   }
 
   sendWindowMessage(clientId, args) {
     this.client.sendWindowMessage(clientId, args);
+  }
+
+  onDidMessage(callback) {
+    return this.emitter.on('did-message', callback);
+  }
+
+  onDidWinMessage(callback) {
+    return this.emitter.on('did-win-message', callback);
   }
 }

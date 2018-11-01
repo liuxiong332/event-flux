@@ -73,7 +73,10 @@ module.exports = class ElectronMainClient {
 
     ipcMain.on(winMessageName, (event, clientId, data) => {
       let webContents = clientMap[clientId].webContents;
-      webContents.send(winMessageName, data);
+      let existIndex = findIndex(clientInfos, (item) => item.webContents === event.sender);
+      if (existIndex !== -1) {
+        webContents.send(winMessageName, clientInfos[existIndex].clientId, data);
+      }
     });
     this.clientInfos = clientInfos;
   }

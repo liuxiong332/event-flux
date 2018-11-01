@@ -10,7 +10,7 @@ module.exports = class BrowserRendererClient {
     let mainWin = window.isMainClient ? window : window.opener;
     mainWin.postMessage({ action: renderRegisterName, clientId, data: { filter } }, '*');
     window.addEventListener('message', (event) => {
-      let { action, error, data, invokeId } = event.data || {};
+      let { action, error, data, senderId, invokeId } = event.data || {};
       if (action === mainInitName) {
         callback(data[0], data[1]);
       } else if (action === mainDispatchName) {
@@ -20,7 +20,7 @@ module.exports = class BrowserRendererClient {
       } else if (action === messageName) {
         onGetMessage(data);
       } else if (action === winMessageName) {
-        onGetWinMessage(data);
+        onGetWinMessage(senderId, data);
       }
     });
     window.addEventListener('unload', () => {
@@ -42,6 +42,7 @@ module.exports = class BrowserRendererClient {
 
   sendWindowMessage(clientId, args) {
     let mainWin = window.isMainClient ? window : window.opener;
-    mainWin.postMessage({ action: winMessageName, clientId, data: args }, '*');
+    let senderId = this.clientId;
+    mainWin.postMessage({ action: winMessageName, senderId, clientId, data: args }, '*');
   }
 }

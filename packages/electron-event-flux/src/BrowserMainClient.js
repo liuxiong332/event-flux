@@ -12,7 +12,7 @@ module.exports = class ElectronMainClient {
 
     window.addEventListener("message", (event) => {
       let callbacks = this.callbacks;
-      let { action, data, invokeId, clientId } = event.data || {};
+      let { action, data, invokeId, senderId, clientId } = event.data || {};
       if (action === renderDispatchName) {
         callbacks.handleRendererMessage(data).then((result) => {
           this.clients[clientId].postMessage({
@@ -30,6 +30,7 @@ module.exports = class ElectronMainClient {
       } else if (action === winMessageName) {
         this.clients[clientId].postMessage({
           action: winMessageName,
+          senderId,
           data: result,
         }, '*');
       } else if (action === 'close') {       // Child window has closed

@@ -38,8 +38,8 @@ module.exports = class ElectronRendererClient {
     ipcRenderer.on(messageName, (event, params) => {
       onGetMessage(params);
     });
-    ipcRenderer.on(winMessageName, (event, params) => {
-      onGetWinMessage(params);
+    ipcRenderer.on(winMessageName, (event, senderId, params) => {
+      onGetWinMessage(senderId, params);
     });
   }
 
