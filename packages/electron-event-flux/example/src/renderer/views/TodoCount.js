@@ -30,6 +30,13 @@ class CounterDemo extends React.Component {
     });
   } 
 
+  onClick7() {
+    this.props.store.stores.todoStore.getAsyncObject().then(obj => {
+      console.log('return obj', obj);
+      this.setState({ asyncObj: obj.clientId })
+    });
+  }
+
   render() {
     let { state, store, classes } = this.props;
     let { count, isComplete } = state.todo;
@@ -45,7 +52,8 @@ class CounterDemo extends React.Component {
         <Button color="primary" variant="contained" onClick={onClick3}>Immutable Map {todo4Map.size}</Button>
         <Button color="primary" variant="contained" onClick={onClick4}>Immutable List {todo4List.size}</Button>
         <Button color="primary" variant="contained" onClick={this.onClick5.bind(this)}>Return Value {this.state.retObj}</Button>
-        <Button color="primary" variant="contained" onClick={this.onClick6.bind(this)}>Immutable List {this.state.retErr}</Button>
+        <Button color="primary" variant="contained" onClick={this.onClick6.bind(this)}>Error {this.state.retErr}</Button>
+        <Button color="primary" variant="contained" onClick={this.onClick7.bind(this)}>Async Return {this.state.asyncObj}</Button>
       </div>
     );
   }

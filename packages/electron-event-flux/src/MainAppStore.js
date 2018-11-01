@@ -42,8 +42,7 @@ function storeEnhancer(appStore, stores, storeShape) {
       let store = findStore(stores, storePath);
       try {
         let result = store[method].apply(store, args);
-        console.log('result:', result, JSON.stringify(result));
-        return Promise.resolve(JSON.stringify(result));
+        return Promise.resolve(result);
       } catch (err) {
         return Promise.reject(err);
       }

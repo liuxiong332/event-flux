@@ -62,11 +62,9 @@ module.exports = class ElectronMainClient {
     ipcMain.on(renderDispatchName, (event, clientId, invokeId, stringifiedAction) => {
       let webContents = clientMap[clientId].webContents;
       callbacks.handleRendererMessage(stringifiedAction).then(result => {
-        console.log('gen result:', result)
         webContents.send(mainReturnName, invokeId, undefined, result);
       }, (err) => {
-        errInfo = { name: err.name, message: err.message };
-        console.log('gen error info:', errInfo)
+        let errInfo = { name: err.name, message: err.message };
         webContents.send(mainReturnName, invokeId, errInfo, undefined);
       });
     });

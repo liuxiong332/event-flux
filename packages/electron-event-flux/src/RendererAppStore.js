@@ -60,7 +60,7 @@ export default class RendererAppStore extends AppStore {
     if (error) {
       reject(error);
      } else {
-      if (result !== undefined) result = JSON.parse(result);
+      // if (result !== undefined) result = JSON.parse(result);
       resolve(result);
      }
     this.resolveMap[invokeId] = null;
