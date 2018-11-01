@@ -3,7 +3,7 @@ const {
 } = require('./constants');
 
 module.exports = class BrowserRendererClient {
-  constructor(filter, callback, onGetAction, onGetResult, onGetMessage) {
+  constructor(filter, callback, onGetAction, onGetResult, onGetMessage, onGetWinMessage) {
     let clientId = window.clientId || 'mainClient';
     this.clientId = clientId;
         
@@ -19,6 +19,8 @@ module.exports = class BrowserRendererClient {
         onGetResult(invokeId, error, data);
       } else if (action === messageName) {
         onGetMessage(data);
+      } else if (action === winMessageName) {
+        onGetWinMessage(data);
       }
     });
     window.addEventListener('unload', () => {

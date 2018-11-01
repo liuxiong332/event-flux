@@ -19,30 +19,40 @@ class IDGenerator {
 }
 
 export default class RendererAppStore extends AppStore {
-  init(onMessage) {
+  init(onMessage, onWinMessage) {
     super.init();
     this.onMessage = onMessage;
+    this.onWinMessage = onWinMessage;
 
     this.idGenerator = new IDGenerator();
     this.resolveMap = {};
 
     let filter = true;
     return new Promise((resolve) => {
-      this.client = new RendererClient(filter, (state, store) => {
-        const storeData = deserialize(state);
-        const initialState = filter ? fillShape(storeData, filter) : storeData;
-        this.state = initialState;
-
-        const storeFilters = JSON.parse(store);
-        let stores = proxyStores(storeFilters, (action) => {
-          let invokeId = this.idGenerator.genID();
-          this.client.forward(invokeId, serialize(action));
-          return new Promise((resolve, reject) => this.resolveMap[invokeId] = {resolve, reject});
-        });
-        this.stores = stores;
-        resolve();
-      }, this.handleAction.bind(this), this.handleResult.bind(this), this.handleMessage.bind(this));
+      this.client = new RendererClient(
+        filter,
+        this.handleStore.bind(this), 
+        this.handleAction.bind(this), 
+        this.handleResult.bind(this), 
+        this.handleMessage.bind(this),
+        this.handleWinMessage.bind(this)
+      );
     });
+  }
+
+  handleStore(state, store) {
+    const storeData = deserialize(state);
+    const initialState = filter ? fillShape(storeData, filter) : storeData;
+    this.state = initialState;
+
+    const storeFilters = JSON.parse(store);
+    let stores = proxyStores(storeFilters, (action) => {
+      let invokeId = this.idGenerator.genID();
+      this.client.forward(invokeId, serialize(action));
+      return new Promise((resolve, reject) => this.resolveMap[invokeId] = {resolve, reject});
+    });
+    this.stores = stores;
+    resolve();
   }
 
   handleAction(action) {
@@ -68,5 +78,13 @@ export default class RendererAppStore extends AppStore {
 
   handleMessage(message) {
     this.onMessage && this.onMessage(message);
+  }
+
+  handleWinMessage(message) {
+    this.onWinMessage && this.onWinMessage(message);
+  }
+
+  sendWindowMessage(clientId, args) {
+    this.client.sendWindowMessage(clientId, args);
   }
 }

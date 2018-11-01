@@ -5,7 +5,7 @@ const { ipcRenderer, remote } = require('electron');
 const { serialize, deserialize } = require('json-immutable');
 
 module.exports = class ElectronRendererClient {
-  constructor(filter, callback, onGetAction, onGetResult, onGetMessage) {
+  constructor(filter, callback, onGetAction, onGetResult, onGetMessage, onGetWinMessage) {
     let clientId = window.clientId;
     if (!clientId) {
       const rendererId = process.guestInstanceId || remote.getCurrentWindow().id;
@@ -37,6 +37,9 @@ module.exports = class ElectronRendererClient {
     });
     ipcRenderer.on(messageName, (event, params) => {
       onGetMessage(params);
+    });
+    ipcRenderer.on(winMessageName, (event, params) => {
+      onGetWinMessage(params);
     });
   }
 

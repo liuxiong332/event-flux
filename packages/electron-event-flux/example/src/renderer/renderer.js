@@ -13,6 +13,8 @@ import TodoCountDemo from './views/TodoCount';
 import Todo2CountDemo from './views/Todo2Count';
 import Todo3CountDemo from './views/Todo3Count';
 import query from './parseQuery';
+import { Emitter } from 'event-kit';
+
 let startDate = new Date();
 
 window.clientId = query.clientId;
@@ -193,6 +195,76 @@ class MyView extends React.PureComponent {
   }
 }
 
+class ChildWindowProxy {
+  constructor(store, createPromise) {
+    this.emitter = new Emitter();
+    this.store = store;
+    this.messages = [];
+    createPromise.then(childId => {
+      this.childId = childId;
+      this.messages.forEach(({clientId, message}) => {
+        this.send(clientId, message);
+      });
+    });
+    this.store.onWinMessage = this.handleWinMessage.bind(this);
+  }
+
+  send(clientId, message) {
+    if (!this.childId) {
+      this.messages.push({clientId, message});
+    } else {
+      this.store.sendWindowMessage(clientId, message);
+    }
+  }
+
+  handleWinMessage(message) {
+    this.emitter.emit('message', message);
+  }
+
+  onDidReceiveMsg(callback) {
+    this.emitter.on('message', callback);
+  }
+}
+
+class ParentWindowProxy {
+  constructor(store, parentId) {
+    this.store = store;
+  }
+
+
+}
+
+function rendererInit() {
+  window.clientId = query.clientId;
+  window.parentId = query.parentId;
+
+  function getAction() {
+    if (window.process) return query.url || '/';
+    return window.location.pathname;
+  }
+  window.action = getAction();
+
+  const store = new RendererStore((state) => {
+    console.log(state);
+    ReactDOM.render(<MyView state={state}/>, rootElement);
+  });
+
+  const genProxy = (multiWinStore) => {
+    return new Proxy(multiWinStore, {
+      get: function(target, propName) {
+        if (!propName) return;
+        if (propName === 'createWin') {
+          return function(url, params) {
+            return new ChildWindowProxy(target[propName](url, window.clientId, params));
+          }
+        } else {
+          return target[propName];
+        }
+      }
+    })
+  }
+}
+
 const store = new RendererStore((state) => {
   console.log(state);
   ReactDOM.render(<MyView state={state}/>, rootElement);
@@ -205,6 +277,8 @@ const onGetMessage = (message) => {
 store.init(onGetMessage).then(() => {
   ReactDOM.render(<MyView state={store.state}/>, rootElement);
 });
+
+window.store = store;
 
 window.onload = () => {
   let endDate = new Date();
