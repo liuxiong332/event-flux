@@ -30,8 +30,8 @@ module.exports = class ElectronRendererClient {
     ipcRenderer.on(mainDispatchName, (event, stringifiedAction) => {
       onGetAction(stringifiedAction);
     });
-    ipcRenderer.on(mainReturnName, (event, invokeId, result) => {
-      onGetResult(invokeId, result);
+    ipcRenderer.on(mainReturnName, (event, invokeId, error, result) => {
+      onGetResult(invokeId, error, result);
     });
     ipcRenderer.on('message', (event, params) => {
       onGetMessage(params);

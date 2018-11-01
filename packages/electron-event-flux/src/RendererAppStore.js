@@ -37,7 +37,7 @@ export default class RendererAppStore extends AppStore {
         let stores = proxyStores(storeFilters, (action) => {
           let invokeId = this.idGenerator.genID();
           this.client.forward(invokeId, serialize(action));
-          return new Promise((resolve) => this.resolveMap[invokeId] = resolve);
+          return new Promise((resolve, reject) => this.resolveMap[invokeId] = {resolve, reject});
         });
         this.stores = stores;
         resolve();
@@ -54,10 +54,16 @@ export default class RendererAppStore extends AppStore {
     this.sendUpdate();
   }
 
-  handleResult(invokeId, result) {
+  handleResult(invokeId, error, result) {
     this.idGenerator.dispose(invokeId);
-    if (result !== undefined) result = JSON.parse(result);
-    this.resolveMap[invokeId](result);
+    let {resolve, reject} = this.resolveMap[invokeId];
+    if (error) {
+      reject(error);
+     } else {
+      if (result !== undefined) result = JSON.parse(result);
+      resolve(result);
+     }
+    this.resolveMap[invokeId] = null;
   }
 
   handleMessage(message) {

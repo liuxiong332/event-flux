@@ -8,13 +8,13 @@ module.exports = class BrowserRendererClient {
     let mainWin = window.isMainClient ? window : window.opener;
     mainWin.postMessage({ action: renderRegisterName, clientId, data: { filter } }, '*');
     window.addEventListener('message', (event) => {
-      let { action, data, invokeId } = event.data || {};
+      let { action, error, data, invokeId } = event.data || {};
       if (action === mainInitName) {
         callback(data[0], data[1]);
       } else if (action === mainDispatchName) {
         onGetAction(data);
       } else if (action === mainReturnName) {
-        onGetResult(invokeId, data);
+        onGetResult(invokeId, error, data);
       } else if (action === 'message') {
         onGetMessage(data);
       }
