@@ -3,7 +3,6 @@
 // import React from 'react';
 // import ReactDOM from 'react-dom';
 // import RendererStore from 'electron-event-flux/lib/RendererAppStore';
-import RendererStore from '../../../src/RendererAppStore';
 import React from 'react';
 import ReactDOM from 'react-dom';
 import OneDemoView from './OneDemoView';
@@ -13,7 +12,7 @@ import TodoCountDemo from './views/TodoCount';
 import Todo2CountDemo from './views/Todo2Count';
 import Todo3CountDemo from './views/Todo3Count';
 import query from './parseQuery';
-import { Emitter } from 'event-kit';
+import rendererInit from '../../../src/rendererInitializer';
 
 let startDate = new Date();
 
@@ -43,9 +42,9 @@ class NewButton extends React.PureComponent {
   }
 
   createNewWindow() {
-    let { sizes: { width, outerHeight, demo1Height, demo2Height, demo3Height } } = this.props;
+    let { store, sizes: { width, outerHeight, demo1Height, demo2Height, demo3Height } } = this.props;
 
-    store.stores.multiWinStore.createWin('/', window.clientId, { 
+    store.stores.multiWinStore.createWin('/', { 
       width, height: outerHeight, useContentSize: true,
     });
   }
@@ -58,28 +57,33 @@ class NewButton extends React.PureComponent {
   }
 
   createDemo1(pos) {
-    let { sizes: { width, outerHeight, demo1Height, demo2Height, demo3Height } } = this.props;
+    let { store, sizes: { width, outerHeight, demo1Height, demo2Height, demo3Height } } = this.props;
 
     let params = { 
       width, height: outerHeight - demo2Height - demo3Height, useContentSize: true,
     };
-    store.stores.multiWinStore.createWin('/demo1', window.clientId, this.mergePos(params, pos));
+    console.log('new demo1 pos:', this.mergePos(params, pos))
+    let childWin = store.stores.multiWinStore.createWin('/demo1', this.mergePos(params, pos));
+    childWin.onDidReceiveMsg((msg) => { 
+      console.log('receive child message: ', msg)
+      childWin.send(msg);
+    });
   }
   createDemo2(pos) {
-    let { sizes: { width, outerHeight, demo1Height, demo2Height, demo3Height } } = this.props;
+    let { store, sizes: { width, outerHeight, demo1Height, demo2Height, demo3Height } } = this.props;
 
     let params = {
       width: width, height: outerHeight - demo1Height - demo3Height, useContentSize: true,
     }
-    store.stores.multiWinStore.createWin('/demo2', window.clientId, this.mergePos(params, pos));
+    store.stores.multiWinStore.createWin('/demo2', this.mergePos(params, pos));
   }
   createDemo3(pos) {
-    let { sizes: { width, outerHeight, demo1Height, demo2Height, demo3Height } } = this.props;
+    let { store, sizes: { width, outerHeight, demo1Height, demo2Height, demo3Height } } = this.props;
 
     let params = {
       width: width, height: outerHeight - demo1Height - demo2Height, useContentSize: true,
     };
-    store.stores.multiWinStore.createWin('/demo3', window.clientId, this.mergePos(params, pos));
+    store.stores.multiWinStore.createWin('/demo3', this.mergePos(params, pos));
   }
 
   buttonGet(name) {
@@ -143,12 +147,13 @@ class MyView extends React.PureComponent {
   }
 
   render() {
-    let { state } = this.props;
+    let { store, state, action } = this.props;
     let sizes = { 
       width: this.state.width, demo1Height: this.state.demo1Height, demo2Height: this.state.demo2Height, 
       demo3Height: this.state.demo3Height, outerHeight: this.state.outerHeight,
     };
-    switch (window.action) {
+    console.log('action:', action)
+    switch (action) {
       case '/':
         return (
           <div ref={this.divGetter('outerHeight')}>
@@ -170,7 +175,7 @@ class MyView extends React.PureComponent {
               onDragEnd={this.handleDragEnd('demo3')}
               draggable={true}
             />
-            <NewButton ref={(ref) => this.buttons = ref} sizes={sizes}/>
+            <NewButton ref={(ref) => this.buttons = ref} sizes={sizes} store={store}/>
           </div>
         );
       case '/demo1': 
@@ -195,121 +200,16 @@ class MyView extends React.PureComponent {
   }
 }
 
-class ChildWindowProxy {
-  constructor(store, createPromise) {
-    this.emitter = new Emitter();
-    this.store = store;
-    this.messages = [];
-    createPromise.then(childId => {
-      this.childId = childId;
-      this.messages.forEach(({clientId, message}) => {
-        this.send(clientId, message);
-      });
-    });
-    this.store.onDidWinMessage(this.handleWinMessage.bind(this));
-  }
-
-  send(message) {
-    if (!this.childId) {
-      this.messages.push(message);
-    } else {
-      this.store.sendWindowMessage(this.childId, message);
-    }
-  }
-
-  handleWinMessage({senderId, message}) {
-    if (senderId === this.childId) {
-      this.emitter.emit('message', message);
-    }
-  }
-
-  onDidReceiveMsg(callback) {
-    return this.emitter.on('message', callback);
-  }
+function reactRender(store) {
+  window.store = store;
+  ReactDOM.render(<MyView store={store} state={store.state} action={window.action}/>, rootElement);
 }
 
-class ParentWindowProxy {
-  constructor(store, parentId) {
-    this.store = store;
-    this.parentId = parentId;
-    this.emitter = new Emitter();
-
-    this.store.onDidWinMessage(this.handleWinMessage.bind(this));
-  }
-
-  send(message) {
-    this.store.sendWindowMessage(this.parentId, message);
-  }
-
-  handleWinMessage({senderId, message}) {
-    if (senderId === this.parentId) {
-      this.emitter.emit('message', message);
-    }
-  }
-
-  onDidReceiveMsg(callback) {
-    return this.emitter.on('message', callback);
-  }
-}
-
-function rendererInit(renderHandler, actionHandler) {
-  window.clientId = query.clientId;
-  window.parentId = query.parentId;
-
-  function getAction() {
-    if (window.process) return query.url || '/';
-    return window.location.pathname;
-  }
-  window.action = getAction();
-
-  const store = new RendererStore(renderHandler);
-
-  const genProxy = (multiWinStore) => {
-    return new Proxy(multiWinStore, {
-      get: function(target, propName) {
-        if (!propName) return;
-        if (propName === 'createWin') {
-          return function(url, params) {
-            return new ChildWindowProxy(target[propName](url, window.clientId, params));
-          }
-        } else {
-          return target[propName];
-        }
-      }
-    })
-  }
-
-  store.init().then((state) => {
-    store.stores.multiWinStore = genProxy(store.stores.multiWinStore);
-    if (window.parentId) {
-      window.parentWin = new ParentWindowProxy(store, window.parentId);
-    }
-    store.onDidMessage((message) => {
-      console.log('message', message);
-      let {action, url, parentId} = message;
-      if (action === 'change-props') {
-        window.action = url;
-        window.parentId = parentId;
-        if (!window.parentWin) {
-          window.parentWin = new ParentWindowProxy(store, window.parentId);
-        } else {
-          window.parentWin.parentId = parentId;
-        }
-        actionHandler(window.action);
-      }
-    });
-    actionHandler(window.action);
-    renderHandler(state);
-  });
-  
-  return store;
-}
-
-const store = rendererInit((state) => {
-  ReactDOM.render(<MyView state={state}/>, rootElement);
+rendererInit((state) => {
+  ReactDOM.render(<MyView store={window.store} state={state} action={window.action}/>, rootElement);
 }, (action) => {
-  ReactDOM.render(<MyView state={window.store.state}/>, rootElement);
-});
+  ReactDOM.render(<MyView store={window.store} state={window.store.state} action={window.action}/>, rootElement);
+}).then(reactRender);
 
 // const store = new RendererStore((state) => {
 //   console.log(state);
@@ -323,8 +223,6 @@ const store = rendererInit((state) => {
 // store.init(onGetMessage).then(() => {
 //   ReactDOM.render(<MyView state={store.state}/>, rootElement);
 // });
-
-window.store = store;
 
 window.onload = () => {
   let endDate = new Date();

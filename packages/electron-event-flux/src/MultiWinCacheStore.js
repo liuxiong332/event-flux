@@ -140,20 +140,25 @@ class MultiWinCacheStore extends MultiWinStore {
       clientId = winInfo.clientId;
       win = winInfo.window;
       
-      this._appStore.mainClient.sendMessage(win, { action: 'change-props', url: '/', parentId });
+      this._appStore.mainClient.sendMessage(win, { action: 'change-props', url, parentId });
   
       let setBoundsFunc = params.useContentSize ? 'setContentBounds' : 'setBounds';
+
+      let x = parseInt(params.x) || 0;
+      let y = parseInt(params.y) || 0;
+      let width = parseInt(params.width), height = parseInt(params.height);
       win[setBoundsFunc]({ 
-        x: parseInt(params.x), y: parseInt(params.y),
-        width: params.width, height: params.height,     
+        x, y, width, height,
       });
   
       win[setBoundsFunc]({ 
-        x: parseInt(params.x), y: parseInt(params.y),
-        width: params.width, height: params.height,     
+        x, y, width, height,
       });
   
-      win.show();
+      setTimeout(() => {
+        win[setBoundsFunc]({x, y, width, height})
+        win.show();
+      }, 0);
     }
     return { clientId, win };
   }

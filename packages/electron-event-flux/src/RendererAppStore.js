@@ -31,7 +31,7 @@ export default class RendererAppStore extends AppStore {
     return new Promise((resolve) => {
       this.client = new RendererClient(
         filter,
-        this.handleStore.bind(this), 
+        this.handleStore.bind(this, resolve, filter), 
         this.handleAction.bind(this), 
         this.handleResult.bind(this), 
         this.handleMessage.bind(this),
@@ -40,7 +40,7 @@ export default class RendererAppStore extends AppStore {
     });
   }
 
-  handleStore(state, store) {
+  handleStore(resolve, filter, state, store) {
     const storeData = deserialize(state);
     const initialState = filter ? fillShape(storeData, filter) : storeData;
     this.state = initialState;

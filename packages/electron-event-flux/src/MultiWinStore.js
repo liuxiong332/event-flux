@@ -33,7 +33,11 @@ export default class MultiWinStore extends StoreBase {
       let win = this.createBrowserWin(genBrowserUrl(url, clientId, parentClientId), params);
       this._appStore.mainClient.addWin(clientId, win);
     } else {
-      clientId = this.createElectronWin(url, clientId, parentClientId, params);
+      try {
+        clientId = this.createElectronWin(url, clientId, parentClientId, params);
+      } catch(err) {
+        console.error(err, err.stack);
+      }
     }
     return clientId;
   }
