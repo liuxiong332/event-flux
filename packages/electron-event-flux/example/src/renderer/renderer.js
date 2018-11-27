@@ -12,7 +12,7 @@ import TodoCountDemo from './views/TodoCount';
 import Todo2CountDemo from './views/Todo2Count';
 import Todo3CountDemo from './views/Todo3Count';
 import query from './parseQuery';
-import rendererInit from '../../../src/rendererInitializer';
+import rendererInit from 'electron-event-flux/lib/rendererInitializer';
 
 let startDate = new Date();
 
@@ -126,12 +126,15 @@ class MyView extends React.PureComponent {
  
   handleDragStart(item) {
     return (event) => {
-      event.dataTransfer.setData("text/html", item);
+      event.dataTransfer.setData('ResourceURLs', item);
+      event.dataTransfer.effectAllowed = 'all'
+      event.dataTransfer.dropEffect = 'copy';
     };
   }
 
   handleDragEnd(item) {
     return (event) => {
+      event.dataTransfer.dropEffect = 'copy';
       if (!this.buttons) return;
       let pos = { midX: event.screenX, midY: event.screenY };
       if (window.process) {
@@ -161,20 +164,17 @@ class MyView extends React.PureComponent {
               ref={this.divGetter('demo1Height')} {...TodoCountDemo} store={store} state={state}
               onDragStart={this.handleDragStart('demo1')} 
               onDragEnd={this.handleDragEnd('demo1')} 
-              draggable={true}
-            />
+             />
             <OneDemoView 
               ref={this.divGetter('demo2Height')} {...Todo2CountDemo} store={store} state={state}
               onDragStart={this.handleDragStart('demo2')} 
               onDragEnd={this.handleDragEnd('demo2')}
-              draggable={true}
             />
             <OneDemoView 
               ref={this.divGetter('demo3Height')} {...Todo3CountDemo} store={store} state={state}
               onDragStart={this.handleDragStart('demo3')} 
               onDragEnd={this.handleDragEnd('demo3')}
-              draggable={true}
-            />
+             />
             <NewButton ref={(ref) => this.buttons = ref} sizes={sizes} store={store}/>
           </div>
         );

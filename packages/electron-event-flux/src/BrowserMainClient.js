@@ -60,8 +60,8 @@ module.exports = class ElectronMainClient {
     return this.clientInfos;
   }
 
-  sendToRenderer(win, payload) {
-    let window = this.clients[clientId];
+  sendToRenderer(client, payload) {
+    let window = this.clients[client.clientId];
     window && window.postMessage({ action: mainDispatchName, data: payload }, '*');
   }
 

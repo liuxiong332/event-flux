@@ -109,6 +109,7 @@ class TodoStore extends StoreBase {
   }
 
   addTodo(num) {
+    console.log('add todo')
     this.setState({ count: this.state.count + num });
     this.storage.set('count', this.state.count + num);
   }
@@ -143,7 +144,7 @@ class TodoStore extends StoreBase {
 
   dispose() {
     super.dispose();
-    this.storage.deleteAll();
+    // this.storage.deleteAll();
   }
 }
 TodoStore.innerStores = { todo2: declareStore(Todo2Store) };

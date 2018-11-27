@@ -3,6 +3,9 @@ import Typography from '@material-ui/core/Typography';
 import { withStyles } from '@material-ui/core/styles';
 
 const styles = theme => ({
+  root: {
+    background: '#11181e',
+  },
   title: {
     height: 36,
     lineHeight: '36px',
@@ -19,9 +22,9 @@ const styles = theme => ({
   }
 });
 
-function OneDemoView({ title, Component, state, store, classes, ...otherProps }) {
+function OneDemoView({ title, Component, state, store, classes, onDragStart, onDragEnd, ...otherProps }) {
   return (
-    <div>
+    <div className={classes.root} draggable={true} onDragStart={onDragStart} onDragEnd={onDragEnd}>
       <div className={classes.bar} {...otherProps}/>
       <Typography variant="title" color="inherit" className={classes.title}>
         {title}
