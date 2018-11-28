@@ -13,14 +13,14 @@ const StoreList = require('./StoreList');
 const StoreMap = require('./StoreMap');
 
 const storeBuilders = {
-  Item: function (StoreClass, storeKey, stateKey) {
+  Item: function (StoreClass, storeKey, stateKey, args) {
     if (this.setStore) {
-      return this.setStore(storeKey, this.buildStore(StoreClass));
+      return this.setStore(storeKey, this.buildStore(StoreClass, args));
     }  
-    this[storeKey] = this.buildStore(StoreClass);
+    this[storeKey] = this.buildStore(StoreClass, args);
   },
-  List: function (StoreClass, storeKey, stateKey) {
-    let storeBuilder = () => this.buildStore(StoreClass);
+  List: function (StoreClass, storeKey, stateKey, args) {
+    let storeBuilder = () => this.buildStore(StoreClass, args);
     let storeObserver = (store, index) => {
       return store.observe(state => {
         let oldStates = this.state[stateKey] || [];
@@ -37,8 +37,8 @@ const storeBuilders = {
     if (this.setStore) return this.setStore(storeKey, newStore);
     this[storeKey] = newStore;
   },
-  Map: function (StoreClass, storeKey, stateKey, options) {
-    let storeBuilder = () => this.buildStore(StoreClass);
+  Map: function (StoreClass, storeKey, stateKey, args) {
+    let storeBuilder = () => this.buildStore(StoreClass, args);
     let storeObserver = (store, index) => {
       return store.observe(state => this.setState({
         [stateKey]: { ...this.state[stateKey], [index]: state },
@@ -80,8 +80,8 @@ const storeObservers = {
 
 function extendClass(StoreClass) {
   // return class ExtendStoreClass extends StoreClass {};
-  function ExtendStoreClass() {
-    const obj = new StoreClass();
+  function ExtendStoreClass(...args) {
+    const obj = new StoreClass(...args);
     Object.setPrototypeOf(obj, new.target.prototype); 
     // or B.prototype, but if you derive from B you'll have to do this dance again
   
@@ -138,7 +138,7 @@ exports.filterOneStore = function filterOneStore(StoreClass) {
   }
   StoreClass.prototype.buildStores = function() {
     subStoreInfos.forEach(([type, StoreClass, storeKey, stateKey, options]) => {
-      storeBuilders[type].call(this, StoreClass, storeKey, stateKey, options);
+      storeBuilders[type].call(this, StoreClass, storeKey, stateKey, options && options.args);
       let store = this.getStore ? this.getStore(storeKey) : this[storeKey];
       store.buildStores && store.buildStores();
     });

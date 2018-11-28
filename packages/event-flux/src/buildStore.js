@@ -4,9 +4,9 @@ import { findInObject } from './utils';
 
 const StoreExp = /Store/;
 // Parse the store instance or create instance from instance class
-export function parseStore(store) {
+export function parseStore(store, args = []) {
   if (typeof store === 'function') {
-    return new store();
+    return new store(...args);
   } else if (typeof store === 'object') {
     return store;
   } else {
@@ -40,8 +40,8 @@ export function getStoreKey(storeClass) {
 }
 
 // storeClass must be factory or class.
-export function buildStore(appStore, storeClass) {
-  let store = parseStore(storeClass);
+export function buildStore(appStore, storeClass, args) {
+  let store = parseStore(storeClass, args);
   store.batchUpdater = appStore.batchUpdater;
   store._appStore = appStore;
   store.stores = appStore.stores;

@@ -62,8 +62,9 @@ class Todo3Store extends StoreBase {
 }
 
 class Todo2Store extends StoreBase {
-  constructor() {
+  constructor(arg) {
     super();
+    console.log('todo2 store arg:', arg)
     this.state = { size: 0, todo3List: [], todo3Map: {} };
   }
 
@@ -93,8 +94,9 @@ Todo2Store.innerStores = {
 };
 
 class TodoStore extends StoreBase {
-  constructor() {
+  constructor(arg) {
     super();
+    console.log('arg:', arg);
     this.state = { count: 0 };
   }
 
@@ -147,6 +149,6 @@ class TodoStore extends StoreBase {
     // this.storage.deleteAll();
   }
 }
-TodoStore.innerStores = { todo2: declareStore(Todo2Store) };
+TodoStore.innerStores = { todo2: declareStore(Todo2Store, { args: ['hello'] }) };
 
 export default TodoStore;

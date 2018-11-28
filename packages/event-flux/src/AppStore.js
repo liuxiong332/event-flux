@@ -15,8 +15,8 @@ export default class AppStore {
     this.stores = {};
   }
 
-  buildStore(storeClass) {
-    return buildStore(this, storeClass);
+  buildStore(storeClass, args) {
+    return buildStore(this, storeClass, args);
   }
 
   setState(state) {
