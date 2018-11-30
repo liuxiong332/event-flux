@@ -3,7 +3,9 @@ import React from 'react';
 export const StoreContext = React.createContext('electron-event-flux');
 const ContextProvider = StoreContext.Provider;
 
-export default class Provider extends React.PureComponent {
+export default class Provider extends React.PureComponent<any, any> {
+  appStore: any;
+  
   constructor(props) {
     super(props);
     this.appStore = props.appStore;

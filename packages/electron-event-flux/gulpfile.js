@@ -19,7 +19,7 @@ gulp.task('babel', function() {
 });
 
 gulp.task('ts', function () {
-  var tsResult = gulp.src('src/**/*.ts')
+  var tsResult = gulp.src(['src/**/*.ts', 'src/**/*.tsx'])
     .pipe(ts({
       declaration: true,
       "target": "es5",
