@@ -34,7 +34,7 @@
   "dependencies": {
     "@types/node": "^10.12.10",
     "electron-store": "^2.0.0",
-    "event-flux": "^0.9.3",
+    "event-flux": "^0.9.4",
     "immutable": "^3.8.2",
     "json-immutable": "^0.4.0",
     "lodash": "^4.13.1",
