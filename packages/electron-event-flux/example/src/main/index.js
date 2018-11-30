@@ -4,12 +4,12 @@ import { app, BrowserWindow } from 'electron'
 import * as path from 'path'
 import { format as formatUrl } from 'url'
 import TodoStore from './store';
-// import MultiWinStore from 'electron-event-flux/lib/MultiWinStore';
-// import buildMultiWinAppStore from 'electron-event-flux/lib/MainAppStore';
-import MultiWinStore from '../../../src/MultiWinCacheStore';
-import buildMultiWinAppStore from '../../../src/MainAppStore';
-import { winManagerStoreName } from '../../../src/constants';
-import ElectronWindowState from '../../../src/ElectronWindowState';
+import MultiWinStore from 'electron-event-flux/lib/MultiWinCacheStore';
+import buildMultiWinAppStore from 'electron-event-flux/lib/MainAppStore';
+// import MultiWinStore from '../../../src/MultiWinCacheStore';
+// import buildMultiWinAppStore from '../../../src/MainAppStore';
+// import { winManagerStoreName } from '../../../src/constants';
+// import ElectronWindowState from '../../../src/ElectronWindowState';
 import storage from './storage';
 
 const electron = require('electron');

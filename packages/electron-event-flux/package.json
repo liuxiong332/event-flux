@@ -1,6 +1,6 @@
 {
   "name": "electron-event-flux",
-  "version": "0.10.0",
+  "version": "0.12.4",
   "description": "Redux store which synchronizes between instances in multiple process",
   "main": "lib/index.js",
   "scripts": {
@@ -32,11 +32,13 @@
   ],
   "homepage": "https://github.com/samiskin/redux-electron-store#readme",
   "dependencies": {
+    "@types/node": "^10.12.10",
     "electron-store": "^2.0.0",
-    "event-flux": "^0.7.2",
+    "event-flux": "^0.9.2",
     "immutable": "^3.8.2",
     "json-immutable": "^0.4.0",
-    "lodash": "^4.13.1"
+    "lodash": "^4.13.1",
+    "react": "^16.6.3"
   },
   "devDependencies": {
     "babel-core": "^6.26.3",
@@ -52,8 +54,14 @@
     "gulp": "^3.9.1",
     "gulp-babel": "^7.0.1",
     "gulp-sequence": "^1.0.0",
+    "gulp-typescript": "^5.0.0-alpha.3",
     "jest": "^23.4.0",
+    "merge2": "^1.2.3",
     "redux": "^3.6.0",
-    "tape": "^4.2.2"
+    "tape": "^4.2.2",
+    "typescript": "^3.1.6"
+  },
+  "peerDependencies": {
+    "react": ">16.0.0"
   }
 }

@@ -200,7 +200,11 @@ class MyView extends React.PureComponent {
   }
 }
 
+let startDate1 = new Date().getTime();
+
 function reactRender(store) {
+  console.log('spent time ', new Date().getTime() - startDate1, 'ms');
+
   window.store = store;
   ReactDOM.render(<MyView store={store} state={store.state} action={window.action}/>, rootElement);
 }

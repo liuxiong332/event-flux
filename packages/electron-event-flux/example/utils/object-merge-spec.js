@@ -1,5 +1,5 @@
 import test from 'tape';
-import objectMerge from '../object-merge';
+import objectMerge from '../objectMerge';
 
 test('Basic functionality', (t) => {
   t.plan(1);
