@@ -44,7 +44,7 @@ export function buildStore(appStore, storeClass, args) {
   let store = parseStore(storeClass, args);
   store.batchUpdater = appStore.batchUpdater;
   store._appStore = appStore;
-  store.stores = appStore.stores;
+  store.appStores = appStore.stores;
   if (appStore._init) store._initWrap();  //appStore已经初始化，直接init store
   return store;
 }

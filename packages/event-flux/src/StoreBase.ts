@@ -5,8 +5,8 @@ const IS_STORE = '@@__FLUX_STORE__@@';
 
 export default class StoreBase {
   state: any = {};
-  stores: any;
-  
+  appStores: any;
+
   emitter = new Emitter();
   inWillUpdate = false;
   willUpdateStates = [];

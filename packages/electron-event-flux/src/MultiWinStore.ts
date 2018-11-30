@@ -14,10 +14,8 @@ function genBrowserUrl(url = '', clientId, parentId) {
 }
 
 export default class MultiWinStore extends StoreBase {
-  stores: any;
-
   init() {
-    this.stores[winManagerStoreName].observe((state) => {
+    this.appStores[winManagerStoreName].observe((state) => {
       this.setState({ clientIds: state.clientIds });
     });
 
