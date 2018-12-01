@@ -76,7 +76,7 @@ class ParentWindowProxy {
   }
 }
 
-export default function rendererInit(renderHandler, actionHandler) {
+export default function rendererInit(renderHandler?: any, actionHandler?: any) {
   let query = getQuery();
   window['clientId'] = query['clientId'];
   window['parentId'] = query['parentId'];
@@ -120,7 +120,7 @@ export default function rendererInit(renderHandler, actionHandler) {
         } else {
           window['parentWin']['parentId'] = parentId;
         }
-        actionHandler(window['action']);
+        actionHandler && actionHandler(window['action'], window['parentWin']);
       }
     });
     return store;

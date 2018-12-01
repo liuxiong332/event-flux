@@ -1,11 +1,21 @@
-import React from 'react';
+import * as React from 'react';
 
-export const StoreContext = React.createContext('electron-event-flux');
+interface ContextValue {
+  _appStore: any;
+  stores: object;
+  state: object; 
+}
+
+interface ProviderProps {
+  appStore: any;
+}
+
+export const StoreContext = React.createContext({ _appStore: null, stores: {}, state: {} });
 const ContextProvider = StoreContext.Provider;
 
-export default class Provider extends React.PureComponent<any, any> {
+export default class Provider extends React.PureComponent<ProviderProps, ContextValue> {
   appStore: any;
-  
+
   constructor(props) {
     super(props);
     this.appStore = props.appStore;

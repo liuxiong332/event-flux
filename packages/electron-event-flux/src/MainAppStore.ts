@@ -4,11 +4,12 @@ import { filterOneStore, filterWindowStore, filterWindowState, filterWindowDelta
 import { declareStore } from './StoreDeclarer';
 import MainClient from './MainClient';
 import MultiWinManagerStore, { WinPackStore } from './MultiWinManagerStore';
+import ActionRecordStore from './ActionRecordStore';
 import fillShape from './utils/fillShape';
 
 const isEmpty = require('lodash/isEmpty');
 const isObject = require('lodash/isObject');
-const { globalName, winManagerStoreName, winManagerKey } = require('./constants');
+const { winManagerStoreName, winManagerKey, actionStoreName } = require('./constants');
 const { serialize, deserialize } = require('json-immutable');
 
 function findStore(stores, storePath) {
@@ -103,6 +104,11 @@ class MultiWindowAppStore extends AppStore {
     return this.stores[key] = store;
   }
 
+  getWinSpecificStore(clientId, storeName) {
+    let winStores = this.stores[winManagerStoreName].winPackMap[clientId];
+    if (winStores) return winStores[storeName];
+  }
+
   // 构建子Stores
   buildStores() {}
   // 初始化子Stores
@@ -111,8 +117,13 @@ class MultiWindowAppStore extends AppStore {
   startObserve() {}
 }
 
-export default function buildMultiWinAppStore(stores, winStores, WindowsManagerStore = MultiWinManagerStore) {
-  WinPackStore.innerStores = winStores;
+export default function buildMultiWinAppStore(
+  stores, 
+  winStores, 
+  WindowsManagerStore = MultiWinManagerStore, 
+  ActionStore = ActionRecordStore
+) {
+  WinPackStore.innerStores = { ...winStores, [actionStoreName]: ActionStore };
   let allStores = {
     ...stores, 
     [winManagerKey]: declareStore(WindowsManagerStore, { storeKey: winManagerStoreName }),

@@ -1,4 +1,4 @@
-import React from 'react';
+import * as React from 'react';
 import { StoreContext } from './Provider';
 import { pick } from 'event-flux/lib/utils';
 
