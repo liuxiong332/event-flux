@@ -28,15 +28,16 @@ class WindowManager {
       backgroundColor: '#FFF',
     });
 
+    const url = 'empty';
     if (isDevelopment) {
-      window.loadURL(`http://localhost:${process.env.ELECTRON_WEBPACK_WDS_PORT}?url=/&clientId=${clientId}`);
+      window.loadURL(`http://localhost:${process.env.ELECTRON_WEBPACK_WDS_PORT}?url=${url}&clientId=${clientId}`);
     }
     else {
       window.loadURL(formatUrl({
         pathname: path.join(__dirname, 'index.html'),
         protocol: 'file',
         slashes: true,
-        query: { url: '/', clientId },
+        query: { url: url, clientId },
       }));
     }
     return window;
