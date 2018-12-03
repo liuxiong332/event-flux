@@ -45,7 +45,7 @@ class CounterDemo extends React.Component {
     const onClick2 = () => store.stores.todoStore.setComplete(isComplete ? undefined : true);
     const onClick3 = () => store.stores.todoStore.todo2Store.todo4Store.addKey(Math.random().toString(), 0);
     const onClick4 = () => store.stores.todoStore.todo2Store.todo4Store.increase();
-    const onClickAction = () => store.stores.actionRecordStore.setAction('Hello');
+    const onClickAction = () => store.stores.actionRecordStore.setAction('/Hello');
     return (
       <div className={classes.root}>
         <Button color="primary" variant="contained" onClick={onClick}>INCREMENT {count}</Button>
