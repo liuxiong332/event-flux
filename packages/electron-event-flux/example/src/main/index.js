@@ -92,7 +92,9 @@ class MyMultiWinStore extends MultiWinStore {
   }
 }
 
-global.appStore = buildMultiWinAppStore({ todo: TodoStore, multiWin: MyMultiWinStore }, { winTodo: TodoStore });
+global.appStore = buildMultiWinAppStore({ todo: TodoStore }, { winTodo: TodoStore }, {
+  WinHandleStore: MyMultiWinStore
+});
  
 // let mainWindow;
 

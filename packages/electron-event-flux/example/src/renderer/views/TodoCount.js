@@ -45,6 +45,7 @@ class CounterDemo extends React.Component {
     const onClick2 = () => store.stores.todoStore.setComplete(isComplete ? undefined : true);
     const onClick3 = () => store.stores.todoStore.todo2Store.todo4Store.addKey(Math.random().toString(), 0);
     const onClick4 = () => store.stores.todoStore.todo2Store.todo4Store.increase();
+    const onClickAction = () => store.stores.actionRecordStore.setAction('Hello');
     return (
       <div className={classes.root}>
         <Button color="primary" variant="contained" onClick={onClick}>INCREMENT {count}</Button>
@@ -54,6 +55,7 @@ class CounterDemo extends React.Component {
         <Button color="primary" variant="contained" onClick={this.onClick5.bind(this)}>Return Value {this.state.retObj}</Button>
         <Button color="primary" variant="contained" onClick={this.onClick6.bind(this)}>Error {this.state.retErr}</Button>
         <Button color="primary" variant="contained" onClick={this.onClick7.bind(this)}>Async Return {this.state.asyncObj}</Button>
+        <Button color="primary" variant="contained" onClick={onClickAction}>Change Action</Button>
       </div>
     );
   }

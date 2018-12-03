@@ -101,7 +101,7 @@ class TodoStore extends StoreBase {
   }
 
   willInit() {
-    let clientId = this.parentStore.clientId;
+    let clientId = this.clientId;
     console.log('clientId:', clientId);
     this.storage = clientId ? storage.getNSStore(clientId) : storage; 
     this.setState({

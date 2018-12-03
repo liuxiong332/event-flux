@@ -1,16 +1,10 @@
 import StoreBase from 'event-flux/lib/StoreBase';
+const { winManagerStoreName, winManagerKey } = require('./constants');
 
 export default class ActionRecordStore extends StoreBase {
-  init() {
-    // for browser, use pathname forever
-    if (typeof window === 'object') {   
-      this.setState({ action: window.location.pathname });
-    } else {
-      this.setState({ action: '/empty' });
-    }
-  }
+  clientId: string;
 
   setAction(action) {
-    this.setState({ action });
+    this.appStores.multiWinStore.changeAction(this.clientId, action);
   }
 }

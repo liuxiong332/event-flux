@@ -1,6 +1,15 @@
+export function beforeInit(store, parentStore) {
+  store.parentStore = parentStore;
+  if (parentStore.clientId) {
+    store.clientId = parentStore.clientId;
+  }
+}
+
 export const initStore = function(store, parentStore) {
   store.buildStores && store.buildStores();
-  store.parentStore = parentStore;
+
+  beforeInit(store, parentStore);
+
   store.willInit && store.willInit();
   store.initStores && store.initStores(store);
   store._initWrap();

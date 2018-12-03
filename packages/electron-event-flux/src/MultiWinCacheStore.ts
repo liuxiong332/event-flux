@@ -205,6 +205,11 @@ class MultiWinCacheStore extends MultiWinStore {
   
     return window
   }
+
+  changeAction(clientId, action) {
+    this.clientInfoMap[clientId].url = action;
+    this.saveClients(this.clientIds);
+  }
 }
 
 export default MultiWinCacheStore;

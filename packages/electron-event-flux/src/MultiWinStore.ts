@@ -64,4 +64,8 @@ export default class MultiWinStore extends StoreBase {
   createElectronWin(url, clientId, parentClientId, params) {
     console.error('Please provide the createElectronWin');
   }
+
+  changeAction(clientId, action) {
+    
+  }
 }

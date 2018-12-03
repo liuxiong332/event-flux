@@ -7,6 +7,7 @@
 import { StoreDeclarer, StoreListDeclarer, StoreMapDeclarer } from '../StoreDeclarer';
 import StoreList from './StoreList';
 import StoreMap from './StoreMap';
+import { beforeInit } from './storeBuilder';
 const isFunction = require('lodash/isFunction');
 const omit = require('lodash/omit');
 
@@ -146,7 +147,8 @@ function filterOneStore(StoreClass) {
       let storeKey = info[2];
       let store = this.getStore ? this.getStore(storeKey) : this[storeKey];
       
-      store.parentStore = parentStore;
+      beforeInit(store, parentStore);
+
       store.willInit && store.willInit();
       store.initStores && store.initStores(store);
       store._initWrap();
