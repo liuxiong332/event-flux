@@ -200,8 +200,10 @@ class MultiWinCacheStore extends MultiWinStore {
   }
 
   changeAction(clientId, action) {
-    this.clientInfoMap[clientId].url = action;
-    this.saveClients(this.clientIds);
+    if (this.clientInfoMap[clientId]) {
+      this.clientInfoMap[clientId].url = action;
+      this.saveClients(this.clientIds);
+    }
   }
 }
 
