@@ -86,6 +86,25 @@ class MultiWinCacheStore extends MultiWinStore {
     this.saveClients(this.clientIds || []);
   }
 
+  createWin(url, parentClientId, params) {
+    if (!parentClientId) {
+      return console.error('You should invoke multiWinStore in Renderer process');
+    }
+    if (params && params.x == null && params.y == null) {
+      let window = this._appStore.mainClient.getWindowByClientId(parentClientId);
+      let bounds = params.useContentSize ? window.getContentBounds() : window.getBounds();
+      params.x = bounds.x + bounds.width / 2 - params.width / 2;
+      params.y = bounds.y + bounds.height / 2 - params.height / 2;
+    }
+    let clientId;
+    try {
+      clientId = this.createElectronWin(url, clientId, parentClientId, params);
+    } catch(err) {
+      console.error(err, err.stack);
+    }
+     return clientId;
+  }
+
   createElectronWin(url, clientId, parentId, params) {
     let winState = new ElectronWindowState(null, params, null);
 

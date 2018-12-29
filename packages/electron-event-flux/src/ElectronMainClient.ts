@@ -7,6 +7,7 @@ const findIndex = require('lodash/findIndex');
 export default class ElectronMainClient {
   unregisterRenderer: any;
   clientInfos: any;
+  clientMap: any;
   
   constructor(callbacks) {
     let clientInfos = []; // webContentsId -> {webContents, filter, clientId, windowId, active}
@@ -82,6 +83,7 @@ export default class ElectronMainClient {
       }
     });
     this.clientInfos = clientInfos;
+    this.clientMap = clientMap;
   }
   
   getForwardClients() {
@@ -106,5 +108,9 @@ export default class ElectronMainClient {
         client.window.close()
       }
     });
+  }
+
+  getWindowByClientId(clientId) {
+    return this.clientMap[clientId].window;
   }
 }
