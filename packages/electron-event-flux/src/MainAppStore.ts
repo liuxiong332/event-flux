@@ -15,7 +15,8 @@ const { serialize, deserialize } = require('json-immutable');
 
 function findStore(stores, storePath) {
   return storePath.reduce((subStores, entry) => {
-    if (!isObject(entry)) return subStores[entry]
+    if (!subStores) return undefined;
+    if (!isObject(entry)) return subStores[entry];    
     let { name, type, index } = entry;
     let storeCol = subStores[name];
     if (type === 'List' || type === 'Map') {
@@ -43,10 +44,14 @@ function storeEnhancer(appStore, stores, storeShape) {
     handleRendererMessage(payload) {
       const { store: storePath, method, args } = deserialize(payload);
       let store = findStore(stores, storePath);
-      if (!store[method]) {
-        throw new Error(`The method ${method} in Store ${store} is not defined`);
-      }
+      
       try {
+        if (!store) {
+          throw new Error(`The store for method ${method} is not defined`);
+        }
+        if (!store[method]) {
+          throw new Error(`The method ${method} in Store ${store} is not defined`);
+        }
         let result = store[method].apply(store, args);
         return Promise.resolve(result);
       } catch (err) {

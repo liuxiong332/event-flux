@@ -1,6 +1,6 @@
 {
   "name": "electron-event-flux",
-  "version": "0.13.11",
+  "version": "0.13.12",
   "description": "Redux store which synchronizes between instances in multiple process",
   "main": "lib/index.js",
   "scripts": {
