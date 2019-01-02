@@ -70,6 +70,8 @@ class MultiWinCacheStore extends MultiWinStore {
     return null;
   }
 
+  onDidWinClose(clientId) {}
+
   closeAllWindows() {
     this._appStore.mainClient.closeAllWindows();
   }
@@ -130,6 +132,7 @@ class MultiWinCacheStore extends MultiWinStore {
         this.willQuit = true;
         return this.closeAllWindows();
       }
+      this.onDidWinClose && this.onDidWinClose({ clientId });
       let index = this.clientIds.indexOf(clientId);
       if (index !== -1) {
         this.clientIds.splice(index, 1);
