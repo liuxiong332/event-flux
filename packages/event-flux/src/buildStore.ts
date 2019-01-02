@@ -53,7 +53,7 @@ export function buildStore(appStore, storeClass, args) {
   store.batchUpdater = appStore.batchUpdater;
   store._appStore = appStore;
   store.appStores = appStore.stores;
-  if (appStore._init) store._initWrap();  //appStore已经初始化，直接init store
+  // if (appStore._init) store._initWrap();  //appStore已经初始化，直接init store
   return store;
 }
 

@@ -1,6 +1,6 @@
 {
   "name": "event-flux",
-  "version": "0.9.5",
+  "version": "0.9.6",
   "description": "The flux framework for React",
   "main": "./lib/index.js",
   "scripts": {
@@ -29,15 +29,16 @@
     "babel-preset-stage-0": "^6.22.0",
     "del": "^2.2.2",
     "enzyme": "^2.7.0",
-    "gulp": "^3.9.1",
+    "gulp": "^4.0.0",
     "gulp-babel": "^6.1.2",
     "gulp-mocha": "^3.0.1",
-    "gulp-sequence": "^0.4.6",
+    "gulp-typescript": "^5.0.0",
     "jest": "^18.1.0",
     "merge2": "^1.2.3",
     "react": "^16.3.2",
     "react-addons-test-utils": "^15.4.2",
-    "react-test-renderer": "^16.3.2"
+    "react-test-renderer": "^16.3.2",
+    "typescript": "^3.2.2"
   },
   "dependencies": {
     "event-kit": "^2.2.0",
