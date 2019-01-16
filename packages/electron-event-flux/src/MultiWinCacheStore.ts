@@ -70,7 +70,9 @@ class MultiWinCacheStore extends MultiWinStore {
     return null;
   }
 
-  onDidWinClose(clientId) {}
+  onDidWinClose(clientId) {
+    this._appStore.mainClient.sendMessageByClientId(clientId, { action: 'did-close' });
+  }
 
   closeAllWindows() {
     this._appStore.mainClient.closeAllWindows();

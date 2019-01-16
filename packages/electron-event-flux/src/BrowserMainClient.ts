@@ -75,6 +75,11 @@ export default class ElectronMainClient {
     win && win.postMessage({ action: messageName, data: message }, '*');
   }
 
+  sendMessageByClientId(clientId, message) {
+    let win = this.clients[clientId];
+    win && win.postMessage({ action: messageName, data: message }, '*');
+  }
+
   closeAllWindows() {
     Object.keys(this.clients).forEach(clientId => {
       let window = this.clients[clientId];

@@ -38,7 +38,6 @@ export default class ElectronMainClient {
         filter,
         clientId,
         window: sender.getOwnerBrowserWindow(),
-        active: true
       };
       clientInfos.push(clientInfo);
       clientMap[clientId] = clientInfo;
@@ -66,6 +65,7 @@ export default class ElectronMainClient {
     }
   
     ipcMain.on(renderDispatchName, (event, clientId, invokeId, stringifiedAction) => {
+      if (!clientMap[clientId]) return;
       let webContents = clientMap[clientId].webContents;
       callbacks.handleRendererMessage(stringifiedAction).then(result => {
         webContents.send(mainReturnName, invokeId, undefined, result);
@@ -76,6 +76,7 @@ export default class ElectronMainClient {
     });
 
     ipcMain.on(winMessageName, (event, clientId, data) => {
+      if (!clientMap[clientId]) return;
       let webContents = clientMap[clientId].webContents;
       let existIndex = findIndex(clientInfos, (item) => item.webContents === event.sender);
       if (existIndex !== -1) {
@@ -90,20 +91,31 @@ export default class ElectronMainClient {
     return this.clientInfos;
   }
 
+  checkWebContents(webContents) {
+    return !webContents.isDestroyed() && !webContents.isCrashed();
+  }
+
   sendToRenderer(client, payload) {
     let webContents = client.webContents;
-    if (webContents.isDestroyed() || webContents.isCrashed()) {
-      return this.unregisterRenderer(client.clientId);
+    // if (webContents.isDestroyed() || webContents.isCrashed()) {
+    //   return this.unregisterRenderer(client.clientId);
+    // }
+    if (this.checkWebContents(webContents)) {
+      webContents.send(mainDispatchName, payload);
     }
-    webContents.send(mainDispatchName, payload);
   }
 
   sendMessage(win, message) {
     win.webContents.send(messageName, message);
   }
 
+  sendMessageByClientId(clientId, message) {
+    let webContents = this.clientMap[clientId].webContents;
+    webContents.send(messageName, message);
+  }
+
   closeAllWindows() {
-    this.clientInfos.forEach(client => {
+    this.clientInfos.slice().forEach(client => {
       if (!client.window.isDestroyed()) {
         client.window.close()
       }
