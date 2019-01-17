@@ -87,6 +87,7 @@ function storeEnhancer(appStore, stores, storeShape) {
 class MultiWindowAppStore extends AppStore {
   storeShape: any;
   forwarder: any;
+  willQuit: boolean;
 
   static innerStores;
 
