@@ -68,4 +68,8 @@ export default class MultiWinStore extends StoreBase {
   changeAction(clientId, action) {
     
   }
+
+  getWinRootStore(clientId) {
+    this.appStores[winManagerStoreName].winPackMapStore.get(clientId);
+  }
 }

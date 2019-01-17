@@ -179,6 +179,13 @@ function filterOneStore(StoreClass) {
       }
     });
   };
+ 
+  StoreClass.prototype.getSubStores = function() {
+    return subStoreInfos.map(info => {
+      let storeKey = info[2];
+      return this.getStore ? this.getStore(storeKey) : this[storeKey];
+    });
+  }
   return filters;
 }
 

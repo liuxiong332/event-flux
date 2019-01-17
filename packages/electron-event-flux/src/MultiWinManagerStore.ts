@@ -1,7 +1,15 @@
 import StoreBase from 'event-flux/lib/StoreBase';
 import { declareStoreMap } from './StoreDeclarer';
 
-export class WinPackStore extends StoreBase {}
+export class WinPackStore extends StoreBase {
+  getSubStores: Function;
+
+  destroy() {
+    (this.getSubStores() || []).map(store => {
+      store.destroy && store.destroy();
+    });
+  }
+}
 
 export default class MultiWinManagerStore extends StoreBase {
   winPackMapStore: any;
@@ -27,6 +35,9 @@ export default class MultiWinManagerStore extends StoreBase {
     if (index !== -1) this.setState({ 
       clientIds: [ ...clientIds.slice(0, index), ...clientIds.slice(index + 1) ]
     });
+    if (!this._appStore.willQuit) {
+      this.winPackMapStore.get(winId).destroy();
+    }
     this.winPackMapStore.delete(winId);
   }
 }
