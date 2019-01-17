@@ -68,10 +68,14 @@ export default class ElectronMainClient {
       if (!clientMap[clientId]) return;
       let webContents = clientMap[clientId].webContents;
       callbacks.handleRendererMessage(stringifiedAction).then(result => {
-        webContents.send(mainReturnName, invokeId, undefined, result);
+        if (this.checkWebContents(webContents)) {        
+          webContents.send(mainReturnName, invokeId, undefined, result);
+        }
       }, (err) => {
-        let errInfo = { name: err.name, message: err.message };
-        webContents.send(mainReturnName, invokeId, errInfo, undefined);
+        if (this.checkWebContents(webContents)) {        
+          let errInfo = { name: err.name, message: err.message };
+          webContents.send(mainReturnName, invokeId, errInfo, undefined);
+        }
       });
     });
 
@@ -106,12 +110,16 @@ export default class ElectronMainClient {
   }
 
   sendMessage(win, message) {
-    win.webContents.send(messageName, message);
+    if (this.checkWebContents(win.webContents)) {
+      win.webContents.send(messageName, message);
+    }
   }
 
   sendMessageByClientId(clientId, message) {
     let webContents = this.clientMap[clientId].webContents;
-    webContents.send(messageName, message);
+    if (this.checkWebContents(webContents)) {
+      webContents.send(messageName, message);
+    }
   }
 
   closeAllWindows() {
