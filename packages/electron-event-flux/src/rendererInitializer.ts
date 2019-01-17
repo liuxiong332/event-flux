@@ -5,7 +5,7 @@ function getQuery() {
   let query = {};
   window.location.search.slice(1).split('&').forEach(item => {
     let [key, val] = item.split('=');
-    query[key] = val;
+    query[key] = decodeURIComponent(val);
   });
   return query;
 }

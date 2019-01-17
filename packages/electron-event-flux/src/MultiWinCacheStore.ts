@@ -6,7 +6,7 @@ import { app, BrowserWindow } from 'electron';
 
 const isDevelopment = process.env.NODE_ENV !== 'production'
 
-class WindowManager {
+export class WindowManager {
   windows = [];
   winHandler: any;
 
@@ -56,13 +56,17 @@ class MultiWinCacheStore extends MultiWinStore {
   init() {
     let clients = this.getStorage().get('clients');
     if (!clients || clients.length === 0) {
-      clients = [{ clientId: 'mainClient', url: '/', winState: { isMaximized: true } }];
+      clients = this.getDefaultClients();
     }
     this.windowManager = new WindowManager(this);
 
     app.on('ready', () => {
       clients.forEach(item => this.createElectronWin(item.url, item.clientId, item.parentId, item.winState));
     });
+  }
+
+  getDefaultClients() {
+    return [{ clientId: 'mainClient', url: '/', winState: { isMaximized: true } }];
   }
 
   getStorage() {

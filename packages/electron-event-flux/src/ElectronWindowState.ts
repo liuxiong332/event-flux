@@ -6,6 +6,10 @@ var deepEqual = require('deep-equal');
 const isInteger = (Number as any).isInteger;
 const eventHandlingDelay = 100;
 
+function isNumber(num) {
+  return typeof typeof(num) === 'number' && !isNaN(num);
+}
+
 export default class ElectronWindowState {
   onSave: any;
   state: any;
@@ -33,10 +37,18 @@ export default class ElectronWindowState {
   }
 
   normState(state) {
-    state.x = Math.floor(state.x);
-    state.y = Math.floor(state.y);
-    state.width = Math.floor(state.width);
-    state.height = Math.floor(state.height);
+    if (isNumber(state.x)) {
+      state.x = Math.floor(state.x);
+    }
+    if (isNumber(state.y)) {
+      state.y = Math.floor(state.y);
+    }
+    if (isNumber(state.width)) {
+      state.width = Math.floor(state.width);
+    }
+    if (isNumber(state.height)) {
+      state.height = Math.floor(state.height);
+    }
     return state;
   }
 
@@ -55,10 +67,7 @@ export default class ElectronWindowState {
 
   validateState() {
     let state = this.state;
-    var isValid = state && (this.hasBounds() || state.isMaximized || state.isFullScreen);
-    if (!isValid) {
-      return;
-    }
+    if (state && (state.isMaximized || state.isFullScreen)) return;
 
     if (this.hasBounds() && state.displayBounds) {
       // Check if the display where the window was last open is still available
