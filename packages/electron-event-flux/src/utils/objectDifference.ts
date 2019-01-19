@@ -36,11 +36,16 @@ function objectDifference(old, curr) {
   const deleted = {};
 
   if (Map.isMap(old) && Map.isMap(curr)) {
-    curr.forEach((val, key) => checkUpdateVal(key, old.get(key), val, updated, deleted));
-    old.forEach((val, key) => curr.get(key) === undefined && (deleted[key] = true));
+    curr.forEach((val, key) => checkUpdateVal(JSON.stringify(key), old.get(key), val, updated, deleted));
+
+    old.forEach((val, key) => {
+      if (curr.get(key) === undefined) deleted[JSON.stringify(key)] = true;
+    });
   } else {
     keys(curr).forEach(key => checkUpdateVal(key, old[key], curr[key], updated, deleted));
-    keys(old).forEach(key => curr[key] === undefined && (deleted[key] = true));
+    keys(old).forEach(key => {
+      if (curr[key] === undefined) deleted[key] = true;
+    });
   }
   return { updated, deleted };
 };

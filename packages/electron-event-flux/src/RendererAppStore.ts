@@ -97,6 +97,12 @@ export class RendererAppStore extends AppStore {
     return this.emitter.on('did-message', callback);
   }
 
+  onDidClose(callback) {
+    return this.emitter.on('did-message', (message) => {
+      if (message && message.action === 'did-close') callback();
+    });
+  }
+
   onDidWinMessage(callback) {
     return this.emitter.on('did-win-message', callback);
   }

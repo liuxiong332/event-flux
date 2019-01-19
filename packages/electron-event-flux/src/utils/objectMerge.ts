@@ -10,19 +10,16 @@ export default function objectMerge(origin, updated, deleted) {
     return updated;
   }
   if (Map.isMap(origin)) {
-    let merged: {[key: string]: any};
-    if (isObject(deleted)) {
-      merged = {};
-      origin.forEach((val, key) => {
-        if (deleted[key] !== true) merged[key] = val;
+    let merged;
+    deleted = isObject(deleted) ? deleted : {};
+    merged = origin.withMutations(map => {
+      keys(deleted).forEach(key => map.delete(JSON.parse(key)));
+      keys(updated).forEach(key => {
+        let originKey = JSON.parse(key);
+        map.set(originKey, objectMerge(origin.get(originKey), updated[key], deleted && deleted[key]));
       });
-    } else {
-      merged = origin.toObject();
-    }
-    keys(updated).forEach(key => {
-      merged[key] = objectMerge(origin.get(key), updated[key], deleted && deleted[key])
     });
-    return Map(merged);
+    return merged;
   } else {
     let merged = {};
     if (isObject(deleted)) {
