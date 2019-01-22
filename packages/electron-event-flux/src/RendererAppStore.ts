@@ -132,7 +132,8 @@ export class RendererAppStore extends AppStore {
 export default function buildRendererAppStore(stores, onChange) {
   RendererAppStore.innerStores = stores;
   const storeShape = filterOneStore(RendererAppStore);
-  const appStore = new RendererAppStore(onChange);
+  const appStore = new RendererAppStore();
+  appStore.onDidChange(onChange);
   appStore.storeShape = storeShape;
   return appStore;
 }

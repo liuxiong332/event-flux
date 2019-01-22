@@ -8,7 +8,7 @@ export default class AppStore {
   _enableUpdate = true;  // 是否可以更新
   _needUpdate = false;   // 是否需要更新
   _init = false;         // 是否已经初始化
-  onChange: any;
+  didChangeCallbacks = [];
 
   batchUpdater: BatchUpdateHost;
   prevState = {};
@@ -17,8 +17,7 @@ export default class AppStore {
 
   static isAppStore;
   
-  constructor(onChange) {
-    this.onChange = onChange;
+  constructor() {
     this.batchUpdater = new BatchUpdateHost(this);  
   }
 
@@ -60,13 +59,17 @@ export default class AppStore {
   }
 
   _sendUpdate() {
-    this.onWillChange && this.onWillChange(this.prevState, this.state);
-    this.onChange && this.onChange(this.state);
+    this.handleWillChange && this.handleWillChange(this.prevState, this.state);
+    this.didChangeCallbacks.forEach(callback => callback(this.state));
     this.prevState = this.state;
   }
 
-  onWillChange(prevState, state) {}
+  handleWillChange(prevState, state) {}
   
+  onDidChange(callback) {
+    this.didChangeCallbacks.push(callback);
+  }
+
   init() {
     this._init = true;    
     this.prevState = this.state;

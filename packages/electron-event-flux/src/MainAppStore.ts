@@ -91,7 +91,7 @@ class MultiWindowAppStore extends AppStore {
 
   static innerStores;
 
-  onWillChange(prevState, state) {
+  handleWillChange(prevState, state) {
     const delta = objectDifference(prevState, state);
     if (isEmpty(delta.updated) && isEmpty(delta.deleted)) return;
     this.forwarder(delta);
@@ -144,7 +144,7 @@ export default function buildMultiWinAppStore(
   };
   MultiWindowAppStore.innerStores = allStores;
   const storeShape = filterOneStore(MultiWindowAppStore);
-  const appStore = new MultiWindowAppStore(null);
+  const appStore = new MultiWindowAppStore();
   appStore.storeShape = storeShape;
   appStore.init();
   return appStore;
