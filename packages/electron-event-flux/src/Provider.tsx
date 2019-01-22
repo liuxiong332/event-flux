@@ -19,7 +19,7 @@ export default class Provider extends React.PureComponent<ProviderProps, Context
   constructor(props) {
     super(props);
     this.appStore = props.appStore;
-    this.appStore.onChange = this.handleStateChange;
+    this.appStore.onDidChange(this.handleStateChange);
     this.state = { 
       _appStore: this.appStore, 
       stores: this.appStore.stores, 
