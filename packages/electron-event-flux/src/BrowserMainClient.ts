@@ -24,10 +24,12 @@ export default class ElectronMainClient {
             data: result,
           }, '*');
         }, (err) => {
+          let errObj = { name: err.name, message: err.message };
+          Object.keys(err).forEach(key => errObj[key] = err[key]);
           this.clients[clientId].postMessage({
             action: mainReturnName,
             invokeId,
-            error: err,
+            error: errObj,
           }, '*');
         });
       } else if (action === winMessageName) {
