@@ -73,8 +73,7 @@ export default class ElectronMainClient {
         }
       }, (err) => {
         if (this.checkWebContents(webContents)) {        
-          let errInfo = { name: err.name, message: err.message };
-          webContents.send(mainReturnName, invokeId, errInfo, undefined);
+          webContents.send(mainReturnName, invokeId, err, undefined);
         }
       });
     });

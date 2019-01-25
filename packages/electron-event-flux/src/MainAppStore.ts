@@ -55,7 +55,9 @@ function storeEnhancer(appStore, stores, storeShape) {
         let result = store[method].apply(store, args);
         return Promise.resolve(result);
       } catch (err) {
-        return Promise.reject(err);
+        let errObj = { message: err.message };
+        Object.keys(err).forEach(key => errObj[key] = err[key]);
+        return Promise.reject(errObj);
       }
     }
   }

@@ -27,7 +27,7 @@ export default class ElectronMainClient {
           this.clients[clientId].postMessage({
             action: mainReturnName,
             invokeId,
-            error: { name: err.name, message: err.message },
+            error: err,
           }, '*');
         });
       } else if (action === winMessageName) {
