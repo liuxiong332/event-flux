@@ -38,7 +38,7 @@ function storeEnhancer(appStore, stores, storeShape) {
       return JSON.stringify(stores);
     },
     getInitStates(clientId, filter) {
-      let filterState = filterWindowState(appStore.state, winManagerKey, clientId);
+      let filterState = filterWindowState(appStore.prevState, winManagerKey, clientId);
       return serialize(filterState);
     },
     handleRendererMessage(payload) {
