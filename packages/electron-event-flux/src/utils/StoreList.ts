@@ -1,12 +1,14 @@
 import { initStore, disposeStore } from './storeBuilder';
+import { addStateFilter } from './stateFilterDecorator';
 
-export default class StoreList {
+class StoreList {
   length: number = 0;
   storeArray = [];
   disposables = [];
   builder: any;
   observer: any;
   parentStore: any = null;
+  _stateFilters = { '*': false };
 
   constructor(size, builder, observer) {
     this.builder = builder;
@@ -52,3 +54,5 @@ export default class StoreList {
   slice(begin, end) { return this.storeArray.slice(begin, end); }
   indexOf(item) { return this.storeArray.indexOf(item); }
 }
+
+export default addStateFilter(StoreList);

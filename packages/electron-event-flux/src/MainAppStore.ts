@@ -7,6 +7,7 @@ import MultiWinManagerStore, { WinPackStore } from './MultiWinManagerStore';
 import ActionRecordStore from './ActionRecordStore';
 import fillShape from './utils/fillShape';
 import MultiWinStore from './MultiWinStore';
+import { addStateFilter } from './utils/stateFilterDecorator';
 
 const isEmpty = require('lodash/isEmpty');
 const isObject = require('lodash/isObject');
@@ -142,10 +143,12 @@ export default function buildMultiWinAppStore(
     multiWin: WinHandleStore,
     [winManagerKey]: declareStore(WindowsManagerStore, { storeKey: winManagerStoreName }),
   };
-  MultiWindowAppStore.innerStores = allStores;
-  const storeShape = filterOneStore(MultiWindowAppStore);
-  const appStore = new MultiWindowAppStore();
+  let MultiWinAppStore = addStateFilter(MultiWindowAppStore);
+  MultiWinAppStore.innerStores = allStores;
+  const storeShape = filterOneStore(MultiWinAppStore);
+  const appStore = new MultiWinAppStore();
   appStore.storeShape = storeShape;
   appStore.init();
+  console.log('state filters:', appStore._stateFilters);
   return appStore;
 }

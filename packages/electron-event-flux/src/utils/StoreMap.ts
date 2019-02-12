@@ -1,6 +1,7 @@
 import { initStore, disposeStore } from './storeBuilder';
+import { addStateFilterForMap } from './stateFilterDecorator';
 
-export default class StoreMap {
+class StoreMap {
   storeMap = new Map();
   disposables = new Map();
   builder: any;
@@ -63,3 +64,5 @@ export default class StoreMap {
   values() { return this.storeMap.values(); }
   entries() { return this.storeMap.entries(); }
 }
+
+export default addStateFilterForMap(StoreMap);

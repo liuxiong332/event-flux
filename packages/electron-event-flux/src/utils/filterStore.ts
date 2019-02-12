@@ -186,6 +186,9 @@ function filterOneStore(StoreClass) {
       return this.getStore ? this.getStore(storeKey) : this[storeKey];
     });
   }
+  StoreClass.prototype.getSubStoreInfos = function() {
+    return subStoreInfos;
+  }
   return filters;
 }
 
