@@ -1,5 +1,6 @@
 import { initStore, disposeStore } from './storeBuilder';
 import { addStateFilterForMap } from './stateFilterDecorator';
+import { Emitter } from 'event-kit';
 
 class StoreMap {
   storeMap = new Map();
@@ -7,6 +8,8 @@ class StoreMap {
   builder: any;
   observer: any;
   parentStore: any = null;
+  appStores: any;
+  emitter = new Emitter();
 
   constructor(keys, builder, observer) {
     this.builder = builder;

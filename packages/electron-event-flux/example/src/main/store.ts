@@ -1,4 +1,4 @@
-import StoreBase from 'event-flux/lib/StoreBase';
+import StoreBase from '../../../src/MainStoreBase';
 import { declareStore, declareStoreMap, declareStoreList } from 'electron-event-flux/lib/StoreDeclarer';
 import storage from './storage';
 const { Map, List } = require('immutable')
@@ -27,6 +27,11 @@ class Todo4Store extends StoreBase {
 }
 
 class Todo3Store extends StoreBase {
+  mapStoreKey: any;
+  listStoreKey: any;
+  storage: any;
+  parentStore: any;
+
   constructor() {
     super();
     this.state = { size: 0 };
@@ -62,6 +67,9 @@ class Todo3Store extends StoreBase {
 }
 
 class Todo2Store extends StoreBase {
+  parentStore: any;
+  storage: any;
+
   constructor(arg) {
     super();
     console.log('todo2 store arg:', arg)
@@ -94,6 +102,9 @@ Todo2Store.innerStores = {
 };
 
 class TodoStore extends StoreBase {
+  clientId: any;
+  storage: any;
+
   constructor(arg) {
     super();
     console.log('arg:', arg);

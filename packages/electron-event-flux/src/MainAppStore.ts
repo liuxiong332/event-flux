@@ -89,6 +89,10 @@ class MultiWindowAppStore extends AppStore {
   storeShape: any;
   forwarder: any;
   willQuit: boolean;
+  _stateFilters: any;
+  _prevStateFilters: any;
+
+  filterCallbacks = [];
 
   static innerStores;
 
@@ -101,10 +105,21 @@ class MultiWindowAppStore extends AppStore {
   init() {
     this.buildStores();
     this.initStores(this);
+    this.initStateFilters();
     this.startObserve();
     super.init();
     this.forwarder = storeEnhancer(this, this.stores, this.storeShape);
     return this;
+  }
+
+  onDidFilterChange(callback) {
+    this.filterCallbacks.push(callback);
+  }
+
+  _sendUpdate() {
+    super._sendUpdate();
+    this.filterCallbacks.forEach(callback => callback(this._stateFilters));
+    this._prevStateFilters = this._stateFilters;
   }
 
   getStore(key) {
@@ -126,6 +141,8 @@ class MultiWindowAppStore extends AppStore {
   initStores(parent) {}
   // 开始监听子Store改变
   startObserve() {}
+
+  initStateFilters() {}
 }
 
 export default function buildMultiWinAppStore(
@@ -146,6 +163,7 @@ export default function buildMultiWinAppStore(
   let MultiWinAppStore = addStateFilter(MultiWindowAppStore);
   MultiWinAppStore.innerStores = allStores;
   const storeShape = filterOneStore(MultiWinAppStore);
+  console.log('multi win app store:', MultiWinAppStore.prototype.getSubStoreInfos);
   const appStore = new MultiWinAppStore();
   appStore.storeShape = storeShape;
   appStore.init();

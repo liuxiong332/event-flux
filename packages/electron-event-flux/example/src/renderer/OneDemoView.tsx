@@ -1,4 +1,4 @@
-import React from 'react';
+import * as React from 'react';
 import Typography from '@material-ui/core/Typography';
 import { withStyles } from '@material-ui/core/styles';
 
@@ -12,7 +12,7 @@ const styles = theme => ({
     'border-bottom': '1px solid #F4F4F5',
   },
   view: {
-    textAlign: 'center',
+    textAlign: 'center' as 'center',
     padding: 8,
   },
   bar: {
@@ -22,7 +22,8 @@ const styles = theme => ({
   }
 });
 
-function OneDemoView({ title, Component, state, store, classes, onDragStart, onDragEnd, ...otherProps }) {
+function OneDemoView(props) {
+  let { title, Component, state, store, classes, onDragStart, onDragEnd, ...otherProps } = props;
   return (
     <div className={classes.root} draggable={true} onDragStart={onDragStart} onDragEnd={onDragEnd}>
       <div className={classes.bar} {...otherProps}/>

@@ -15,7 +15,7 @@ const storeBuilders = {
   Item: function (StoreClass, storeKey, stateKey, args) {
     if (this.setStore) {
       return this.setStore(storeKey, this.buildStore(StoreClass, args));
-    }  
+    }
     this[storeKey] = this.buildStore(StoreClass, args);
   },
   List: function (StoreClass, storeKey, stateKey, args) {
@@ -33,6 +33,7 @@ const storeBuilders = {
       });
     }
     let newStore = new StoreList(0, storeBuilder, storeObserver);
+    newStore.appStores = this._appStore.stores;
     if (this.setStore) return this.setStore(storeKey, newStore);
     this[storeKey] = newStore;
   },
@@ -51,8 +52,9 @@ const storeBuilders = {
       }));
     }
     let newStore = new StoreMap(null, storeBuilder, storeObserver);
+    newStore.appStores = this._appStore.stores;
     if (this.setStore) return this.setStore(storeKey, newStore);
-    this[storeKey] = newStore;    
+    this[storeKey] = newStore;
   }
 }
 

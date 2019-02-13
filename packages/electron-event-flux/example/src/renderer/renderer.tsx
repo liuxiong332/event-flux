@@ -3,7 +3,7 @@
 // import React from 'react';
 // import ReactDOM from 'react-dom';
 // import RendererStore from 'electron-event-flux/lib/RendererAppStore';
-import React from 'react';
+import * as React from 'react';
 import ReactDOM from 'react-dom';
 import MyView from './RootView';
 import rendererInit from 'electron-event-flux/lib/rendererInitializer';
@@ -17,8 +17,8 @@ let startDate = new Date().getTime();
 function reactRender(store) {
   console.log('spent time ', new Date().getTime() - startDate, 'ms');
 
-  window.store = store;
-  ReactDOM.render(<MyView store={store} state={store.state} action={window.action}/>, rootElement);
+  window['store'] = store;
+  ReactDOM.render(<MyView store={store} state={store.state} action={window['action']}/>, rootElement);
 }
 
 const storeDeclarer = {
@@ -27,14 +27,14 @@ const storeDeclarer = {
 
 rendererInit(storeDeclarer, {
   renderHandler: (state) => {
-    ReactDOM.render(<MyView store={window.store} state={state} action={window.action}/>, rootElement);
+    ReactDOM.render(<MyView store={window['store']} state={state} action={window['action']}/>, rootElement);
   }, 
   actionHandler: (action) => {
-    ReactDOM.render(<MyView store={window.store} state={window.store.state} action={window.action}/>, rootElement);
+    ReactDOM.render(<MyView store={window['store']} state={window['store'].state} action={window['action']}/>, rootElement);
   }
 }).then(reactRender);
 
 window.onload = () => {
   let endDate = new Date();
-  console.log('load elapse milliseconds ' + (endDate - startDate) + 'ms');
+  console.log('load elapse milliseconds ' + (endDate.getTime() - startDate) + 'ms');
 }

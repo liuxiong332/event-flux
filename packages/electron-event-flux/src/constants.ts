@@ -4,8 +4,8 @@ module.exports = {
   mainInitName: 'event-flux-main-init',
   mainDispatchName: 'event-flux-main-dispatch',
   mainReturnName: 'event-flux-main-return',
-  winManagerStoreName: '__WIN_MANAGER_STORE__',
-  winManagerKey: '__WIN_MANAGER__',
+  winManagerStoreName: 'winManagerStore',
+  winManagerKey: 'winManager',
   messageName: '__MESSAGE__',
   winMessageName: '__WIN_MESSAGE__',
 };

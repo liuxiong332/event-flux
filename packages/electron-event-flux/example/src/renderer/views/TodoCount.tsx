@@ -1,4 +1,4 @@
-import React from 'react';
+import * as React from 'react';
 import Button from '@material-ui/core/Button';
 import { withStyles } from '@material-ui/core/styles';
 
@@ -10,7 +10,7 @@ const styles = theme => ({
   },
 });
 
-class CounterDemo extends React.Component {
+class CounterDemo extends React.Component<any, any> {
   constructor(props) {
     super(props);
     this.state = {};

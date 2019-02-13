@@ -18,7 +18,7 @@ export default class BatchUpdateHost {
 
   runLoop() {
     this.runState = 'prepare';
-    setTimeout(() => this.runTasks(), 0);
+    setTimeout(() => this.runTasks(), 20);
     // if (requestAnimationFrame) {
     //   requestAnimationFrame(() => this.runTasks());
     // } else {
