@@ -3,16 +3,20 @@ import { Emitter } from 'event-kit';
 
 class MockManagerStore {
   emitter = new Emitter();
+  clientIds = [];
 
   getClienIds() { 
-    return [] 
+    return this.clientIds; 
   }
 
   addWin(clientId) {
+    this.clientIds.push(clientId);
     this.emitter.emit('add-win', clientId);
   }
 
   removeWin(clientId) {
+    let index = this.clientIds.indexOf(clientId);
+    if (index !== -1) this.clientIds.splice(index, 1);
     this.emitter.emit('remove-win', clientId);
   }
 
@@ -86,6 +90,27 @@ test('addStateFilter', () => {
   );
 });
 
+test('addStateFilter for defaultFilter option', () => {
+  const Base1DeriveClass = addStateFilter(Base1Class);
+  let base1Instance = new Base1DeriveClass();
+
+  class Base2Class extends Base1Class {
+    options = { defaultFilter: true };
+    subStore = base1Instance;
+    getSubStoreInfos() { return [[null, null, 'subStore', 'subState']]; }
+  }
+  
+  let StateFilterClass = addStateFilter(Base2Class);
+  let stateFilterInstance = new StateFilterClass();
+  base1Instance._initWrap();
+  stateFilterInstance._initWrap();
+  managerStore.addWin('client1');
+  expect(base1Instance._stateFilters).toEqual({ client1: { '*': false } });
+  expect(stateFilterInstance._stateFilters).toEqual(
+    { client1: { '*': true, subState: { '*': false } } }
+  );
+});
+
 test('addStateFilterForMap', () => {
   const Base1DeriveClass = addStateFilter(Base1Class);
   let base1Instance = new Base1DeriveClass();
@@ -125,5 +150,42 @@ test('addStateFilterForMap', () => {
   base1Instance.unlisten('client1');
   expect(stateFilterInstance._stateFilters).toEqual({ 
     client1: { '*': false, item1: { '*': false }, item2: false } 
+  });
+});
+
+test('addStateFilterForMap for defaultFilter option', () => {
+  const Base1DeriveClass = addStateFilter(Base1Class);
+  let base1Instance = new Base1DeriveClass();
+  let base2Instance = new Base1DeriveClass();
+  class Base2Class extends Base1Class {
+    options = { defaultFilter: true };
+    storeMap = new Map([['item1', base1Instance], ['item2', base2Instance]]);
+    add(key, prevInit) { 
+      let newStore = new Base1DeriveClass();
+      newStore._initWrap();
+      return newStore;
+    }
+    delete(key) { }
+  }
+
+  let StateFilterClass = addStateFilterForMap(Base2Class);
+  let stateFilterInstance = new StateFilterClass();
+
+  base1Instance._initWrap();
+  base2Instance._initWrap();
+  stateFilterInstance._initWrap();
+  managerStore.addWin('client1');
+  expect(stateFilterInstance._stateFilters).toEqual({ 
+    client1: { '*': true, item1: { '*': false }, item2: { '*': false } } 
+  });
+
+  stateFilterInstance.add('item3', null);
+  expect(stateFilterInstance._stateFilters).toEqual({ 
+    client1: { '*': true, item1: { '*': false }, item2: { '*': false }, item3: { '*': false } } 
+  });
+
+  stateFilterInstance.delete('item3');
+  expect(stateFilterInstance._stateFilters).toEqual({ 
+    client1: { '*': true, item1: { '*': false }, item2: { '*': false }, item3: null } 
   });
 });

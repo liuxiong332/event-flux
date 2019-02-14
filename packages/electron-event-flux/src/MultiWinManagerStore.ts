@@ -58,4 +58,8 @@ export default class MultiWinManagerStore extends StoreBase {
   }
 }
 
-MultiWinManagerStore.innerStores = { winPackMap: declareStoreMap(WinPackStore) };
+MultiWinManagerStore.innerStores = {
+  winPackMap: declareStoreMap(WinPackStore, {
+    defaultFilter: true, storeDefaultFilter: true 
+  })
+};

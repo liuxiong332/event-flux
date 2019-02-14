@@ -5,15 +5,17 @@ import { Emitter } from 'event-kit';
 class StoreMap {
   storeMap = new Map();
   disposables = new Map();
+  options: any;
   builder: any;
   observer: any;
   parentStore: any = null;
   appStores: any;
   emitter = new Emitter();
 
-  constructor(keys, builder, observer) {
+  constructor(keys, builder, observer, options) {
     this.builder = builder;
     this.observer = observer;
+    this.options = options;
     if (Array.isArray(keys)) keys.forEach(key => this.add(key, null));
   }
 

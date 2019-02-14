@@ -12,14 +12,18 @@ const isFunction = require('lodash/isFunction');
 const omit = require('lodash/omit');
 
 const storeBuilders = {
-  Item: function (StoreClass, storeKey, stateKey, args) {
+  Item: function (StoreClass, storeKey, stateKey, options) {
+    let args = options && options.args;
+    options = options ? { defaultFilter: options.defaultFilter } : null;
     if (this.setStore) {
-      return this.setStore(storeKey, this.buildStore(StoreClass, args));
+      return this.setStore(storeKey, this.buildStore(StoreClass, args, options));
     }
-    this[storeKey] = this.buildStore(StoreClass, args);
+    this[storeKey] = this.buildStore(StoreClass, args, options);
   },
-  List: function (StoreClass, storeKey, stateKey, args) {
-    let storeBuilder = () => this.buildStore(StoreClass, args);
+  List: function (StoreClass, storeKey, stateKey, options) {
+    let args = options && options.args;
+    let storeOptions = options ? { defaultFilter: options.storeDefaultFilter } : null;
+    let storeBuilder = () => this.buildStore(StoreClass, args, storeOptions);
     let storeObserver = (store, index) => {
       return store.observe(state => {
         let oldStates = this.state[stateKey] || [];
@@ -32,13 +36,16 @@ const storeBuilders = {
         });
       });
     }
-    let newStore = new StoreList(0, storeBuilder, storeObserver);
+    let listOptions = options ? { defaultFilter: options.defaultFilter } : null;
+    let newStore = new StoreList(0, storeBuilder, storeObserver, listOptions);
     newStore.appStores = this._appStore.stores;
     if (this.setStore) return this.setStore(storeKey, newStore);
     this[storeKey] = newStore;
   },
-  Map: function (StoreClass, storeKey, stateKey, args) {
-    let storeBuilder = () => this.buildStore(StoreClass, args);
+  Map: function (StoreClass, storeKey, stateKey, options) {
+    let args = options && options.args;
+    let storeOptions = options ? { defaultFilter: options.storeDefaultFilter } : null;
+    let storeBuilder = () => this.buildStore(StoreClass, args, storeOptions);
     let storeObserver = (store, index) => {
       if (!stateKey) {
         return store.observe(state => 
@@ -51,7 +58,8 @@ const storeBuilders = {
         [stateKey]: { ...this.state[stateKey], [index]: state },
       }));
     }
-    let newStore = new StoreMap(null, storeBuilder, storeObserver);
+    let mapOptions = options ? { defaultFilter: options.defaultFilter } : null;
+    let newStore = new StoreMap(null, storeBuilder, storeObserver, mapOptions);
     newStore.appStores = this._appStore.stores;
     if (this.setStore) return this.setStore(storeKey, newStore);
     this[storeKey] = newStore;
@@ -147,7 +155,7 @@ function filterOneStore(StoreClass) {
   }
   StoreClass.prototype.buildStores = function() {
     subStoreInfos.forEach(([type, StoreClass, storeKey, stateKey, options]) => {
-      storeBuilders[type].call(this, StoreClass, storeKey, stateKey, options && options.args);
+      storeBuilders[type].call(this, StoreClass, storeKey, stateKey, options);
       let store = this.getStore ? this.getStore(storeKey) : this[storeKey];
       store.buildStores && store.buildStores();
     });

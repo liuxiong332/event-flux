@@ -28,9 +28,9 @@ export default class StoreBase {
   init() {}
 
   // Create new store from storeClass. storeClass must be factory or class.  
-  buildStore(storeClass, args) {
+  buildStore(storeClass, args, options) {
     if (!this._appStore) return console.error('Can not invoke buildStore in constructor');
-    let store = buildStore(this._appStore, storeClass, args);
+    let store = buildStore(this._appStore, storeClass, args, options);
     // store._initWrap();
     return store;
   }

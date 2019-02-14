@@ -13,9 +13,14 @@ export const addStateFilter = (StoreClass) => {
       super(...args);
     }
 
+    getDefaultFilter() {
+      if (this.options && this.options.defaultFilter) return { '*': true };
+      return { '*': false };
+    }
+
     initStateFilters() {
       const initForClientId = (clientId) => {
-        let clientFilters = { '*': false };
+        let clientFilters = this.getDefaultFilter();
         this.getSubStoreInfos && this.getSubStoreInfos().forEach((storeInfo) => {
           let storeName = storeInfo[2]; 
           let stateKey = storeInfo[3];
@@ -55,10 +60,10 @@ export const addStateFilter = (StoreClass) => {
 
     _setFilter(clientId, newFilter) {
       const filterRunner = () => {
-        let oldFilters = this._stateFilters[clientId] || { '*': false };
+        let oldFilters = this._stateFilters[clientId] || this.getDefaultFilter();
         let nextFilters = { ...oldFilters, ...newFilter }; 
         this._stateFilters[clientId] = nextFilters;
-        this.emitter.emit('did-filter-update', { clientId, filters: nextFilters });
+        this.emitter && this.emitter.emit('did-filter-update', { clientId, filters: nextFilters });
       };
       this.batchUpdater ? this.batchUpdater.addTask(filterRunner) : filterRunner();
     }
@@ -95,14 +100,37 @@ export const addStateFilterForMap = (StoreClass) => {
       super(...args);
     }
 
+    getDefaultFilter() {
+      // defaultFilter=true 表示默认的*为true，并且将observe所有key
+      if (this.options && this.options.defaultFilter) return { '*': true };
+      return { '*': false };
+    }
+
     initStateFilters() {
+      let defaultFilter = this.options && this.options.defaultFilter;
       const initForClientId = (clientId) => {
-        this._stateFilters[clientId] = { '*': false };
+        let clientFilters = this.getDefaultFilter();
+        if (defaultFilter) {
+          let entries = this.storeMap.entries(); 
+          for (let [key, store] of entries) {
+            clientFilters[key] = store._stateFilters && store._stateFilters[clientId] || { '*': true };
+          }
+        }
+        this._stateFilters[clientId] = clientFilters; 
       };
       let winManagerStore = this.appStores.winManagerStore;
       winManagerStore.getClienIds().forEach(initForClientId);
       winManagerStore.onDidAddWin(initForClientId);
       winManagerStore.onDidRemoveWin((clientId) => this._stateFilters[clientId] = null);
+
+      if (defaultFilter) {
+        for (let [key, store] of this.storeMap.entries()) {
+          // clientFilters[key] = defaultFilter ? store._stateFilters && store._stateFilters[clientId] || { '*': true } : { '*': false };
+          this._filterDisposables[key] = store.emitter.on('did-filter-update', ({ clientId, filters }) => {
+            this._setFilter(clientId, { [key]: filters })
+          });
+        }
+      }
     }
 
     _initWrap() {
@@ -111,7 +139,7 @@ export const addStateFilterForMap = (StoreClass) => {
     }
 
     _setFilter(clientId, newFilter) {
-      let oldFilters = this._stateFilters[clientId] || { '*': false };
+      let oldFilters = this._stateFilters[clientId] || this.getDefaultFilter();
       let nextFilters = { ...oldFilters, ...newFilter }; 
       this._stateFilters[clientId] = nextFilters;
       this.emitter.emit('did-filter-update', { clientId, filters: nextFilters});
@@ -149,5 +177,53 @@ export const addStateFilterForMap = (StoreClass) => {
         }
       });
     };
+
+    add(key, prevInit) {
+      let newStore = super.add(key, prevInit);
+      let defaultFilter = this.options && this.options.defaultFilter;
+      if (defaultFilter) {
+        Object.keys(this._stateFilters).forEach(clientId => {
+          let filters = newStore._stateFilters && newStore._stateFilters[clientId] || { '*': true };
+          this._setFilter(clientId, { [key]: filters });
+        });
+        if (this._filterDisposables[key]) console.error(`The key ${key} should NOT add twice`);
+        this._filterDisposables[key] = newStore.emitter.on('did-filter-update', ({ clientId, filters }) => {
+          this._setFilter(clientId, { [key]: filters });
+        });
+      }
+      return newStore;
+    }
+
+    deleteFilter(key) {
+      let store = this.storeMap.get(key);
+      Object.keys(this._stateFilters).forEach(clientId => {
+        this._setFilter(clientId, { [key]: null });
+      });
+      if (this._filterDisposables[key]) {
+        this._filterDisposables[key].dispose();
+        this._filterDisposables[key] = null;
+      }
+    }
+
+    delete(key) {
+      this.deleteFilter(key);  
+      super.delete(key);
+    }
+
+    clear() {
+      let keys = this.storeMap.keys();
+      for (let key of keys) {
+        this.deleteFilter(key);
+      }
+      super.clear();
+    }
+
+    dispose() {
+      super.dispose();
+      for (let key in this._filterDisposables) {
+        let disposable = this._filterDisposables[key];
+        disposable && disposable.dispose();
+      }
+    }
   }
 }
