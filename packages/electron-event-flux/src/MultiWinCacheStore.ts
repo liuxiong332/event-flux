@@ -13,7 +13,7 @@ export class WindowManager {
   constructor(winHandler) {
     this.windows = [];
     this.winHandler = winHandler;
-    app.on('ready', () => this.ensureWindows());
+    app.whenReady().then(() => this.ensureWindows());
   }
 
   genClientId() {
@@ -26,7 +26,7 @@ export class WindowManager {
   }
 
   ensureWindows() {
-    while (this.windows.length < 2) {
+    while (this.windows.length < 1) {
       let clientId = this.genClientId()
       this.windows.push({ clientId, window: this.createWin(clientId) });
     }
@@ -60,7 +60,7 @@ class MultiWinCacheStore extends MultiWinStore {
     }
     this.windowManager = new WindowManager(this);
 
-    app.on('ready', () => {
+    app.whenReady().then(() => {
       clients.forEach(item => this.createElectronWin(item.url, item.clientId, item.parentId, item.winState));
     });
   }
