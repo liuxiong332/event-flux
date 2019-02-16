@@ -26,6 +26,7 @@ export class WindowManager {
   }
 
   ensureWindows() {
+    if (!this.windows) return;
     while (this.windows.length < 1) {
       let clientId = this.genClientId()
       this.windows.push({ clientId, window: this.createWin(clientId) });
@@ -33,13 +34,18 @@ export class WindowManager {
   }
 
   getWin() {
-    let win = this.windows.shift();
+    if (!this.windows) return null;
+    let winInfo = this.windows.shift();
     this.ensureWindows();
-    return win;
+    return winInfo;
   }
 
   dispose() {
-    this.windows.forEach(win => win.close());
+    this.windows.forEach(({ window }) => {
+      if (!window.isDestroyed()) {
+        window.close()
+      }
+    });
     this.windows = null;
   }
 }
@@ -48,6 +54,7 @@ class MultiWinCacheStore extends MultiWinStore {
   clientInfoMap = {};
   clientStateMap = {};
   clientIds = [];
+  createWins = [];
   willQuit = false;
   windowManager: WindowManager;
 
@@ -79,7 +86,13 @@ class MultiWinCacheStore extends MultiWinStore {
   }
 
   closeAllWindows() {
-    this._appStore.mainClient.closeAllWindows();
+    // this._appStore.mainClient.closeAllWindows();
+    this.windowManager.dispose();
+    this.createWins.slice().forEach(window => {
+      if (!window.isDestroyed()) {
+        window.close();
+      }
+    });
   }
 
   saveClients(clientIds) {
@@ -129,10 +142,14 @@ class MultiWinCacheStore extends MultiWinStore {
     };
     this.clientStateMap[clientId] = winState.state;
     winState.manage(win);
+    this.createWins.push(win);
 
     this.saveClients(this.clientIds);   // Save clients into Storage
   
     win.on('closed', () => {
+      let winIndex = this.createWins.indexOf(win);
+      this.createWins.splice(winIndex, 1);
+
       if (this.willQuit) return;
       if (clientId === 'mainClient') {
         this.willQuit = true;
