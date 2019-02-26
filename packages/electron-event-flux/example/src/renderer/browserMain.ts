@@ -1,6 +1,6 @@
 import TodoStore from '../main/store';
-import MultiWinStore from 'electron-event-flux/lib/MultiWinStore';
-import buildMultiWinAppStore from 'electron-event-flux/lib/MainAppStore';
+import MultiWinStore from '../../../src/MultiWinStore';
+import buildMultiWinAppStore from '../../../src/MainAppStore';
 import query from './parseQuery';
 
 class MyMultiWinStore extends MultiWinStore {

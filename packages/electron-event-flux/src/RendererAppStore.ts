@@ -66,7 +66,7 @@ export class RendererAppStore extends AppStore {
     // const withDeletions = filterObject(this.state, deleted);
     if (!this.state) return;
     this.state = objectMerge(this.state, updated, deleted);
-    this.sendUpdate();
+    this.batchUpdater.requestUpdate();
   }
 
   handleResult(invokeId, error, result) {

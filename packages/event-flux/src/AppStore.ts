@@ -19,8 +19,8 @@ export default class AppStore {
     this.batchUpdater = new BatchUpdateHost(this);  
   }
 
-  buildStore(storeClass, args) {
-    return buildStore(this, storeClass, args);
+  buildStore(storeClass, args, options) {
+    return buildStore(this, storeClass, args, options);
   }
 
   setState(state) {

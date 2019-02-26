@@ -19,6 +19,7 @@ export const addStateFilter = (StoreClass) => {
     }
 
     initStateFilters() {
+      // Init the state filters for the window with clientId
       const initForClientId = (clientId) => {
         let clientFilters = this.getDefaultFilter();
         this.getSubStoreInfos && this.getSubStoreInfos().forEach((storeInfo) => {
@@ -39,13 +40,14 @@ export const addStateFilter = (StoreClass) => {
       winManagerStore.onDidAddWin(initForClientId);
       winManagerStore.onDidRemoveWin((clientId) => this._stateFilters[clientId] = null);
 
+      // For every subStore, we need update the filter when subStore filter changed.
       this.getSubStoreInfos && this.getSubStoreInfos().forEach((storeInfo) => {
         let storeName = storeInfo[2]; 
         let stateKey = storeInfo[3];
         let subStore = this.getStore ? this.getStore(storeName) : this[storeName];
         subStore.emitter.on('did-filter-update', ({ clientId, filters }) => {
           if (stateKey) {
-            this._setFilter(clientId, { [stateKey]: filters })
+            this._setFilter(clientId, { [stateKey]: filters });
           } else {
             this._setFilter(clientId, omit(filters, '*'));
           }
@@ -65,7 +67,7 @@ export const addStateFilter = (StoreClass) => {
         this._stateFilters[clientId] = nextFilters;
         this.emitter && this.emitter.emit('did-filter-update', { clientId, filters: nextFilters });
       };
-      this.batchUpdater ? this.batchUpdater.addTask(filterRunner) : filterRunner();
+      filterRunner();
     }
 
     listen = function(clientId: string) {

@@ -1,5 +1,5 @@
 import StoreBase from '../../../src/MainStoreBase';
-import { declareStore, declareStoreMap, declareStoreList } from 'electron-event-flux/lib/StoreDeclarer';
+import { declareStore, declareStoreMap, declareStoreList } from '../../../src/StoreDeclarer';
 import storage from './storage';
 const { Map, List } = require('immutable')
 

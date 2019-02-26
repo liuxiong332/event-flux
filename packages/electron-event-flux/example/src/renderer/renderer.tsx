@@ -6,7 +6,7 @@
 import * as React from 'react';
 import ReactDOM from 'react-dom';
 import MyView from './RootView';
-import rendererInit from 'electron-event-flux/lib/rendererInitializer';
+import rendererInit from '../../../src/rendererInitializer';
 import rendererStore from './rendererStore';
 
 const rootElement = document.createElement('div');
