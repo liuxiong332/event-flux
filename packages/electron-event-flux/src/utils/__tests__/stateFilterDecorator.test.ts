@@ -188,4 +188,10 @@ test('addStateFilterForMap for defaultFilter option', () => {
   expect(stateFilterInstance._stateFilters).toEqual({ 
     client1: { '*': true, item1: { '*': false }, item2: { '*': false }, item3: null } 
   });
+
+  managerStore.addWin('client2');
+  expect(stateFilterInstance._stateFilters).toEqual({ 
+    client1: { '*': true, item1: { '*': false }, item2: { '*': false }, item3: null },
+    client2: { '*': true, item1: { '*': false }, item2: { '*': false } },
+  });
 });

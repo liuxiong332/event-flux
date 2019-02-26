@@ -5,6 +5,7 @@ export const addStateFilter = (StoreClass) => {
   return class MainStoreBase extends StoreClass {
     _stateListeners = {};
     _stateFilters = {};
+    _stateFiltersInit = false;  // Check if or not the stateFilters has init
 
     appStores: any;
     static innerStores;
@@ -18,27 +19,30 @@ export const addStateFilter = (StoreClass) => {
       return { '*': false };
     }
 
-    initStateFilters() {
+    _initForClientId = (clientId) => {
+      let clientFilters = this.getDefaultFilter();
+      this.getSubStoreInfos && this.getSubStoreInfos().forEach((storeInfo) => {
+        let storeName = storeInfo[2]; 
+        let stateKey = storeInfo[3];
+        let subStore = this.getStore ? this.getStore(storeName) : this[storeName];
+        let storeFilter = subStore._stateFilters && subStore._stateFilters[clientId] || { '*': true };
+        if (stateKey) {
+          clientFilters[stateKey] = storeFilter;
+        } else {
+          clientFilters = Object.assign(clientFilters, omit(storeFilter, '*'));
+        }
+      });
+      this._stateFilters[clientId] = clientFilters;
+    };
+
+    _initStateFilters() {
       // Init the state filters for the window with clientId
-      const initForClientId = (clientId) => {
-        let clientFilters = this.getDefaultFilter();
-        this.getSubStoreInfos && this.getSubStoreInfos().forEach((storeInfo) => {
-          let storeName = storeInfo[2]; 
-          let stateKey = storeInfo[3];
-          let subStore = this.getStore ? this.getStore(storeName) : this[storeName];
-          let storeFilter = subStore._stateFilters && subStore._stateFilters[clientId] || { '*': true };
-          if (stateKey) {
-            clientFilters[stateKey] = storeFilter;
-          } else {
-            clientFilters = Object.assign(clientFilters, omit(storeFilter, '*'));
-          }
-        });
-        this._stateFilters[clientId] = clientFilters;
-      };
       let winManagerStore = (this.appStores || this.stores).winManagerStore;
-      winManagerStore.getClienIds().forEach(initForClientId);
-      winManagerStore.onDidAddWin(initForClientId);
-      winManagerStore.onDidRemoveWin((clientId) => this._stateFilters[clientId] = null);
+      winManagerStore.getClienIds().forEach(this._initForClientId);
+      this._stateFiltersInit = true;
+
+      // winManagerStore.onDidAddWin(initForClientId);
+      // winManagerStore.onDidRemoveWin((clientId) => this._stateFilters[clientId] = null);
 
       // For every subStore, we need update the filter when subStore filter changed.
       this.getSubStoreInfos && this.getSubStoreInfos().forEach((storeInfo) => {
@@ -56,8 +60,31 @@ export const addStateFilter = (StoreClass) => {
     }
 
     _initWrap() {
-      this.initStateFilters();
+      this._initStateFilters();
       super._initWrap();
+    }
+
+    _handleAddWin(clientId) {
+      if (this._stateFiltersInit) {
+        this.getSubStoreInfos && this.getSubStoreInfos().forEach((storeInfo) => {
+          let storeName = storeInfo[2]; 
+          let subStore = this.getStore ? this.getStore(storeName) : this[storeName];
+          subStore._handleAddWin && subStore._handleAddWin(clientId);
+        });
+        this._initForClientId(clientId);
+      }
+    }
+
+    _handleRemoveWin(clientId) {
+      if (this._stateFiltersInit) {
+        this._stateListeners[clientId] = 0;
+        this._stateFilters[clientId] = null;
+        this.getSubStoreInfos && this.getSubStoreInfos().forEach((storeInfo) => {
+          let storeName = storeInfo[2]; 
+          let subStore = this.getStore ? this.getStore(storeName) : this[storeName];
+          subStore._handleRemoveWin && subStore._handleRemoveWin(clientId);
+        });
+      }
     }
 
     _setFilter(clientId, newFilter) {
@@ -97,7 +124,8 @@ export const addStateFilterForMap = (StoreClass) => {
     _stateListeners = {};
     _stateFilters = {};
     _filterDisposables = {};
-  
+    _stateFiltersInit = false;  // Check if or not the stateFilters has init
+
     constructor(...args) {
       super(...args);
     }
@@ -108,22 +136,27 @@ export const addStateFilterForMap = (StoreClass) => {
       return { '*': false };
     }
 
-    initStateFilters() {
+    _initForClientId = (clientId) => {
       let defaultFilter = this.options && this.options.defaultFilter;
-      const initForClientId = (clientId) => {
-        let clientFilters = this.getDefaultFilter();
-        if (defaultFilter) {
-          let entries = this.storeMap.entries(); 
-          for (let [key, store] of entries) {
-            clientFilters[key] = store._stateFilters && store._stateFilters[clientId] || { '*': true };
-          }
+      let clientFilters = this.getDefaultFilter();
+      if (defaultFilter) {
+        let entries = this.storeMap.entries(); 
+
+        for (let [key, store] of entries) {
+          clientFilters[key] = store._stateFilters && store._stateFilters[clientId] || { '*': true };
         }
-        this._stateFilters[clientId] = clientFilters; 
-      };
+      }
+      this._stateFilters[clientId] = clientFilters; 
+    };
+
+    _initStateFilters() {
+      let defaultFilter = this.options && this.options.defaultFilter;
       let winManagerStore = this.appStores.winManagerStore;
-      winManagerStore.getClienIds().forEach(initForClientId);
-      winManagerStore.onDidAddWin(initForClientId);
-      winManagerStore.onDidRemoveWin((clientId) => this._stateFilters[clientId] = null);
+      winManagerStore.getClienIds().forEach(this._initForClientId);
+      this._stateFiltersInit = true;
+
+      // winManagerStore.onDidAddWin(initForClientId);
+      // winManagerStore.onDidRemoveWin((clientId) => this._stateFilters[clientId] = null);
 
       if (defaultFilter) {
         for (let [key, store] of this.storeMap.entries()) {
@@ -136,7 +169,7 @@ export const addStateFilterForMap = (StoreClass) => {
     }
 
     _initWrap() {
-      this.initStateFilters();
+      this._initStateFilters();
       super._initWrap();
     }
 
@@ -145,6 +178,29 @@ export const addStateFilterForMap = (StoreClass) => {
       let nextFilters = { ...oldFilters, ...newFilter }; 
       this._stateFilters[clientId] = nextFilters;
       this.emitter.emit('did-filter-update', { clientId, filters: nextFilters});
+    }
+
+    _handleAddWin(clientId) {
+      if (this._stateFiltersInit) {
+        let entries = this.storeMap.entries(); 
+
+        for (let [key, store] of entries) {
+          store._handleAddWin && store._handleAddWin(clientId);
+        }
+        this._initForClientId(clientId);
+      }
+    }
+
+    _handleRemoveWin(clientId) {
+      if (this._stateFiltersInit) {
+        this._stateFilters[clientId] = null;
+        let entries = this.storeMap.entries(); 
+
+        for (let [key, store] of entries) {
+          this._stateListeners[clientId + key] = 0;
+          store._handleRemoveWin && store._handleRemoveWin(clientId);
+        }
+      }
     }
 
     listenForKeys = function(clientId: string, key: KeyType) {

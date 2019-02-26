@@ -36,7 +36,7 @@
     "@types/react": "^16.7.11",
     "electron": "^4.0.5",
     "electron-store": "^2.0.0",
-    "event-flux": "^0.10.1",
+    "event-flux": "^0.10.2",
     "immutable": "^3.8.2",
     "json-immutable": "^0.4.0",
     "lodash": "^4.13.1",

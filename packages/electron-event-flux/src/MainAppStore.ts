@@ -105,7 +105,12 @@ class MultiWindowAppStore extends AppStore {
   init() {
     this.buildStores();
     this.initStores(this);
-    this.initStateFilters();
+
+    this._initStateFilters();
+    let winManagerStore = this.stores.winManagerStore;
+    winManagerStore.onDidAddWin((clientId) => this._handleAddWin(clientId));
+    winManagerStore.onDidRemoveWin((clientId) => this._handleRemoveWin(clientId));
+
     this.startObserve();
     super.init();
     this.forwarder = storeEnhancer(this, this.stores, this.storeShape);
@@ -142,7 +147,9 @@ class MultiWindowAppStore extends AppStore {
   // 开始监听子Store改变
   startObserve() {}
 
-  initStateFilters() {}
+  _initStateFilters() {}
+  _handleAddWin(clientId) {}
+  _handleRemoveWin(clientId) {}
 }
 
 export default function buildMultiWinAppStore(
