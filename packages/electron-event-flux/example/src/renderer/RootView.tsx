@@ -1,7 +1,7 @@
 // import React from 'react';
 // import ReactDOM from 'react-dom';
 // import RendererStore from 'electron-event-flux/lib/RendererAppStore';
-import React from 'react';
+import * as React from 'react';
 import ReactDOM from 'react-dom';
 import OneDemoView from './OneDemoView';
 import Button from '@material-ui/core/Button';
@@ -16,7 +16,7 @@ styleElement.innerHTML = 'body { margin: 0; }';
 document.head.appendChild(styleElement);
 
 
-class NewButton extends React.PureComponent {
+class NewButton extends React.PureComponent<any, any> {
   constructor(props) {
     super(props);
     this.createNewWindow = this.createNewWindow.bind(this);
@@ -82,18 +82,27 @@ class NewButton extends React.PureComponent {
     return (
       <div>
         <Button onClick={this.createNewWindow}>Create New Window</Button>
-        <Button ref={this.buttonGet('demo1')} onClick={this.createDemo1}>Create Demo1</Button>
-        <Button ref={this.buttonGet('demo2')} onClick={this.createDemo2}>Create Demo2</Button>
-        <Button ref={this.buttonGet('demo3')} onClick={this.createDemo3}>Create Demo3</Button>
+        <Button innerRef={this.buttonGet('demo1')} onClick={this.createDemo1}>Create Demo1</Button>
+        <Button innerRef={this.buttonGet('demo2')} onClick={this.createDemo2}>Create Demo2</Button>
+        <Button innerRef={this.buttonGet('demo3')} onClick={this.createDemo3}>Create Demo3</Button>
       </div>
     );
   }
 }
 
-export default class MyView extends React.PureComponent {
+export default class MyView extends React.PureComponent<any, any> {
+  buttons: any;
+
   constructor(props) {
     super(props);
     this.state = {};
+    let { store } = props;
+    // store.todoStore.listen(window['clientId']);
+    // store.todoStore.todo2Store.listen(window['clientId']);
+    // store.todoStore.todo2Store.todo3Store.listen(window['clientId']);
+    // store.todoStore.todo2Store.todo4Store.listen(window['clientId']);
+    // store.todoStore.todo2Store.todo3StoreList.listen(window['clientId']);
+    // store.todoStore.todo2Store.todo3StoreMap.listenForKeys(window['clientId'], 'myKey');
   }
 
   divGetter(prop) {
@@ -121,7 +130,7 @@ export default class MyView extends React.PureComponent {
       event.dataTransfer.dropEffect = 'copy';
       if (!this.buttons) return;
       let pos = { midX: event.screenX, midY: event.screenY };
-      if (window.process) {
+      if (window['process']) {
         switch (item) {
           case 'demo1': this.buttons.createDemo1(pos); break;
           case 'demo2': this.buttons.createDemo2(pos); break;

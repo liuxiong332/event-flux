@@ -1,6 +1,7 @@
 interface StoreDeclarerOptions {
   args?: [any];
   storeKey?: string;
+  defaultFilter?: boolean;
 }
 
 const IS_STORE = '@@__STORE_ITEM__@@';
@@ -43,6 +44,8 @@ interface StoreMapDeclarerOptions {
   storeKey?: string;
   keys?: [string];
   directInsert?: boolean;
+  defaultFilter?: boolean;
+  storeDefaultFilter?: boolean;
 }
 const IS_STORE_MAP = '@@__STORE_MAP__@@';
 function StoreMapDeclarer(Store, options?: StoreMapDeclarerOptions) {

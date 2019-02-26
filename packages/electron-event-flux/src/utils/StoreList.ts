@@ -1,16 +1,22 @@
 import { initStore, disposeStore } from './storeBuilder';
+import { Emitter } from 'event-kit';
+// import { addStateFilter } from './stateFilterDecorator';
 
 export default class StoreList {
   length: number = 0;
   storeArray = [];
   disposables = [];
+  options: any;
   builder: any;
   observer: any;
   parentStore: any = null;
+  appStores: any;
+  emitter = new Emitter();
 
-  constructor(size, builder, observer) {
+  constructor(size, builder, observer, options) {
     this.builder = builder;
     this.observer = observer;
+    this.options = options;
     if (size) this.setSize(size);
   }
 

@@ -26,7 +26,10 @@ export class WindowManager {
   }
 
   ensureWindows() {
+<<<<<<< HEAD
     if (!this.windows) return;
+=======
+>>>>>>> filter
     while (this.windows.length < 1) {
       let clientId = this.genClientId()
       this.windows.push({ clientId, window: this.createWin(clientId) });

@@ -1,4 +1,4 @@
-import StoreBase from 'event-flux/lib/StoreBase';
+import StoreBase from './MainStoreBase';
 
 export default class WinSpecStoreBase extends StoreBase {
   clientId: string;
