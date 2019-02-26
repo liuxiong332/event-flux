@@ -20,7 +20,7 @@ function findStore(stores, storePath) {
     let { name, type, index } = entry;
     let storeCol = subStores[name];
     if (type === 'List' || type === 'Map') {
-      return storeCol.get(index);      
+      return storeCol.get(index);
     }
   }, stores);
 }
