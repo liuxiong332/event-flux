@@ -1,5 +1,7 @@
 import StoreBase from '../src/StoreBase';
 
+jest.useFakeTimers();
+
 describe('StoreBase', () => {
   test('onDidUpdate method', () => {
     let store = new StoreBase();
@@ -7,6 +9,7 @@ describe('StoreBase', () => {
     store.onDidUpdate(stateChangeMock);
     expect(stateChangeMock.mock.calls.length).toBe(0);
     store.setState({ state1: 'dd' });
+    jest.runAllTimers();
     expect(stateChangeMock.mock.calls.length).toBe(1);
   });
 
@@ -16,6 +19,7 @@ describe('StoreBase', () => {
     store.observe(stateChangeMock);
     expect(stateChangeMock.mock.calls.length).toBe(1);
     store.setState({ state1: 'dd' });
+    jest.runAllTimers();
     expect(stateChangeMock.mock.calls.length).toBe(2);
   });
 
@@ -25,6 +29,7 @@ describe('StoreBase', () => {
     let stateChangeMock = jest.fn();
     store.onDidUpdate(stateChangeMock);
     store.setState({ hello: 'world' });
+    jest.runAllTimers();
     expect(stateChangeMock.mock.calls[0][0]).toMatchObject({ hello: 'world' });
   });
 
@@ -42,6 +47,8 @@ describe('StoreBase', () => {
       store.setState({ hello: 'updateHello2', newKey: 'key' });      
     });
     store.setState({ hello: 'hello1' });
+    
+    jest.runAllTimers();
     expect(stateChangeMock).toHaveBeenCalledTimes(1);
     expect(store.state).toEqual({ hello: 'updateHello2', newKey: 'key' });
   });

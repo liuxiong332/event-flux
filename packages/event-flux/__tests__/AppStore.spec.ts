@@ -11,14 +11,6 @@ class Todo2Store extends StoreBase {
   }
 }
 
-class Todo3Store extends StoreBase {
-  static dependencies = ['TodoDep1Store'];
-  constructor() {
-    super();
-    this.state = { todo3: 'todo3' };
-  }
-}
-
 jest.useFakeTimers();
 
 describe('AppStore', () => {
@@ -32,6 +24,8 @@ describe('AppStore', () => {
     appStore.init();
 
     todo2Store.setState({ todo2: 'todo3' });
+    jest.runAllTimers();
+    
     expect(appStore.state).toEqual({ todo2: { todo2: 'todo3' } });
   });
 
