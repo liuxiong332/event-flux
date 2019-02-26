@@ -1,17 +1,8 @@
 import StoreBase from '../src/StoreBase';
-import StoreRecycleBase from '../src/StoreRecycleBase';
-
-class StoreBaseInherit extends StoreBase {
-  constructor(props) {
-    super(props);
-    this.batchUpdater = {};
-    this.batchUpdater.addTask = (task) => task();
-  }
-}
 
 describe('StoreBase', () => {
   test('onDidUpdate method', () => {
-    let store = new StoreBaseInherit();
+    let store = new StoreBase();
     let stateChangeMock = jest.fn();
     store.onDidUpdate(stateChangeMock);
     expect(stateChangeMock.mock.calls.length).toBe(0);
@@ -20,7 +11,7 @@ describe('StoreBase', () => {
   });
 
   test('observe method', () => {
-    let store = new StoreBaseInherit();
+    let store = new StoreBase();
     let stateChangeMock = jest.fn();
     store.observe(stateChangeMock);
     expect(stateChangeMock.mock.calls.length).toBe(1);
@@ -30,7 +21,7 @@ describe('StoreBase', () => {
 
 
   test('setState method', () => {
-    let store = new StoreBaseInherit();
+    let store = new StoreBase();
     let stateChangeMock = jest.fn();
     store.onDidUpdate(stateChangeMock);
     store.setState({ hello: 'world' });
@@ -38,8 +29,10 @@ describe('StoreBase', () => {
   });
 
   test('setState will update test', () => {
-    let store = new StoreBaseInherit();
+    let store = new StoreBase();
     store.setState({ hello: 'hello1' });
+    let stateChangeMock = jest.fn();
+    store.onDidUpdate(stateChangeMock);
     expect(store.state).toEqual({ hello: 'hello1' });
 
     store.onWillUpdate(function() {
@@ -49,6 +42,7 @@ describe('StoreBase', () => {
       store.setState({ hello: 'updateHello2', newKey: 'key' });      
     });
     store.setState({ hello: 'hello1' });
+    expect(stateChangeMock).toHaveBeenCalledTimes(1);
     expect(store.state).toEqual({ hello: 'updateHello2', newKey: 'key' });
   });
 });

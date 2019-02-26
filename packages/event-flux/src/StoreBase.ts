@@ -13,7 +13,6 @@ export default class StoreBase {
   willUpdateStates = [];
   _isInit = false
   _appStore = null;
-  batchUpdater: any;
 
   static isStore;
   static innerStores;
@@ -30,9 +29,7 @@ export default class StoreBase {
   // Create new store from storeClass. storeClass must be factory or class.  
   buildStore(storeClass, args) {
     if (!this._appStore) return console.error('Can not invoke buildStore in constructor');
-    let store = buildStore(this._appStore, storeClass, args);
-    // store._initWrap();
-    return store;
+    return buildStore(this._appStore, storeClass, args);
   }
 
   setState(state) {
@@ -41,21 +38,19 @@ export default class StoreBase {
       return this.willUpdateStates.push(state);
     }
     // Make the update delay to next tick that can collect many update into one operation.
-    this.batchUpdater.addTask(() => {
-      let nextState = { ...this.state, ...state }; 
-      this.inWillUpdate = true;   
-      this.emitter.emit('will-update', nextState);
-      this.inWillUpdate = false;
-      if (this.willUpdateStates.length > 0) {
-        this.state = this.willUpdateStates.reduce((allState, state) => 
-          (Object as any).assign(allState, state
-        ), nextState);
-        this.willUpdateStates = [];
-      } else {
-        this.state = nextState;
-      }
-      this.emitter.emit('did-update', this.state);
-    });
+    let nextState = Object.assign({}, this.state, state); 
+    this.inWillUpdate = true;   
+    this.emitter.emit('will-update', nextState);
+    this.inWillUpdate = false;
+    if (this.willUpdateStates.length > 0) {
+      this.state = this.willUpdateStates.reduce((allState, state) => 
+        Object.assign(allState, state
+      ), nextState);
+      this.willUpdateStates = [];
+    } else {
+      this.state = nextState;
+    }
+    this.emitter.emit('did-update', this.state);
     // this.emitter.emit('did-update', this.state);
   }
 

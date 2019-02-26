@@ -23,6 +23,7 @@ gulp.task('ts', function () {
     .pipe(ts({
       declaration: true,
       "target": "es5",
+      "lib": ["es2015", "es2017", "dom"],
       "jsx": "react",
     }));
 

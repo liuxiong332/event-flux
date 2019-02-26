@@ -1,10 +1,11 @@
 {
   "include": [
-      "src/**/*.ts"
+      "src/**/*.ts", "__tests__/StoreBase.test.ts"
   ],
   "compilerOptions": {
       "noImplicitAny": false,
       "target": "es5",
+      "lib": ["es2015", "es2017", "dom"],
       "jsx": "react"
   },
   "declaration": true 

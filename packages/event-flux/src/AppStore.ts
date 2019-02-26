@@ -5,15 +5,13 @@ import { buildStore } from './buildStore';
 const IS_APP_STORE = '@@__APP_STORE__@@';
 
 export default class AppStore {
-  _enableUpdate = true;  // 是否可以更新
-  _needUpdate = false;   // 是否需要更新
-  _init = false;         // 是否已经初始化
+  _init = false;
   didChangeCallbacks = [];
 
   batchUpdater: BatchUpdateHost;
-  prevState = {};
-  state = {};
-  stores = {};
+  prevState: any = {};
+  state: any = {};
+  stores: any = {};
 
   static isAppStore;
   
@@ -27,34 +25,10 @@ export default class AppStore {
 
   setState(state) {
     if (!this._init) {  // 未初始化完成
-      (Object as any).assign(this.state, state);
+      Object.assign(this.state, state);
     } else {
-      this.state = { ...this.state, ...state };
-      if (this._enableUpdate) {
-        this._sendUpdate();
-      } else {
-        this._needUpdate = true;
-      }
-    }
-  }
-
-  disableUpdate() {
-    this._enableUpdate = false;
-  }
-
-  enableUpdate() {
-    this._enableUpdate = true;
-    if (this._needUpdate) {
-      this._sendUpdate();
-    }
-  }
-
-  sendUpdate() {
-    if (!this._init) return;
-    if (this._enableUpdate) {
-      this._sendUpdate();
-    } else {
-      this._needUpdate = true;
+      this.state = Object.assign({}, this.state, state);
+      this.batchUpdater.requestUpdate();
     }
   }
 
@@ -64,7 +38,8 @@ export default class AppStore {
     this.prevState = this.state;
   }
 
-  handleWillChange(prevState, state) {}
+  handleWillChange(prevState, state) {
+  }
   
   onDidChange(callback) {
     this.didChangeCallbacks.push(callback);
@@ -77,6 +52,8 @@ export default class AppStore {
   }
 
   dispose() {
+    this.didChangeCallbacks = null;
+    this.prevState = this.state = this.stores = null;
     for (var key in this.stores) {
       let store = this[key];
       if (store instanceof StoreBase) {

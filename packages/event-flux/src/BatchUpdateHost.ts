@@ -1,33 +1,22 @@
 export default class BatchUpdateHost {
   appStore: any;
-  tasks = [];
   runState = 'idle';
 
   constructor(appStore) {
     this.appStore = appStore;
   }
 
-  addTask(task) {
-    // this.tasks.push(task);
+  // The AppStore need to update the state
+  requestUpdate() {
     if (this.runState === 'idle') {
-      this.appStore.disableUpdate();   //disable appStore update    
-      this.runLoop();
+      this.runState = 'prepare';
+      // Collect all of the update request and update AppStore After 20ms
+      setTimeout(() => this.runUpdate(), 20);
     }
-    task();
   }
 
-  runLoop() {
-    this.runState = 'prepare';
-    setTimeout(() => this.runTasks(), 20);
-    // if (requestAnimationFrame) {
-    //   requestAnimationFrame(() => this.runTasks());
-    // } else {
-             
-    // }
-  }
-
-  runTasks() {
+  runUpdate() {
     this.runState = 'idle';
-    this.appStore.enableUpdate();   //enable appStore update
+    this.appStore._sendUpdate();   //enable appStore update
   }
 }
