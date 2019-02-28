@@ -41,6 +41,8 @@ export default class ElectronMainClient {
       };
       clientInfos.push(clientInfo);
       clientMap[clientId] = clientInfo;
+      
+      // Add window first, then get window info, The window info should has prepared
       callbacks.addWin(clientId);
 
       if (!sender.isGuest()) { // For windowMap (not webviews)
@@ -49,6 +51,8 @@ export default class ElectronMainClient {
         // Webcontents aren't automatically destroyed on window close
         browserWindow.on('closed', () => unregisterRenderer(clientId));
       }
+
+      sender.send(mainInitName, callbacks.getStores(clientId), callbacks.getInitStates(clientId));
     });
   
     // Give renderers a way to sync the current state of the store, but be sure we don't
@@ -56,13 +60,13 @@ export default class ElectronMainClient {
     // data types, Arrays, or Buffers. Refer to:
     // https://github.com/electron/electron/blob/master/docs/api/remote.md#remote-objects
   
-    global[mainInitName + 'Stores'] = function(clientId) {
-      return callbacks.getStores(clientId, clientMap[clientId].filter);
-    }
+    // global[mainInitName + 'Stores'] = function(clientId) {
+    //   return callbacks.getStores(clientId, clientMap[clientId].filter);
+    // }
   
-    global[mainInitName] = (clientId) => {
-      return callbacks.getInitStates(clientId, clientMap[clientId].filter);
-    }
+    // global[mainInitName] = (clientId) => {
+    //   return callbacks.getInitStates(clientId, clientMap[clientId].filter);
+    // }
   
     ipcMain.on(renderDispatchName, (event, clientId, invokeId, stringifiedAction) => {
       if (!clientMap[clientId]) return;

@@ -22,19 +22,21 @@ const styles = theme => ({
   }
 });
 
-function OneDemoView(props) {
-  let { title, Component, state, store, classes, onDragStart, onDragEnd, ...otherProps } = props;
-  return (
-    <div className={classes.root} draggable={true} onDragStart={onDragStart} onDragEnd={onDragEnd}>
-      <div className={classes.bar} {...otherProps}/>
-      <Typography variant="title" color="inherit" className={classes.title}>
-        {title}
-      </Typography>
-      <div className={classes.view}>
-        <Component state={state} store={store}/>
+class OneDemoView extends React.PureComponent<any, any> {
+  render() {
+    let { title, Component, state, store, classes, onDragStart, onDragEnd, ...otherProps } = this.props;
+    return (
+      <div className={classes.root} draggable={true} onDragStart={onDragStart} onDragEnd={onDragEnd}>
+        <div className={classes.bar} {...otherProps}/>
+        <Typography variant="title" color="inherit" className={classes.title}>
+          {title}
+        </Typography>
+        <div className={classes.view}>
+          <Component state={state} store={store}/>
+        </div>
       </div>
-    </div>
-  );
+    );
+  }
 }
 
 export default withStyles(styles)(OneDemoView);

@@ -1,5 +1,7 @@
 import AppStore from 'event-flux/lib/AppStore';
 import objectDifference from './utils/objectDifference';
+import filterDifference from './utils/filterDifference';
+import filterApply from './utils/filterApply';
 import { filterOneStore, filterWindowStore, filterWindowState, filterWindowDelta } from './utils/filterStore';
 import { declareStore } from './StoreDeclarer';
 import MainClient from './MainClient';
@@ -26,7 +28,7 @@ function findStore(stores, storePath) {
   }, stores);
 }
 
-function storeEnhancer(appStore, stores, storeShape) {
+function storeEnhancer(appStore: MultiWindowAppStore, stores, storeShape) {
   const callbacks = {
     addWin(clientId) {
       stores[winManagerStoreName].addWin(clientId);
@@ -39,7 +41,21 @@ function storeEnhancer(appStore, stores, storeShape) {
       return JSON.stringify(stores);
     },
     getInitStates(clientId, filter) {
-      let filterState = filterWindowState(appStore.prevState, winManagerKey, clientId);
+      if (process.env.NODE_ENV === 'development') {
+        if (!appStore._prevStateFilters || !appStore._prevStateFilters[clientId]) {
+          console.error('The filter should has init, If not, then should has a bug!');
+        }
+        if (appStore._prevStateFilters !== appStore._stateFilters) {
+          console.error('The state filters should has update before get initial states!');
+        }
+        if (appStore.prevState !== appStore.state) {
+          console.error('The state should has updated before get initial states!');
+        }
+      }
+      
+      let updateState = filterApply(appStore.prevState, appStore._prevStateFilters[clientId], null);
+      let filterState = filterWindowState(updateState, winManagerKey, clientId);
+      console.log('initial state:', filterState);
       return serialize(filterState);
     },
     handleRendererMessage(payload) {
@@ -63,15 +79,39 @@ function storeEnhancer(appStore, stores, storeShape) {
   
   const mainClient = new MainClient(callbacks);
   appStore.mainClient = mainClient;
-  const forwarder = (payload) => {
+  const forwarder = (prevState, state, prevFilters, filters) => {
     // Forward all actions to the listening renderers
     let clientInfo = mainClient.getForwardClients();
+
+    if (clientInfo.length === 0) return;
+
+    clientInfo.forEach(client => {
+      let clientId = client.clientId;
+      if (prevFilters[clientId] !== filters[clientId]) {
+        let { updated, deleted } = filterDifference(prevFilters[clientId], filters[clientId]);
+        let updateState = filterApply(state, updated, deleted);
+        
+        console.log('update state:', prevFilters[clientId], filters[clientId], updateState);
+        if (isEmpty(updateState)) return;
+        mainClient.sendToRenderer(client, serialize({ payload: { updated: updateState } }));
+      }
+    });
+
+    const delta = objectDifference(prevState, state);
+    if (isEmpty(delta.updated) && isEmpty(delta.deleted)) return;
    
     clientInfo.forEach(client => {
-      let { filter: shape, clientId } = client;
-      let updated = fillShape(payload.updated, shape);
-      let deleted = fillShape(payload.deleted, shape);
-      [updated, deleted] = filterWindowDelta(updated, deleted, winManagerKey, clientId);
+      let { clientId } = client;
+
+      let filterUpdated = filterApply(delta.updated, filters[clientId], null);
+      let filterDeleted = filterApply(delta.deleted, filters[clientId], null);
+
+      console.log('filter updated:', delta.updated, filterUpdated);
+      console.log('filter deleted:', delta.deleted, filterDeleted);
+
+      let [updated, deleted] = filterWindowDelta(
+        filterUpdated, filterDeleted, winManagerKey, clientId
+      );
 
       if (isEmpty(updated) && isEmpty(deleted)) {
         return;
@@ -93,14 +133,9 @@ class MultiWindowAppStore extends AppStore {
   _prevStateFilters: any;
 
   filterCallbacks = [];
+  mainClient: any;
 
   static innerStores;
-
-  handleWillChange(prevState, state) {
-    const delta = objectDifference(prevState, state);
-    if (isEmpty(delta.updated) && isEmpty(delta.deleted)) return;
-    this.forwarder(delta);
-  };
 
   init() {
     this.buildStores();
@@ -108,8 +143,12 @@ class MultiWindowAppStore extends AppStore {
 
     this._initStateFilters();
     let winManagerStore = this.stores.winManagerStore;
-    winManagerStore.onDidAddWin((clientId) => this._handleAddWin(clientId));
+    winManagerStore.onDidAddWin((clientId) => {
+      this._handleAddWin(clientId);
+      this._sendUpdate();
+    });
     winManagerStore.onDidRemoveWin((clientId) => this._handleRemoveWin(clientId));
+    this._prevStateFilters = this._stateFilters;
 
     this.startObserve();
     super.init();
@@ -117,12 +156,18 @@ class MultiWindowAppStore extends AppStore {
     return this;
   }
 
+  handleWillFilterChange(prevState, state, prevFilters, filters) {
+    return this.forwarder(prevState, state, prevFilters, filters);
+  };
+
   onDidFilterChange(callback) {
     this.filterCallbacks.push(callback);
   }
 
   _sendUpdate() {
-    super._sendUpdate();
+    this.handleWillFilterChange(this.prevState, this.state, this._prevStateFilters, this._stateFilters);
+    this.didChangeCallbacks.forEach(callback => callback(this.state));
+    this.prevState = this.state;
     this.filterCallbacks.forEach(callback => callback(this._stateFilters));
     this._prevStateFilters = this._stateFilters;
   }

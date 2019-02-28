@@ -18,19 +18,10 @@ export default class ElectronRendererClient {
     // Allows the main process to forward updates to this renderer automatically
     ipcRenderer.send(renderRegisterName, { filter: filter, clientId });
   
-    // Get current from the electronEnhanced store in the browser through the global it creates
-    let getStores = remote.getGlobal(mainInitName + 'Stores');
-    const storeFilters = getStores(clientId);
-    // const util = require('util')
-    // console.log(util.inspect(storeFilters, {showHidden: false, depth: null}))
-  
-    let getInitialState = remote.getGlobal(mainInitName);
-    if (!getInitialState) throw new Error('Could not find electronEnhanced store in main process');
-    const stateData = getInitialState(clientId);
-  
-    callback(stateData, storeFilters);
-    
     // Dispatches from other processes are forwarded using this ipc message
+    ipcRenderer.on(mainInitName, (event, storeFilters, stateData) => {
+      callback(stateData, storeFilters);
+    });
     ipcRenderer.on(mainDispatchName, (event, stringifiedAction) => {
       onGetAction(stringifiedAction);
     });

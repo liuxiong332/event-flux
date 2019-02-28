@@ -22,11 +22,11 @@ export default class MultiWinManagerStore extends StoreBase {
   addWin(winId) {
     let { clientIds } = this.state;
     if (clientIds.indexOf(winId) === -1) {
-      this.emitter.emit('did-add-win', winId);
       this.setState({ clientIds: [ ...clientIds, winId ] });
       this.winPackMapStore.add(winId, (store) => {
         store.clientId = winId;
       });
+      this.emitter.emit('did-add-win', winId);
     }
   }
 
@@ -34,10 +34,10 @@ export default class MultiWinManagerStore extends StoreBase {
     let { clientIds } = this.state;
     let index = clientIds.indexOf(winId);
     if (index !== -1) {
-      this.emitter.emit('did-remove-win', winId);
       this.setState({ 
         clientIds: [ ...clientIds.slice(0, index), ...clientIds.slice(index + 1) ]
       });
+      this.emitter.emit('did-remove-win', winId);
     }
     if (!this._appStore.willQuit) {
       this.winPackMapStore.get(winId).destroy();

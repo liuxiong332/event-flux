@@ -2,7 +2,7 @@
 // import ReactDOM from 'react-dom';
 // import RendererStore from 'electron-event-flux/lib/RendererAppStore';
 import * as React from 'react';
-import ReactDOM from 'react-dom';
+import * as ReactDOM from 'react-dom';
 import OneDemoView from './OneDemoView';
 import Button from '@material-ui/core/Button';
 
@@ -82,9 +82,9 @@ class NewButton extends React.PureComponent<any, any> {
     return (
       <div>
         <Button onClick={this.createNewWindow}>Create New Window</Button>
-        <Button innerRef={this.buttonGet('demo1')} onClick={this.createDemo1}>Create Demo1</Button>
-        <Button innerRef={this.buttonGet('demo2')} onClick={this.createDemo2}>Create Demo2</Button>
-        <Button innerRef={this.buttonGet('demo3')} onClick={this.createDemo3}>Create Demo3</Button>
+        <Button ref={this.buttonGet('demo1')} onClick={this.createDemo1}>Create Demo1</Button>
+        <Button ref={this.buttonGet('demo2')} onClick={this.createDemo2}>Create Demo2</Button>
+        <Button ref={this.buttonGet('demo3')} onClick={this.createDemo3}>Create Demo3</Button>
       </div>
     );
   }
@@ -144,38 +144,13 @@ export default class MyView extends React.PureComponent<any, any> {
 
   render() {
     let { store, state, action } = this.props;
+    if (!state) return null;
     let sizes = { 
       width: this.state.width, demo1Height: this.state.demo1Height, demo2Height: this.state.demo2Height, 
       demo3Height: this.state.demo3Height, outerHeight: this.state.outerHeight,
     };
     console.log('action:', action)
     switch (action) {
-      case '/':
-        return (
-          <div ref={this.divGetter('outerHeight')}>
-            <OneDemoView 
-              ref={this.divGetter('demo1Height')} {...TodoCountDemo} store={store} state={state}
-              onDragStart={this.handleDragStart('demo1')} 
-              onDragEnd={this.handleDragEnd('demo1')} 
-             />
-            <OneDemoView 
-              ref={this.divGetter('demo2Height')} {...Todo2CountDemo} store={store} state={state}
-              onDragStart={this.handleDragStart('demo2')} 
-              onDragEnd={this.handleDragEnd('demo2')}
-            />
-            <OneDemoView 
-              ref={this.divGetter('demo3Height')} {...Todo3CountDemo} store={store} state={state}
-              onDragStart={this.handleDragStart('demo3')} 
-              onDragEnd={this.handleDragEnd('demo3')}
-             />
-             <OneDemoView 
-              ref={this.divGetter('demo4Height')} {...Todo4CountDemo} store={store} state={state}
-              onDragStart={this.handleDragStart('demo4')} 
-              onDragEnd={this.handleDragEnd('demo4')}
-             />
-            <NewButton ref={(ref) => this.buttons = ref} sizes={sizes} store={store}/>
-          </div>
-        );
       case '/demo1': 
         return (
           <div>
@@ -194,8 +169,32 @@ export default class MyView extends React.PureComponent<any, any> {
             <OneDemoView {...Todo3CountDemo} store={store} state={state}/>
           </div>
         );
-      default: 
-        return null;
+      default:
+        return (
+          <div ref={this.divGetter('outerHeight')}>
+            <OneDemoView 
+              innerRef={this.divGetter('demo1Height')} {...TodoCountDemo} store={store} state={state}
+              onDragStart={this.handleDragStart('demo1')} 
+              onDragEnd={this.handleDragEnd('demo1')} 
+            />
+            <OneDemoView 
+              innerRef={this.divGetter('demo2Height')} {...Todo2CountDemo} store={store} state={state}
+              onDragStart={this.handleDragStart('demo2')} 
+              onDragEnd={this.handleDragEnd('demo2')}
+            />
+            <OneDemoView 
+              innerRef={this.divGetter('demo3Height')} {...Todo3CountDemo} store={store} state={state}
+              onDragStart={this.handleDragStart('demo3')} 
+              onDragEnd={this.handleDragEnd('demo3')}
+             />
+             <OneDemoView 
+              innerRef={this.divGetter('demo4Height')} {...Todo4CountDemo} store={store} state={state}
+              onDragStart={this.handleDragStart('demo4')} 
+              onDragEnd={this.handleDragEnd('demo4')}
+             />
+            <NewButton ref={(ref) => this.buttons = ref} sizes={sizes} store={store}/>
+          </div>
+        );
     }
   }
 }

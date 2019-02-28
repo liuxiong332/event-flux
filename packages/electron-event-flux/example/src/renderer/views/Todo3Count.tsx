@@ -11,10 +11,11 @@ const styles = theme => ({
 });
 
 function Todo2Demo({ state, store, classes }) {
+  if (!state.winTodo) return null;
   let { size } = state.winTodo.todo2;
   let { size: todo3Size } = state.winTodo.todo2.todo3;
   let { size: todo3Slice0Size } = state.winTodo.todo2.todo3List[0];
-  let { size: todo3MyKeySize } = state.winTodo.todo2.todo3Map['myKey'];
+  // let { size: todo3MyKeySize } = state.winTodo.todo2.todo3Map['myKey'];
   const onClick = () => store.stores.winTodoStore.todo2Store.addSize();
   const onClick2 = () => store.stores.winTodoStore.todo2Store.decreaseSize();
   const onClick3 = () => store.stores.winTodoStore.todo2Store.todo3Store.addSize();
@@ -26,7 +27,7 @@ function Todo2Demo({ state, store, classes }) {
       <Button color="primary" variant="contained" onClick={onClick2}>Decrease Size {size}</Button>
       <Button color="primary" variant="contained" onClick={onClick3}>Add Todo3 Size {todo3Size}</Button>
       <Button color="primary" variant="contained" onClick={onClick4}>Add Todo3 List Size {todo3Slice0Size}</Button>
-      <Button color="primary" variant="contained" onClick={onClick5}>Add Todo3 Map Size {todo3MyKeySize}</Button>
+      {/* <Button color="primary" variant="contained" onClick={onClick5}>Add Todo3 Map Size {todo3MyKeySize}</Button> */}
     </div>
   );
 }

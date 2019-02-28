@@ -11,7 +11,6 @@ export default class StoreBase {
   emitter = new Emitter();
   inWillUpdate = false;
   willUpdateStates = [];
-  timeoutId: number;
 
   _isInit = false
   _appStore = null;
@@ -53,14 +52,8 @@ export default class StoreBase {
       this.state = nextState;
     }
 
-    // Send update notification when next tick.
-    if (!this.timeoutId) {
-      this.timeoutId = setTimeout(() => {
-        this.timeoutId = undefined;
-        this.emitter.emit('did-update', this.state);
-      }, 0);
-    }
-    // this.emitter.emit('did-update', this.state);
+    // Send update notification.
+    this.emitter.emit('did-update', this.state);
   }
 
   onDidUpdate(callback) {

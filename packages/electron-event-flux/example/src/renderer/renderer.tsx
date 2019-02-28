@@ -4,7 +4,7 @@
 // import ReactDOM from 'react-dom';
 // import RendererStore from 'electron-event-flux/lib/RendererAppStore';
 import * as React from 'react';
-import ReactDOM from 'react-dom';
+import * as ReactDOM from 'react-dom';
 import MyView from './RootView';
 import rendererInit from '../../../src/rendererInitializer';
 import rendererStore from './rendererStore';
@@ -16,7 +16,8 @@ let startDate = new Date().getTime();
 
 function reactRender(store) {
   console.log('spent time ', new Date().getTime() - startDate, 'ms');
-
+  console.log('render with state:', store.state);
+  
   window['store'] = store;
   ReactDOM.render(<MyView store={store} state={store.state} action={window['action']}/>, rootElement);
 }

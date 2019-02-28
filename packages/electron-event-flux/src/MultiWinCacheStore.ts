@@ -216,6 +216,7 @@ class MultiWinCacheStore extends MultiWinStore {
 
     if (isDevelopment) {
       window.loadURL(`http://localhost:${process.env.ELECTRON_WEBPACK_WDS_PORT}?url=${url}&clientId=${clientId}&parentId=${parentId}`);
+      // window.webContents.openDevTools();
     }
     else {
       window.loadURL(formatUrl({

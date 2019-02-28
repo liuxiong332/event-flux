@@ -11,10 +11,11 @@ const styles = theme => ({
 });
 
 function Todo2Demo({ state, store, classes }) {
+  if (!state.todo) return null;
   let { size } = state.todo.todo2;
   let { size: todo3Size } = state.todo.todo2.todo3;
-  let { size: todo3Slice0Size } = state.todo.todo2.todo3List[0];
-  let { size: todo3MyKeySize } = state.todo.todo2.todo3Map['myKey'];
+  let { size: todo3Slice0Size } = state.todo.todo2.todo3List[0] || { size: undefined };
+  let { size: todo3MyKeySize } = state.todo.todo2.todo3Map['myKey'] || { size: undefined };
   const onClick = () => store.stores.todoStore.todo2Store.addSize();
   const onClick2 = () => store.stores.todoStore.todo2Store.decreaseSize();
   const onClick3 = () => {

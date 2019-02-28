@@ -40,7 +40,7 @@ export default class StoreProxyHandler {
   }
 
   genIndexProxy(storePath, childFilters, forwarder) {
-    let storePathKey = storePath.toString();
+    let storePathKey = storePath.slice(0, storePath.length - 1).toString();
     let newProxy = new Proxy(forwarder, {
       get: (target, propName) => {
         if (!propName) return;

@@ -61,6 +61,8 @@ test('addStateFilter', () => {
   base1Instance._initWrap();
   stateFilterInstance._initWrap();
   managerStore.addWin('client1');
+  stateFilterInstance._handleAddWin('client1');
+
   expect(base1Instance._stateFilters).toEqual({ client1: { '*': false } });
   expect(stateFilterInstance._stateFilters).toEqual(
     { client1: { '*': false, subState: { '*': false } } }
@@ -105,6 +107,8 @@ test('addStateFilter for defaultFilter option', () => {
   base1Instance._initWrap();
   stateFilterInstance._initWrap();
   managerStore.addWin('client1');
+  stateFilterInstance._handleAddWin('client1');
+
   expect(base1Instance._stateFilters).toEqual({ client1: { '*': false } });
   expect(stateFilterInstance._stateFilters).toEqual(
     { client1: { '*': true, subState: { '*': false } } }
@@ -126,6 +130,8 @@ test('addStateFilterForMap', () => {
   base2Instance._initWrap();
   stateFilterInstance._initWrap();
   managerStore.addWin('client1');
+  stateFilterInstance._handleAddWin('client1');
+
   expect(stateFilterInstance._stateFilters).toEqual({ client1: { '*': false } });
 
   let filterFn = jest.fn();
@@ -175,6 +181,8 @@ test('addStateFilterForMap for defaultFilter option', () => {
   base2Instance._initWrap();
   stateFilterInstance._initWrap();
   managerStore.addWin('client1');
+  stateFilterInstance._handleAddWin('client1');
+
   expect(stateFilterInstance._stateFilters).toEqual({ 
     client1: { '*': true, item1: { '*': false }, item2: { '*': false } } 
   });
@@ -190,6 +198,8 @@ test('addStateFilterForMap for defaultFilter option', () => {
   });
 
   managerStore.addWin('client2');
+  stateFilterInstance._handleAddWin('client2');
+
   expect(stateFilterInstance._stateFilters).toEqual({ 
     client1: { '*': true, item1: { '*': false }, item2: { '*': false }, item3: null },
     client2: { '*': true, item1: { '*': false }, item2: { '*': false } },
