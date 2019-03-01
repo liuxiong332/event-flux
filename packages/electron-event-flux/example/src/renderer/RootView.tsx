@@ -96,13 +96,13 @@ export default class MyView extends React.PureComponent<any, any> {
   constructor(props) {
     super(props);
     this.state = {};
-    let { store } = props;
-    // store.todoStore.listen(window['clientId']);
-    // store.todoStore.todo2Store.listen(window['clientId']);
-    // store.todoStore.todo2Store.todo3Store.listen(window['clientId']);
-    // store.todoStore.todo2Store.todo4Store.listen(window['clientId']);
-    // store.todoStore.todo2Store.todo3StoreList.listen(window['clientId']);
-    // store.todoStore.todo2Store.todo3StoreMap.listenForKeys(window['clientId'], 'myKey');
+    let { store: { stores } } = props;
+    stores.todoStore.listen(window['clientId']);
+    stores.todoStore.todo2Store.listen(window['clientId']);
+    stores.todoStore.todo2Store.todo3Store.listen(window['clientId']);
+    stores.todoStore.todo2Store.todo4Store.listen(window['clientId']);
+    stores.todoStore.todo2Store.todo3StoreList.listen(window['clientId']);
+    stores.todoStore.todo2Store.todo3StoreMap.listenForKeys(window['clientId'], 'myKey');
   }
 
   divGetter(prop) {
