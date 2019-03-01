@@ -1,6 +1,6 @@
 {
   "name": "electron-event-flux",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "description": "Redux store which synchronizes between instances in multiple process",
   "main": "lib/index.js",
   "scripts": {
@@ -34,7 +34,6 @@
   "dependencies": {
     "@types/node": "^10.12.10",
     "@types/react": "^16.7.11",
-    "electron": "^4.0.5",
     "electron-store": "^2.0.0",
     "event-flux": "^0.9.7",
     "immutable": "^3.8.2",
@@ -65,6 +64,7 @@
     "typescript": "^3.1.6"
   },
   "peerDependencies": {
-    "react": ">16.0.0"
+    "react": ">16.0.0",
+    "electron": "^4"
   }
 }
