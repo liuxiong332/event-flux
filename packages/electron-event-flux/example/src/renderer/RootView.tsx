@@ -103,6 +103,13 @@ export default class MyView extends React.PureComponent<any, any> {
     stores.todoStore.todo2Store.todo4Store.listen(window['clientId']);
     // stores.todoStore.todo2Store.todo3StoreList.listen(window['clientId']);
     stores.todoStore.todo2Store.todo3StoreMap.listenForKeys(window['clientId'], 'myKey');
+
+    stores.winTodoStore.listen(window['clientId']);
+    stores.winTodoStore.todo2Store.listen(window['clientId']);
+    stores.winTodoStore.todo2Store.todo3Store.listen(window['clientId']);
+    stores.winTodoStore.todo2Store.todo4Store.listen(window['clientId']);
+    // stores.todoStore.todo2Store.todo3StoreList.listen(window['clientId']);
+    stores.winTodoStore.todo2Store.todo3StoreMap.listenForKeys(window['clientId'], 'myKey');
   }
 
   divGetter(prop) {

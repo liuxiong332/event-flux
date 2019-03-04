@@ -92,6 +92,7 @@ function storeEnhancer(appStore: MultiWindowAppStore, stores, storeShape) {
         let { updated, deleted } = filterDifference(prevFilters[clientId], filters[clientId]);
         let updateState = filterApply(state, updated, deleted);
         
+        updateState = filterWindowState(updateState, winManagerKey, clientId);
         console.log('update state:', prevFilters[clientId], filters[clientId], updateState);
         if (isEmpty(updateState)) return;
         mainClient.sendToRenderer(client, serialize({ payload: { updated: updateState } }));
