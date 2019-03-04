@@ -2,12 +2,12 @@ import AppStore from 'event-flux/lib/AppStore';
 import objectDifference from './utils/objectDifference';
 import filterDifference from './utils/filterDifference';
 import filterApply from './utils/filterApply';
-import { filterOneStore, filterWindowStore, filterWindowState, filterWindowDelta } from './utils/filterStore';
+import { filterOneStore } from './utils/filterStore';
+import { filterWindowStore, filterWindowState, filterWindowDelta } from './utils/filterWindowStore';
 import { declareStore } from './StoreDeclarer';
 import MainClient from './MainClient';
 import MultiWinManagerStore, { WinPackStore } from './MultiWinManagerStore';
 import ActionRecordStore from './ActionRecordStore';
-import fillShape from './utils/fillShape';
 import MultiWinStore from './MultiWinStore';
 import { addStateFilter } from './utils/stateFilterDecorator';
 

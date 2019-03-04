@@ -1,6 +1,5 @@
 import AppStore from 'event-flux/lib/AppStore';
 import objectMerge from './utils/objectMerge';
-import fillShape from './utils/fillShape';
 import { serialize, deserialize } from 'json-immutable';
 import StoreProxyHandler from './utils/StoreProxyHandler';
 import RendererClient from './RendererClient';
@@ -46,7 +45,7 @@ export class RendererAppStore extends AppStore {
 
   handleStore(resolve, filter, state, store) {
     const storeData = deserialize(state);
-    const initialState = filter ? fillShape(storeData, filter) : storeData;
+    const initialState = storeData;
     this.state = initialState;
 
     const storeFilters = JSON.parse(store);
