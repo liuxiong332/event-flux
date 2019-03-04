@@ -98,7 +98,9 @@ Todo2Store.innerStores = {
   todo3: declareStore(Todo3Store),
   todo4: declareStore(Todo4Store),
   todo3List: declareStoreList(Todo3Store, { storeKey: 'todo3StoreList', size: 1 }),
-  todo3Map: declareStoreMap(Todo3Store, { storeKey: 'todo3StoreMap', keys: ['myKey'] }),
+  todo3Map: declareStoreMap(Todo3Store, {
+    storeKey: 'todo3StoreMap', keys: ['myKey'], storeDefaultFilter: true,
+  }),
 };
 
 class TodoStore extends StoreBase {

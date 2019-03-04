@@ -28,6 +28,7 @@ const storeDeclarer = {
 
 rendererInit(storeDeclarer, {
   renderHandler: (state) => {
+    console.log('get new state:', state);
     ReactDOM.render(<MyView store={window['store']} state={state} action={window['action']}/>, rootElement);
   }, 
   actionHandler: (action) => {

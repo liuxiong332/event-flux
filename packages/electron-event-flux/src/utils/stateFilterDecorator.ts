@@ -92,7 +92,11 @@ export const addStateFilter = (StoreClass) => {
         let oldFilters = this._stateFilters[clientId] || this.getDefaultFilter();
         let nextFilters = { ...oldFilters, ...newFilter }; 
         this._stateFilters[clientId] = nextFilters;
-        this.emitter && this.emitter.emit('did-filter-update', { clientId, filters: nextFilters });
+        if (this.emitter) {
+          this.emitter.emit('did-filter-update', { clientId, filters: nextFilters });
+        } else {
+          this.handleFilterChange && this.handleFilterChange();
+        }
       };
       filterRunner();
     }

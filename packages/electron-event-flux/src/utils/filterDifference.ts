@@ -25,7 +25,7 @@ function checkUpdateVal(key, old, curr, updated, deleted) {
   if (key === '*') {
     updated[key] = currVal;
     if (process.env.NODE_ENV === 'development') {
-      
+
     }
     updated['*@exclude'] = Object.keys(curr).filter(k => k !== '*');
     return;
@@ -40,6 +40,8 @@ function checkUpdateVal(key, old, curr, updated, deleted) {
 }
 
 function filterDifference(old, curr) {
+  if (old == null || curr == null) return { updated: curr, deleted: {} };
+
   const updated = {};
   const deleted = {};
 

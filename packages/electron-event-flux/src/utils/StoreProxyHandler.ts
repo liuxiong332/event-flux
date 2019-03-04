@@ -21,6 +21,10 @@ type StoreFilters = {
   [name: string]: StoreShape;
 }
 
+const IndexForwardKeys = [
+  'invoke', 'listen', 'unlisten', 'listenForKeys', 'unlistenForKeys'
+];
+
 export default class StoreProxyHandler {
   storeProxyCache = new Map();
 
@@ -48,14 +52,22 @@ export default class StoreProxyHandler {
           let cacheStore = this.storeProxyCache.get(storePathKey + index);
           if (cacheStore) return cacheStore;
 
-          storePath = [
+          let mapStorepath = [
             ...storePath.slice(0, -1), 
             { ...storePath[storePath.length - 1], index }
           ];
-          let childStores = this.proxyStore(storePath, childFilters, forwarder);
-          let newStore = this.genProxy(storePath, childStores, forwarder);
+          let childStores = this.proxyStore(mapStorepath, childFilters, forwarder);
+          let newStore = this.genProxy(mapStorepath, childStores, forwarder);
           this.storeProxyCache.set(storePathKey + index, newStore);
           return newStore;
+        }
+        if (IndexForwardKeys.indexOf(propName as string) !== -1) {
+          let oneStorePath = [
+            ...storePath.slice(0, -1), storePath[storePath.length - 1].name
+          ];
+          return function(...args) {
+            return forwarder({ store: oneStorePath, method: propName, args });
+          };
         }
         if (propName === 'get') {
           return retIndexFunc;

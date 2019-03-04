@@ -17,6 +17,7 @@ const { winManagerStoreName, winManagerKey } = require('./constants');
 const { serialize, deserialize } = require('json-immutable');
 
 function findStore(stores, storePath) {
+  if (!storePath) return;
   return storePath.reduce((subStores, entry) => {
     if (!subStores) return undefined;
     if (!isObject(entry)) return subStores[entry];    
@@ -148,7 +149,7 @@ class MultiWindowAppStore extends AppStore {
       this._sendUpdate();
     });
     winManagerStore.onDidRemoveWin((clientId) => this._handleRemoveWin(clientId));
-    this._prevStateFilters = this._stateFilters;
+    this._prevStateFilters = Object.assign({}, this._stateFilters);
 
     this.startObserve();
     super.init();
@@ -164,12 +165,16 @@ class MultiWindowAppStore extends AppStore {
     this.filterCallbacks.push(callback);
   }
 
+  handleFilterChange() {
+    this.batchUpdater.requestUpdate();
+  }
+
   _sendUpdate() {
     this.handleWillFilterChange(this.prevState, this.state, this._prevStateFilters, this._stateFilters);
     this.didChangeCallbacks.forEach(callback => callback(this.state));
     this.prevState = this.state;
     this.filterCallbacks.forEach(callback => callback(this._stateFilters));
-    this._prevStateFilters = this._stateFilters;
+    this._prevStateFilters = Object.assign({}, this._stateFilters);
   }
 
   getStore(key) {
