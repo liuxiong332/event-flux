@@ -132,31 +132,31 @@ function filterOneStore(StoreClass, filterOptions?: FilterStoreOptions) {
       let Store = extendClass(value);
       filters[storeName] = { 
         type: 'Store',
-        filters: filterOneStore(Store),
+        filters: filterOneStore(Store, filterOptions),
       };
-      subStoreInfos.push(['Item', Store, storeName, key]);
+      subStoreInfos.push(['Item', Store, storeName, key, filterOptions]);
     } else {
       let { options, Store } = value;
-      if (filterOptions) Object.assign(options, filterOptions);
+      if (filterOptions) options = { ...options, ...filterOptions };
       let storeName = options && options.storeKey || key + 'Store';
       Store = extendClass(Store);
 
       if (StoreDeclarer.isStore(value)) {
         filters[storeName] = { 
           type: 'Store',
-          filters: filterOneStore(Store),
+          filters: filterOneStore(Store, filterOptions),
         };
         subStoreInfos.push(['Item', Store, storeName, key, options]);
       } else if (StoreListDeclarer.isStoreList(value)) {
         filters[storeName] = {
           type: 'StoreList',
-          filters: filterOneStore(Store),
+          filters: filterOneStore(Store, filterOptions),
         }
         subStoreInfos.push(['List', Store, storeName, key, options]);
       } else if (StoreMapDeclarer.isStoreMap(value)) {
         filters[storeName] = {
           type: 'StoreMap',
-          filters: filterOneStore(Store),
+          filters: filterOneStore(Store, filterOptions),
         };
         if (options && options.directInsert) key = null;
         subStoreInfos.push(['Map', Store, storeName, key, options]);

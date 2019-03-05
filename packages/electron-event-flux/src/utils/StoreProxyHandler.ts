@@ -21,8 +21,12 @@ type StoreFilters = {
   [name: string]: StoreShape;
 }
 
+const ListenForwardKeys = [
+  'listen', 'unlisten'
+];
+
 const IndexForwardKeys = [
-  'invoke', 'listen', 'unlisten', 'listenForKeys', 'unlistenForKeys'
+  'listen', 'unlisten', 'listenForKeys', 'unlistenForKeys'
 ];
 
 export default class StoreProxyHandler {
@@ -36,6 +40,12 @@ export default class StoreProxyHandler {
       get: function(target, propName) {
         if (!propName) return;
         if (forwardStore && forwardStore[propName]) return forwardStore[propName];
+        if (ListenForwardKeys.indexOf(propName as string) !== -1) {
+          return function(...args) {
+            args.unshift(window['clientId']);
+            return forwarder({ store: storePath, method: propName, args });
+          };
+        }
         return function(...args) {
           return forwarder({ store: storePath, method: propName, args });
         };
@@ -66,6 +76,7 @@ export default class StoreProxyHandler {
             ...storePath.slice(0, -1), storePath[storePath.length - 1].name
           ];
           return function(...args) {
+            args.unshift(window['clientId']);
             return forwarder({ store: oneStorePath, method: propName, args });
           };
         }

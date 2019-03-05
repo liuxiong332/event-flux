@@ -97,19 +97,19 @@ export default class MyView extends React.PureComponent<any, any> {
     super(props);
     this.state = {};
     let { store: { stores } } = props;
-    stores.todoStore.listen(window['clientId']);
-    stores.todoStore.todo2Store.listen(window['clientId']);
-    stores.todoStore.todo2Store.todo3Store.listen(window['clientId']);
-    stores.todoStore.todo2Store.todo4Store.listen(window['clientId']);
+    stores.todoStore.listen();
+    stores.todoStore.todo2Store.listen();
+    stores.todoStore.todo2Store.todo3Store.listen();
+    stores.todoStore.todo2Store.todo4Store.listen();
     // stores.todoStore.todo2Store.todo3StoreList.listen(window['clientId']);
-    stores.todoStore.todo2Store.todo3StoreMap.listenForKeys(window['clientId'], 'myKey');
+    stores.todoStore.todo2Store.todo3StoreMap.listenForKeys('myKey');
 
-    stores.winTodoStore.listen(window['clientId']);
-    stores.winTodoStore.todo2Store.listen(window['clientId']);
-    stores.winTodoStore.todo2Store.todo3Store.listen(window['clientId']);
-    stores.winTodoStore.todo2Store.todo4Store.listen(window['clientId']);
+    stores.winTodoStore.listen();
+    stores.winTodoStore.todo2Store.listen();
+    stores.winTodoStore.todo2Store.todo3Store.listen();
+    stores.winTodoStore.todo2Store.todo4Store.listen();
     // stores.todoStore.todo2Store.todo3StoreList.listen(window['clientId']);
-    stores.winTodoStore.todo2Store.todo3StoreMap.listenForKeys(window['clientId'], 'myKey');
+    stores.winTodoStore.todo2Store.todo3StoreMap.listenForKeys('myKey');
   }
 
   divGetter(prop) {
