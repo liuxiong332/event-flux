@@ -123,8 +123,18 @@ export const addStateFilter = (StoreClass) => {
 }
 
 type KeyType = string | number | string[] | number[];
-export const addStateFilterForMap = (StoreClass) => {
-  return class MainStoreBase extends StoreClass {
+
+export interface IFilterStoreMap {
+  listenForKeys(clientId: string, key: KeyType): void;
+  unlistenForKeys(clientId: string, key: KeyType): void;
+  add(key: string, prevInit?: Function): any;
+  delete(key: string): void;
+  clear(): void;
+  dispose(): void;
+}
+
+export function addStateFilterForMap(StoreClass) {
+  return class MainStoreBase extends StoreClass implements IFilterStoreMap {
     _stateListeners = {};
     _stateFilters = {};
     _filterDisposables = {};

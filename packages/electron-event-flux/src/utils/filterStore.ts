@@ -7,6 +7,7 @@
 import { StoreDeclarer, StoreListDeclarer, StoreMapDeclarer } from '../StoreDeclarer';
 import StoreList from './StoreList';
 import StoreMap from './StoreMap';
+import FilterStoreMap from './FilterStoreMap';
 import { beforeInit } from './storeBuilder';
 const isFunction = require('lodash/isFunction');
 
@@ -58,7 +59,12 @@ const storeBuilders = {
       }));
     }
     let mapOptions = options ? { defaultFilter: options.defaultFilter } : null;
-    let newStore = new StoreMap(null, storeBuilder, storeObserver, mapOptions);
+    let newStore = null;
+    if (options && options.applyFilter) {
+      newStore = new FilterStoreMap(null, storeBuilder, storeObserver, mapOptions); 
+    } else {
+      newStore = new StoreMap(null, storeBuilder, storeObserver, mapOptions);
+    }
     newStore.appStores = this._appStore.stores;
     if (this.setStore) return this.setStore(storeKey, newStore);
     this[storeKey] = newStore;
@@ -108,7 +114,11 @@ function extendClass(StoreClass) {
   return ExtendStoreClass;
 }
 
-function filterOneStore(StoreClass) {
+interface FilterStoreOptions {
+  applyFilter: boolean;
+}
+
+function filterOneStore(StoreClass, filterOptions?: FilterStoreOptions) {
   if (!StoreClass) return null;
   let innerStores = StoreClass.innerStores;
   if (!innerStores) return null;
@@ -127,6 +137,7 @@ function filterOneStore(StoreClass) {
       subStoreInfos.push(['Item', Store, storeName, key]);
     } else {
       let { options, Store } = value;
+      if (filterOptions) Object.assign(options, filterOptions);
       let storeName = options && options.storeKey || key + 'Store';
       Store = extendClass(Store);
 

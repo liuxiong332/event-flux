@@ -1,5 +1,5 @@
 import { initStore, disposeStore } from './storeBuilder';
-import { addStateFilterForMap } from './stateFilterDecorator';
+import { addStateFilterForMap, IFilterStoreMap } from './stateFilterDecorator';
 import { Emitter } from 'event-kit';
 
 class StoreMap {

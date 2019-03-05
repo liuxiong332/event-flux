@@ -220,7 +220,7 @@ export default function buildMultiWinAppStore(
   };
   let MultiWinAppStore = addStateFilter(MultiWindowAppStore);
   MultiWinAppStore.innerStores = allStores;
-  const storeShape = filterOneStore(MultiWinAppStore);
+  const storeShape = filterOneStore(MultiWinAppStore, { applyFilter: true });
   console.log('multi win app store:', MultiWinAppStore.prototype.getSubStoreInfos);
   const appStore = new MultiWinAppStore();
   appStore.storeShape = storeShape;
