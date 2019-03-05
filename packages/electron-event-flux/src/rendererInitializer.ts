@@ -83,7 +83,7 @@ interface RenderOptions {
 
 export default function rendererInit(rendererStores, options: RenderOptions = {}) {
   let query = getQuery();
-  window['clientId'] = query['clientId'];
+  window['clientId'] = query['clientId'] || 'mainClient';
   window['parentId'] = query['parentId'];
 
   // if (!window['clientId']) {  // Not a renderer window
