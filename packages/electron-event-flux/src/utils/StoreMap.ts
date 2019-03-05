@@ -1,8 +1,7 @@
 import { initStore, disposeStore } from './storeBuilder';
-import { addStateFilterForMap, IFilterStoreMap } from './stateFilterDecorator';
 import { Emitter } from 'event-kit';
 
-class StoreMap {
+export default class StoreMap {
   storeMap = new Map();
   disposables = new Map();
   options: any;
@@ -69,5 +68,3 @@ class StoreMap {
   values() { return this.storeMap.values(); }
   entries() { return this.storeMap.entries(); }
 }
-
-export default addStateFilterForMap(StoreMap);
