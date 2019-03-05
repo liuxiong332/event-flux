@@ -20,7 +20,7 @@ test('One Store test', () => {
   }, forwarder);
 
   resProxy.todoStore.getTodoStore('hello');
-  expect(forwarder).toHaveBeenCalledWith({ 
+  expect(forwarder).toHaveBeenCalledWith({
     store: ['todoStore'], method: 'getTodoStore', args: ['hello']
   });
 
@@ -54,18 +54,18 @@ test('Store List with path test', () => {
     storeList: { type: "StoreList", filters: null }
   }, forwarder);
 
-  resProxy.storeList.invoke('hello');
+  resProxy.storeList.listen('hello');
   expect(forwarder).toHaveBeenCalledWith({
     store: ['storeList'], 
-    method: 'invoke', 
-    args: ['hello']
+    method: 'listen', 
+    args: [undefined, 'hello']
   });
 
-  resProxy.storeList[0].invoke('ddd');
+  resProxy.storeList[0].listen('ddd');
   expect(forwarder).toHaveBeenCalledWith({
     store: [{ type: 'List', name: 'storeList', index: '0' }], 
-    method: 'invoke',
-    args: ['ddd']
+    method: 'listen',
+    args: [undefined, 'ddd']
   });
 
   expect(resProxy.storeList[0]).toBe(resProxy.storeList[0]);
@@ -78,18 +78,18 @@ test('Store Map with path test', () => {
     storeMap: { type: "StoreMap", filters: null }
   }, forwarder);
 
-  resProxy.storeMap.key1.invoke('ddd');
+  resProxy.storeMap.key1.listen('ddd');
   expect(forwarder).toHaveBeenCalledWith({
     store: [{ type: 'Map', name: 'storeMap', index: 'key1' }], 
-    method: 'invoke',
-    args: ['ddd']
+    method: 'listen',
+    args: [undefined, 'ddd']
   });
 
-  resProxy.storeMap.invoke('hello');
+  resProxy.storeMap.listen('hello');
   expect(forwarder).toHaveBeenCalledWith({
     store: ['storeMap'], 
-    method: 'invoke', 
-    args: ['hello']
+    method: 'listen', 
+    args: [undefined, 'hello']
   });
 
   expect(resProxy.storeMap.key2).toBe(resProxy.storeMap.key2);

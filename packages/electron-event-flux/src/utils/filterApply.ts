@@ -19,6 +19,13 @@
     {}
   ) would return
     { b: { m: 'd' } }
+
+  3. filterApply(
+    { a: { d: 1 }, b: { m: 'd' } },
+    { a: { *: true }, b: null },
+    {}
+  ) would return
+    { a: { d: 1 } }
 */
 
 const isObject = require('lodash/isObject');
@@ -43,7 +50,7 @@ export default function filterApply(origin, updated, deleted) {
   if (isObject(updated)) {
     Object.keys(updated).forEach(key => {
       if (key === '*' || key === '*@exclude') return;
-      if (origin[key] != null) {
+      if (origin[key] != null && updated[key]) {
         merged[key] = filterApply(origin[key], updated[key], deleted && deleted[key]);
       }
     });

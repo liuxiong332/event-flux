@@ -22,6 +22,12 @@ test('base apply filter', () => {
   )).toEqual(
     { a: 1, b: 2, c: { c1: { cc1: 'd' } }, d: undefined }
   );
+
+  expect(filterApply(
+    { a: { d: 1 }, b: { m: 'd' } },
+    { a: { '*': true }, b: null },
+    {}
+  )).toEqual({ a: { d: 1 } });
 });
 
 test('advanced apply test', () => {
