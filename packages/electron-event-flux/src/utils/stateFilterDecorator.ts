@@ -229,8 +229,11 @@ export function addStateFilterForMap(StoreClass) {
           let store = this.storeMap.get(key);
           let storeFilter = store._stateFilters && store._stateFilters[clientId] || { '*': true };
           this._setFilter(clientId, { [key]: storeFilter });
-          this._filterDisposables[key] = store.emitter.on('did-filter-update', ({ clientId, filters }) => {
-            this._setFilter(clientId, { [key]: filters });
+          if (this._filterDisposables[saveKey]) {
+            console.error(`The ${key} for ${clientId} has listened, This May be Bugs`);
+          }
+          this._filterDisposables[saveKey] = store.emitter.on('did-filter-update', ({ clientId: nowId, filters }) => {
+            if (nowId === clientId) this._setFilter(clientId, { [key]: filters });
           });
         }
       });
@@ -245,7 +248,7 @@ export function addStateFilterForMap(StoreClass) {
         _stateListeners[saveKey] -= 1;
         if (_stateListeners[saveKey] === 0) {
           this._setFilter(clientId, { [key]: false });
-          this._filterDisposables[key].dispose();
+          this._filterDisposables[saveKey].dispose();
         }
       });
     };

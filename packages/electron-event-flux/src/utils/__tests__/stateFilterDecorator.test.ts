@@ -159,6 +159,65 @@ test('addStateFilterForMap', () => {
   });
 });
 
+test('addStateFilterForMap for multi listen and unlisten', () => {
+  const Base1DeriveClass = addStateFilter(Base1Class);
+  let base1Instance = new Base1DeriveClass();
+  let base2Instance = new Base1DeriveClass();
+  class Base2Class extends Base1Class {
+    storeMap = new Map([['item1', base1Instance], ['item2', base2Instance]]);
+  }
+
+  let StateFilterClass = addStateFilterForMap(Base2Class);
+  let stateFilterInstance = new StateFilterClass();
+
+  base1Instance._initWrap();
+  base2Instance._initWrap();
+  stateFilterInstance._initWrap();
+  managerStore.addWin('client1');
+  managerStore.addWin('client2');
+  stateFilterInstance._handleAddWin('client1');
+  stateFilterInstance._handleAddWin('client2');
+
+  expect(stateFilterInstance._stateFilters).toEqual({ 
+    client1: { '*': false },
+    client2: { '*': false },
+  });
+
+  let filterFn = jest.fn();
+  stateFilterInstance.emitter.on('did-filter-update', filterFn);
+
+  base1Instance.listen('client1');
+  base2Instance.listen('client1');
+   
+  for (let i = 0; i < 2; i += 1) {
+    stateFilterInstance.listenForKeys('client1', ['item1']);
+    expect(stateFilterInstance._stateFilters).toEqual({ 
+      client1: { '*': false, item1: { '*': true } }, client2: { '*': false },
+    });
+    base1Instance.listen('client1');
+  }
+  expect(stateFilterInstance._stateListeners).toEqual({
+    ['client1' + 'item1']: 2
+  });
+  
+  stateFilterInstance.unlistenForKeys('client1', ['item1']);
+  expect(stateFilterInstance._stateFilters).toEqual({ 
+    client1: { '*': false, item1: { '*': true } }, client2: { '*': false },
+  });
+  stateFilterInstance.unlistenForKeys('client1', ['item1']);
+  expect(stateFilterInstance._stateFilters).toEqual({
+    client1: { '*': false, item1: false }, client2: { '*': false },
+  });
+  expect(stateFilterInstance._stateListeners).toEqual({
+    ['client1' + 'item1']: 0
+  });
+
+  base2Instance.listen('client1');
+  expect(stateFilterInstance._stateFilters).toEqual({
+    client1: { '*': false, item1: false }, client2: { '*': false },
+  });
+});
+
 test('addStateFilterForMap for defaultFilter option', () => {
   const Base1DeriveClass = addStateFilter(Base1Class);
   let base1Instance = new Base1DeriveClass();
