@@ -35,7 +35,7 @@ export default class MultiWinStore extends StoreBase {
     let clientId;
     if (typeof window === 'object') {
       clientId = this.genClientId();
-      let win = this.createBrowserWin(genBrowserUrl(url, clientId, parentClientId), params);
+      let win = this.createBrowserWin(genBrowserUrl(url, clientId, parentClientId), clientId, params);
       this._appStore.mainClient.addWin(clientId, win);
     } else {
       try {
@@ -55,7 +55,8 @@ export default class MultiWinStore extends StoreBase {
       this.clientNamedWinIdMap[clientId] = winId;
     } else {
       let clientId = this.namedWinIdMap[winId];
-      this.changeClientAction(clientId, url);
+      this._appStore.mainClient.changeClientAction(clientId, url);
+      this.activeWindow(clientId);
     }
   }
 
@@ -73,11 +74,18 @@ export default class MultiWinStore extends StoreBase {
     this.clientNamedWinIdMap = {};
   }
 
-  createBrowserWin(url, params: any = {}) {
+  createBrowserWin(url, clientId, params: any = {}) {
     if (!params.width) params.width = 400;
     if (!params.height) params.height = 400;
     let featureStr = Object.keys(params).map(key => `${key}=${params[key]}`).join(',');
-    return window.open(url, "newwindow", featureStr + ", toolbar=no, menubar=no, scrollbars=no, resizable=no, location=no, status=no, titlebar=no");
+    let childWin = window.open(url, "newwindow", featureStr + ", toolbar=no, menubar=no, scrollbars=no, resizable=no, location=no, status=no, titlebar=no");
+    childWin.addEventListener('unload', () => {
+      let winId = this.clientNamedWinIdMap[clientId];
+      if (winId) {
+        this.clientNamedWinIdMap[clientId] = undefined;
+        this.namedWinIdMap[winId] = undefined;
+      }
+    });
   }
 
   createElectronWin(url, clientId, parentClientId, params) {
@@ -89,10 +97,12 @@ export default class MultiWinStore extends StoreBase {
   }
 
   changeClientAction(clientId, url) {
-
+    this._appStore.mainClient.changeClientAction(clientId, url);
   }
 
   getWinRootStore(clientId) {
     return this.appStores[winManagerStoreName].winPackMapStore.get(clientId);
   }
+
+  activeWindow(clientId) {}
 }
