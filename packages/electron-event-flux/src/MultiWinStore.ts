@@ -14,6 +14,11 @@ function genBrowserUrl(url = '', clientId, parentId) {
 }
 
 export default class MultiWinStore extends StoreBase {
+  // namedWinId to clientId map
+  namedWinIdMap: { [winId: string]: string } = {};
+  // clientId to namedWinId map
+  clientNamedWinIdMap: { [winId: string]: string } = {};
+
   init() {
     this.appStores[winManagerStoreName].observe((state) => {
       this.setState({ clientIds: state.clientIds });
@@ -42,6 +47,18 @@ export default class MultiWinStore extends StoreBase {
     return clientId;
   }
 
+  // Create new win if the specific winId is not exists
+  createOrOpenWin(winId, url, params) {
+    if (!this.namedWinIdMap[winId]) {
+      let clientId = this.createWin(url, null, params);
+      this.namedWinIdMap[winId] = clientId;
+      this.clientNamedWinIdMap[clientId] = winId;
+    } else {
+      let clientId = this.namedWinIdMap[winId];
+      this.changeClientAction(clientId, url);
+    }
+  }
+
   genClientId() {
     let clientId = 'win' + Math.floor(Math.random() * 10000);
     if (this.state.clientIds.indexOf(clientId) !== -1) {
@@ -52,6 +69,8 @@ export default class MultiWinStore extends StoreBase {
 
   closeAllWindows() {
     this._appStore.mainClient.closeAllWindows();
+    this.namedWinIdMap = {};
+    this.clientNamedWinIdMap = {};
   }
 
   createBrowserWin(url, params: any = {}) {
@@ -65,8 +84,12 @@ export default class MultiWinStore extends StoreBase {
     console.error('Please provide the createElectronWin');
   }
 
-  changeAction(clientId, action) {
+  actionChanged(clientId, action) {
     
+  }
+
+  changeClientAction(clientId, url) {
+
   }
 
   getWinRootStore(clientId) {

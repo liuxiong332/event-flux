@@ -5,6 +5,6 @@ export default class ActionRecordStore extends StoreBase {
   clientId: string;
 
   setAction(action) {
-    this.appStores.multiWinStore.changeAction(this.clientId, action);
+    this.appStores.multiWinStore.actionChanged(this.clientId, action);
   }
 }

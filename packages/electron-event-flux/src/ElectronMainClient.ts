@@ -138,4 +138,9 @@ export default class ElectronMainClient {
   getWindowByClientId(clientId) {
     return this.clientMap[clientId].window;
   }
+
+  changeClientAction(clientId, url) {
+    let win = this.clientMap[clientId].window;
+    this.sendMessage(win, { action: 'change-props', url });
+  }
 }

@@ -93,6 +93,8 @@ class MultiWinCacheStore extends MultiWinStore {
         window.close();
       }
     });
+    this.namedWinIdMap = {};
+    this.clientNamedWinIdMap = {};
   }
 
   saveClients(clientIds) {
@@ -149,6 +151,12 @@ class MultiWinCacheStore extends MultiWinStore {
     win.on('closed', () => {
       let winIndex = this.createWins.indexOf(win);
       this.createWins.splice(winIndex, 1);
+
+      let winId = this.clientNamedWinIdMap[clientId];
+      if (winId) {
+        this.clientNamedWinIdMap[clientId] = undefined;
+        this.namedWinIdMap[winId] = undefined;
+      }
 
       if (this.willQuit) return;
       if (clientId === 'mainClient') {
@@ -246,10 +254,19 @@ class MultiWinCacheStore extends MultiWinStore {
     return window;
   }
 
-  changeAction(clientId, action) {
+  actionChanged(clientId, action) {
     if (this.clientInfoMap[clientId]) {
       this.clientInfoMap[clientId].url = action;
       this.saveClients(this.clientIds);
+    }
+  }
+
+  activeWindow(clientId) {
+    const win = this._appStore.mainClient.getWindowByClientId(clientId);
+    if (win) {
+      win.moveTop();
+      // win && win.minimize();
+      win.focus();
     }
   }
 }

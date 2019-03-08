@@ -88,4 +88,9 @@ export default class ElectronMainClient {
       window && window.close();
     });
   }
+
+  changeClientAction(clientId, url) {
+    let win = this.clients[clientId];
+    this.sendMessage(win, { action: 'change-props', url });
+  }
 }
