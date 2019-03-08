@@ -25,6 +25,16 @@ export default class MultiWinStore extends StoreBase {
     });
 
     if (typeof window === 'object') {
+      window.addEventListener("message", (event) => {
+        let { action, clientId } = event.data || {} as any;
+        if (action === 'close') {
+          let winId = this.clientNamedWinIdMap[clientId];
+          if (winId) {
+            this.clientNamedWinIdMap[clientId] = undefined;
+            this.namedWinIdMap[winId] = undefined;
+          }
+        }
+      });
       window.addEventListener("beforeunload", (event) => {
         this.closeAllWindows();
       });
@@ -79,13 +89,6 @@ export default class MultiWinStore extends StoreBase {
     if (!params.height) params.height = 400;
     let featureStr = Object.keys(params).map(key => `${key}=${params[key]}`).join(',');
     let childWin = window.open(url, "newwindow", featureStr + ", toolbar=no, menubar=no, scrollbars=no, resizable=no, location=no, status=no, titlebar=no");
-    childWin.onunload = () => {
-      let winId = this.clientNamedWinIdMap[clientId];
-      if (winId) {
-        this.clientNamedWinIdMap[clientId] = undefined;
-        this.namedWinIdMap[winId] = undefined;
-      }
-    }
     return childWin;
   }
 
