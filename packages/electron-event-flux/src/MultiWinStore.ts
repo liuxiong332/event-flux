@@ -79,13 +79,14 @@ export default class MultiWinStore extends StoreBase {
     if (!params.height) params.height = 400;
     let featureStr = Object.keys(params).map(key => `${key}=${params[key]}`).join(',');
     let childWin = window.open(url, "newwindow", featureStr + ", toolbar=no, menubar=no, scrollbars=no, resizable=no, location=no, status=no, titlebar=no");
-    childWin.addEventListener('unload', () => {
+    childWin.onunload = () => {
       let winId = this.clientNamedWinIdMap[clientId];
       if (winId) {
         this.clientNamedWinIdMap[clientId] = undefined;
         this.namedWinIdMap[winId] = undefined;
       }
-    });
+    }
+    return childWin;
   }
 
   createElectronWin(url, clientId, parentClientId, params) {
