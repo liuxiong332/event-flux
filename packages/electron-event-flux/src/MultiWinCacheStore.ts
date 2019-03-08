@@ -2,7 +2,7 @@ import MultiWinStore from './MultiWinStore';
 import ElectronWindowState from './ElectronWindowState';
 import { format as formatUrl } from 'url';
 import * as path from 'path';
-import { app, BrowserWindow } from 'electron';
+import { app, BrowserWindow, screen } from 'electron';
 
 const isDevelopment = process.env.NODE_ENV !== 'production'
 
@@ -110,14 +110,17 @@ class MultiWinCacheStore extends MultiWinStore {
   }
 
   createWin(url, parentClientId, params) {
-    if (!parentClientId) {
-      return console.error('You should invoke multiWinStore in Renderer process');
-    }
     if (params && params.x == null && params.y == null) {
-      let window = this._appStore.mainClient.getWindowByClientId(parentClientId);
-      let bounds = params.useContentSize ? window.getContentBounds() : window.getBounds();
-      params.x = bounds.x + bounds.width / 2 - params.width / 2;
-      params.y = bounds.y + bounds.height / 2 - params.height / 2;
+      if (parentClientId) {
+        let window = this._appStore.mainClient.getWindowByClientId(parentClientId);
+        let bounds = params.useContentSize ? window.getContentBounds() : window.getBounds();
+        params.x = bounds.x + bounds.width / 2 - params.width / 2;
+        params.y = bounds.y + bounds.height / 2 - params.height / 2;
+      } else {
+        let screenSize = screen.getPrimaryDisplay().size;
+        params.x = screenSize.width / 2 - params.width / 2;
+        params.y = screenSize.height / 2 - params.height / 2;
+      }
     }
     let clientId;
     try {

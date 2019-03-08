@@ -48,9 +48,9 @@ export default class MultiWinStore extends StoreBase {
   }
 
   // Create new win if the specific winId is not exists
-  createOrOpenWin(winId, url, params) {
+  createOrOpenWin(winId, url, parentClientId, params) {
     if (!this.namedWinIdMap[winId]) {
-      let clientId = this.createWin(url, null, params);
+      let clientId = this.createWin(url, parentClientId, params);
       this.namedWinIdMap[winId] = clientId;
       this.clientNamedWinIdMap[clientId] = winId;
     } else {
