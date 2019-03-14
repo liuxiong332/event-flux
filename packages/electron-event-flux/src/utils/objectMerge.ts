@@ -2,7 +2,6 @@ import { List, Map } from 'immutable';
 const isObject = require('lodash/isObject');
 const keys = require('lodash/keys');
 const union = require('lodash/union');
-// const { deserialize } = require('json-immutable');
 
 const isShallow = (val) => Array.isArray(val) || !isObject(val) || List.isList(val);
 

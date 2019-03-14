@@ -14,7 +14,7 @@ import { addStateFilter } from './utils/stateFilterDecorator';
 const isEmpty = require('lodash/isEmpty');
 const isObject = require('lodash/isObject');
 const { winManagerStoreName, winManagerKey } = require('./constants');
-const { serialize, deserialize } = require('json-immutable');
+const { serialize, deserialize } = require('json-immutable-bn');
 
 function findStore(stores, storePath) {
   if (!storePath) return;

@@ -249,6 +249,7 @@ export function addStateFilterForMap(StoreClass) {
         if (_stateListeners[saveKey] === 0) {
           this._setFilter(clientId, { [key]: false });
           this._filterDisposables[saveKey].dispose();
+          this._filterDisposables[saveKey] = null;
         }
       });
     };

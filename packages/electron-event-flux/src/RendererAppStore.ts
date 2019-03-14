@@ -1,6 +1,6 @@
 import AppStore from 'event-flux/lib/AppStore';
 import objectMerge from './utils/objectMerge';
-import { serialize, deserialize } from 'json-immutable';
+import { serialize, deserialize } from 'json-immutable-bn';
 import StoreProxyHandler from './utils/StoreProxyHandler';
 import RendererClient from './RendererClient';
 import { Emitter } from 'event-kit';

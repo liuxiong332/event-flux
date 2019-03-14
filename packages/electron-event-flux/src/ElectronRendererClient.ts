@@ -2,7 +2,6 @@ const {
   mainInitName, renderRegisterName, renderDispatchName, mainDispatchName, mainReturnName, winMessageName, messageName
 } = require('./constants');
 const { ipcRenderer, remote } = require('electron');
-// const { serialize, deserialize } = require('json-immutable');
 
 export default class ElectronRendererClient {
   clientId: any;
