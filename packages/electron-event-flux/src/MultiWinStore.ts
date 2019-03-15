@@ -63,11 +63,25 @@ export default class MultiWinStore extends StoreBase {
       let clientId = this.createWin(url, parentClientId, params);
       this.namedWinIdMap[winId] = clientId;
       this.clientNamedWinIdMap[clientId] = winId;
+      return clientId;
     } else {
       let clientId = this.namedWinIdMap[winId];
       this._appStore.mainClient.changeClientAction(clientId, url);
       this.activeWindow(clientId);
+      return clientId;
     }
+  }
+
+  closeWin(clientId) {
+    if (typeof window === 'object') {
+    } else {
+
+    }
+  }
+
+  closeWinByWinId(winId) {
+    let clientId = this.namedWinIdMap[winId];
+    clientId && this.closeWin(clientId);
   }
 
   genClientId() {

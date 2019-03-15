@@ -56,7 +56,6 @@ function storeEnhancer(appStore: MultiWindowAppStore, stores, storeShape) {
       
       let updateState = filterApply(appStore.prevState, appStore._prevStateFilters[clientId], null);
       let filterState = filterWindowState(updateState, winManagerKey, clientId);
-      console.log('initial state:', filterState);
       return serialize(filterState);
     },
     handleRendererMessage(payload) {
@@ -93,7 +92,6 @@ function storeEnhancer(appStore: MultiWindowAppStore, stores, storeShape) {
         let updateState = filterApply(state, updated, deleted);
         
         updateState = filterWindowState(updateState, winManagerKey, clientId);
-        console.log('update state:', prevFilters[clientId], filters[clientId], updateState);
         if (isEmpty(updateState)) return;
         mainClient.sendToRenderer(client, serialize({ payload: { updated: updateState } }));
       }
@@ -107,9 +105,6 @@ function storeEnhancer(appStore: MultiWindowAppStore, stores, storeShape) {
 
       let filterUpdated = filterApply(delta.updated, filters[clientId], null);
       let filterDeleted = filterApply(delta.deleted, filters[clientId], null);
-
-      console.log('filter updated:', delta.updated, filterUpdated);
-      console.log('filter deleted:', delta.deleted, filterDeleted);
 
       let [updated, deleted] = filterWindowDelta(
         filterUpdated, filterDeleted, winManagerKey, clientId
@@ -221,10 +216,8 @@ export default function buildMultiWinAppStore(
   let MultiWinAppStore = addStateFilter(MultiWindowAppStore);
   MultiWinAppStore.innerStores = allStores;
   const storeShape = filterOneStore(MultiWinAppStore, { applyFilter: true });
-  console.log('multi win app store:', MultiWinAppStore.prototype.getSubStoreInfos);
   const appStore = new MultiWinAppStore();
   appStore.storeShape = storeShape;
   appStore.init();
-  console.log('state filters:', appStore._stateFilters);
   return appStore;
 }
