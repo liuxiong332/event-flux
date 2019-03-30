@@ -59,10 +59,10 @@ function storeEnhancer(appStore: MultiWindowAppStore, stores, storeShape) {
       return serialize(filterState);
     },
     handleRendererMessage(payload) {
-      const { store: storePath, method, args } = deserialize(payload);
-      let store = findStore(stores, storePath);
-      
       try {
+        const { store: storePath, method, args } = deserialize(payload);
+        let store = findStore(stores, storePath);
+
         if (!store) {
           throw new Error(`The store for method ${method} is not defined`);
         }

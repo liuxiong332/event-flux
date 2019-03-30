@@ -71,13 +71,13 @@ export class RendererAppStore extends AppStore {
   handleResult(invokeId, error, result) {
     this.idGenerator.dispose(invokeId);
     let {resolve, reject} = this.resolveMap[invokeId];
+    this.resolveMap[invokeId] = null;
     if (error) {
       reject(error);
-     } else {
+    } else {
       // if (result !== undefined) result = JSON.parse(result);
       resolve(result);
-     }
-    this.resolveMap[invokeId] = null;
+    }
   }
 
   handleMessage(message) {

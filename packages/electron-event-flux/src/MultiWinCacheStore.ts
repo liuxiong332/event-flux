@@ -9,6 +9,7 @@ const isDevelopment = process.env.NODE_ENV !== 'production'
 export class WindowManager {
   windows = [];
   winHandler: any;
+  winSize = 1;
 
   constructor(winHandler) {
     this.windows = [];
@@ -27,7 +28,7 @@ export class WindowManager {
 
   ensureWindows() {
     if (!this.windows) return;
-    while (this.windows.length < 1) {
+    while (this.windows.length < this.winSize) {
       let clientId = this.genClientId()
       this.windows.push({ clientId, window: this.createWin(clientId) });
     }
@@ -184,28 +185,33 @@ class MultiWinCacheStore extends MultiWinStore {
       win = this.createMainWindow(url, clientId, parentId, params);
     } else {
       let winInfo = this.windowManager.getWin();
-      clientId = winInfo.clientId;
-      win = winInfo.window;
-      
-      this._appStore.mainClient.sendMessage(win, { action: 'change-props', url, parentId });
-  
-      let setBoundsFunc = params.useContentSize ? 'setContentBounds' : 'setBounds';
+      if (!winInfo) {
+        clientId = this.genClientId();
+        win = this.createMainWindow(url, clientId, parentId, params);
+      } else {
+        clientId = winInfo.clientId;
+        win = winInfo.window;
+        
+        this._appStore.mainClient.sendMessage(win, { action: 'change-props', url, parentId });
+    
+        let setBoundsFunc = params.useContentSize ? 'setContentBounds' : 'setBounds';
 
-      let x = parseInt(params.x) || 0;
-      let y = parseInt(params.y) || 0;
-      let width = parseInt(params.width), height = parseInt(params.height);
-      win[setBoundsFunc]({ 
-        x, y, width, height,
-      });
-  
-      win[setBoundsFunc]({ 
-        x, y, width, height,
-      });
-  
-      setTimeout(() => {
-        win[setBoundsFunc]({x, y, width, height})
-        win.show();
-      }, 0);
+        let x = parseInt(params.x) || 0;
+        let y = parseInt(params.y) || 0;
+        let width = parseInt(params.width), height = parseInt(params.height);
+        win[setBoundsFunc]({ 
+          x, y, width, height,
+        });
+    
+        win[setBoundsFunc]({ 
+          x, y, width, height,
+        });
+    
+        setTimeout(() => {
+          win[setBoundsFunc]({x, y, width, height})
+          win.show();
+        }, 0);
+      }
     }
     return { clientId, win };
   }
