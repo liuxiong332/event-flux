@@ -199,6 +199,15 @@ class MultiWinCacheStore extends MultiWinStore {
         let x = parseInt(params.x) || 0;
         let y = parseInt(params.y) || 0;
         let width = parseInt(params.width), height = parseInt(params.height);
+        if (params.minWidth && params.minHeight) {
+          win.setMinimumSize(parseInt(params.minWidth), parseInt(params.minHeight));
+        }
+        if (params.maxWidth && params.maxHeight) {
+          win.setMaximumSize(parseInt(params.maxWidth), parseInt(params.maxHeight));
+        }
+        if (params.title) {
+          win.setTitle(params.title);
+        }
         win[setBoundsFunc]({ 
           x, y, width, height,
         });
