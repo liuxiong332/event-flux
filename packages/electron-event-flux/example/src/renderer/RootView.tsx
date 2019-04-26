@@ -29,7 +29,10 @@ class NewButton extends React.PureComponent<any, any> {
     let { store, sizes: { width, outerHeight, demo1Height, demo2Height, demo3Height } } = this.props;
 
     store.stores.multiWinStore.createWin('/', { 
-      width, height: outerHeight, useContentSize: true,
+      width, height: outerHeight, useContentSize: true, 
+      minWidth: 300, minHeight: 300,
+      maxWidth: 600, maxHeight: 600,
+      title: 'Hello World',
     });
   }
   
