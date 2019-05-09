@@ -84,6 +84,10 @@ export default class MultiWinStore extends StoreBase {
     clientId && this.closeWin(clientId);
   }
 
+  sendWinMsg(winId: string, message: any) {
+    this._appStore.mainClient.sendMessageByClientId(winId, message);
+  }
+
   genClientId() {
     let clientId = 'win' + Math.floor(Math.random() * 10000);
     if (this.state.clientIds.indexOf(clientId) !== -1) {
