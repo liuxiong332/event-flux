@@ -65,12 +65,26 @@ class MultiWinCacheStore extends MultiWinStore {
     let clients = this.getStorage().get('clients');
     if (!clients || clients.length === 0) {
       clients = this.getDefaultClients();
+    } else {
+      clients = this.filterClients(clients);
     }
     this.windowManager = new WindowManager(this);
 
     app.whenReady().then(() => {
       clients.forEach(item => this.createElectronWin(item.url, item.clientId, item.parentId, item.winState));
     });
+  }
+
+  filterClients(clients) {
+    let clientIds = new Set();
+    clients = clients.filter(client => {
+      if (!clientIds.has(client.clientId)) {
+        clientIds.add(client.clientId);
+        return true;
+      }
+      return false;
+    });
+    return clients;
   }
 
   getDefaultClients() {
@@ -133,6 +147,9 @@ class MultiWinCacheStore extends MultiWinStore {
   }
 
   createElectronWin(url, clientId, parentId, params) {
+    if (clientId && this.clientIds.indexOf(clientId) !== -1) {
+      return;
+    }
     let winState = new ElectronWindowState(null, params, null);
 
     let winInfo = this.getElectronWin(url, clientId, parentId, winState.state);
