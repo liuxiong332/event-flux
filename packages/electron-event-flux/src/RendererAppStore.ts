@@ -24,6 +24,8 @@ export class RendererAppStore extends AppStore {
   resolveMap = {};
   storeShape: any;
   storeProxyHandler = new StoreProxyHandler();
+
+  winInitParams: any;
   static innerStores;
 
   asyncInit() {
@@ -38,7 +40,8 @@ export class RendererAppStore extends AppStore {
         this.handleAction.bind(this), 
         this.handleResult.bind(this), 
         this.handleMessage.bind(this),
-        this.handleWinMessage.bind(this)
+        this.handleWinMessage.bind(this),
+        this.handleInitWindow.bind(this)
       );
     });
   }
@@ -86,6 +89,19 @@ export class RendererAppStore extends AppStore {
 
   handleWinMessage(senderId, message) {
     this.emitter.emit('did-win-message', {senderId, message});
+  }
+
+  handleInitWindow(params) {
+    this.winInitParams = params;
+    this.emitter.emit('did-init-window', params);
+  }
+
+  observeInitWindow(callback) {
+    if (this.winInitParams) {
+      callback(this.winInitParams);
+    } else {
+      this.emitter.on('did-init-window', callback);
+    }
   }
 
   sendWindowMessage(clientId, args) {

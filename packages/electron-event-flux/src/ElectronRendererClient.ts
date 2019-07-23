@@ -6,7 +6,7 @@ const { ipcRenderer, remote } = require('electron');
 export default class ElectronRendererClient {
   clientId: any;
 
-  constructor(filter, callback, onGetAction, onGetResult, onGetMessage, onGetWinMessage) {
+  constructor(filter, callback, onGetAction, onGetResult, onGetMessage, onGetWinMessage, onInitWindow) {
     let clientId = (window as any).clientId;
     if (!clientId) {
       const rendererId = (process as any).guestInstanceId || remote.getCurrentWindow().id;
@@ -32,6 +32,10 @@ export default class ElectronRendererClient {
     });
     ipcRenderer.on(winMessageName, (event, senderId, params) => {
       onGetWinMessage(senderId, params);
+    });
+
+    ipcRenderer.on("__INIT_WINDOW__", (event, params) => {
+      onInitWindow(params);
     });
   }
 

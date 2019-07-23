@@ -117,20 +117,19 @@ export default function rendererInit(rendererStores, options: RenderOptions = {}
     if (window['parentId']) {
       window['parentWin'] = new ParentWindowProxy(store, window['parentId']);
     }
-    store.onDidMessage((message) => {
+    store.observeInitWindow((message) => {
       // console.log('message', message);
-      let {action, url, parentId} = message;
-      if (action === 'change-props') {
-        window['action'] = url;
-        window['parentId'] = parentId;
-        if (!window['parentWin']) {
-          window['parentWin'] = new ParentWindowProxy(store, window['parentId']);
-        } else {
-          window['parentWin']['parentId'] = parentId;
-        }
-        options.actionHandler && options.actionHandler(window['action'], window['parentWin']);
+      let { url, parentId } = message;
+      // change-props
+      window['action'] = url;
+      window['parentId'] = parentId;
+      if (!window['parentWin']) {
+        window['parentWin'] = new ParentWindowProxy(store, window['parentId']);
+      } else {
+        window['parentWin']['parentId'] = parentId;
       }
-    });
+      options.actionHandler && options.actionHandler(window['action'], window['parentWin']);
+     });
     return store;
   });
 }

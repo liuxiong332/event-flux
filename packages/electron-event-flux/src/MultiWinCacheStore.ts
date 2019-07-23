@@ -209,7 +209,8 @@ class MultiWinCacheStore extends MultiWinStore {
         clientId = winInfo.clientId;
         win = winInfo.window;
         
-        this._appStore.mainClient.sendMessage(win, { action: 'change-props', url, parentId });
+        // this._appStore.mainClient.sendMessage(win, { action: 'change-props', url, parentId });
+        this._appStore.mainClient.changeClientAction(win, { url, parentId });
     
         let setBoundsFunc = params.useContentSize ? 'setContentBounds' : 'setBounds';
 
