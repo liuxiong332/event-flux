@@ -5,6 +5,7 @@ import StoreProxyHandler from './utils/StoreProxyHandler';
 import RendererClient from './RendererClient';
 import { Emitter } from 'event-kit';
 import { filterOneStore } from './utils/filterStore';
+import loggerApply, { Log } from './utils/loggerApply';
 
 class IDGenerator {
   count = 0;
@@ -26,7 +27,14 @@ export class RendererAppStore extends AppStore {
   storeProxyHandler = new StoreProxyHandler();
 
   winInitParams: any;
+  log: Log;
+
   static innerStores;
+
+  constructor(log: Log) {
+    super();
+    this.log = log;
+  }
 
   asyncInit() {
     super.init();
@@ -94,6 +102,7 @@ export class RendererAppStore extends AppStore {
   handleInitWindow(params) {
     this.winInitParams = params;
     this.emitter.emit('did-init-window', params);
+    this.log((logger) => logger("RendererAppStore", "init window", params))
   }
 
   observeInitWindow(callback) {
@@ -144,10 +153,10 @@ export class RendererAppStore extends AppStore {
   startObserve() {}
 }
 
-export default function buildRendererAppStore(stores, onChange) {
+export default function buildRendererAppStore(stores, onChange, logger) {
   RendererAppStore.innerStores = stores;
   const storeShape = filterOneStore(RendererAppStore);
-  const appStore = new RendererAppStore();
+  const appStore = new RendererAppStore(loggerApply(logger));
   appStore.onDidChange(onChange);
   appStore.storeShape = storeShape;
   return appStore;

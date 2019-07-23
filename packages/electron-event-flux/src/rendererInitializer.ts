@@ -81,7 +81,7 @@ interface RenderOptions {
   actionHandler?: any;
 };
 
-export default function rendererInit(rendererStores, options: RenderOptions = {}) {
+export default function rendererInit(rendererStores, options: RenderOptions = {}, logger) {
   let query = getQuery();
   window['clientId'] = query['clientId'] || 'mainClient';
   window['parentId'] = query['parentId'];
@@ -95,7 +95,7 @@ export default function rendererInit(rendererStores, options: RenderOptions = {}
   }
   window['action'] = getAction();
 
-  const store = buildRendererAppStore(rendererStores, options.renderHandler);
+  const store = buildRendererAppStore(rendererStores, options.renderHandler, logger);
 
   const genProxy = (store, multiWinStore) => {
     return new Proxy(multiWinStore, {

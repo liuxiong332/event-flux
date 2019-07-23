@@ -10,6 +10,7 @@ import MultiWinManagerStore, { WinPackStore } from './MultiWinManagerStore';
 import ActionRecordStore from './ActionRecordStore';
 import MultiWinStore from './MultiWinStore';
 import { addStateFilter } from './utils/stateFilterDecorator';
+import loggerApply, { Log } from './utils/loggerApply';
 
 const isEmpty = require('lodash/isEmpty');
 const isObject = require('lodash/isObject');
@@ -29,7 +30,7 @@ function findStore(stores, storePath) {
   }, stores);
 }
 
-function storeEnhancer(appStore: MultiWindowAppStore, stores, storeShape) {
+function storeEnhancer(appStore: MultiWindowAppStore, stores, storeShape, log: Log) {
   const callbacks = {
     addWin(clientId) {
       stores[winManagerStoreName].addWin(clientId);
@@ -77,7 +78,7 @@ function storeEnhancer(appStore: MultiWindowAppStore, stores, storeShape) {
     }
   }
   
-  const mainClient = new MainClient(callbacks);
+  const mainClient = new MainClient(callbacks, log);
   appStore.mainClient = mainClient;
   const forwarder = (prevState, state, prevFilters, filters) => {
     // Forward all actions to the listening renderers
@@ -131,8 +132,14 @@ class MultiWindowAppStore extends AppStore {
 
   filterCallbacks = [];
   mainClient: any;
+  log: Log;
 
   static innerStores;
+
+  constructor(log: Log) {
+    super();
+    this.log = log;
+  }
 
   init() {
     this.buildStores();
@@ -149,7 +156,7 @@ class MultiWindowAppStore extends AppStore {
 
     this.startObserve();
     super.init();
-    this.forwarder = storeEnhancer(this, this.stores, this.storeShape);
+    this.forwarder = storeEnhancer(this, this.stores, this.storeShape, this.log);
     return this;
   }
 
@@ -205,7 +212,8 @@ export default function buildMultiWinAppStore(
     WindowsManagerStore = MultiWinManagerStore, 
     ActionStore = ActionRecordStore, 
     WinHandleStore = MultiWinStore, 
-  }
+  },
+  logger
 ) {
   WinPackStore.innerStores = { ...winStores, actionRecord: ActionStore };
   let allStores = {
@@ -216,7 +224,7 @@ export default function buildMultiWinAppStore(
   let MultiWinAppStore = addStateFilter(MultiWindowAppStore);
   MultiWinAppStore.innerStores = allStores;
   const storeShape = filterOneStore(MultiWinAppStore, { applyFilter: true });
-  const appStore = new MultiWinAppStore();
+  const appStore = new MultiWinAppStore(loggerApply(logger));
   appStore.storeShape = storeShape;
   appStore.init();
   return appStore;

@@ -1,3 +1,5 @@
+import { Log } from "./utils/loggerApply";
+
 const { 
   mainInitName, mainDispatchName, mainReturnName, renderDispatchName, renderRegisterName, messageName, winMessageName
 } = require('./constants');
@@ -8,8 +10,11 @@ export default class ElectronMainClient {
   unregisterRenderer: any;
   clientInfos: any;
   clientMap: any;
-  
-  constructor(callbacks) {
+  log: Log;
+
+  constructor(callbacks, log: Log) {
+    this.log = log;
+
     let clientInfos = []; // webContentsId -> {webContents, filter, clientId, windowId, active}
     let clientMap = {};
     // Need to keep track of windows, as when a window refreshes it creates a new
@@ -150,5 +155,6 @@ export default class ElectronMainClient {
     // let win = this.clientMap[clientId].window;
     // this.sendMessage(win, { action: 'change-props', url });
     win.webContents.send("__INIT_WINDOW__", params);
+    this.log((logger) => logger("ElectronMainClient", "init Window", params));
   }
 }
