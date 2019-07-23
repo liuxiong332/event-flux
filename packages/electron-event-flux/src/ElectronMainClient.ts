@@ -151,10 +151,19 @@ export default class ElectronMainClient {
     return this.clientMap[clientId].window;
   }
 
-  changeClientAction(win, params) {
-    // let win = this.clientMap[clientId].window;
-    // this.sendMessage(win, { action: 'change-props', url });
-    win.webContents.send("__INIT_WINDOW__", params);
-    this.log((logger) => logger("ElectronMainClient", "init Window", params));
+  changeClientAction(clientId, params) {
+    if (this.clientMap[clientId]) {
+      let win = this.clientMap[clientId].window;
+      // this.sendMessage(win, { action: 'change-props', url });
+      win.webContents.send("__INIT_WINDOW__", params);
+      this.log((logger) => logger("ElectronMainClient", "init Window", params));
+    } else {
+      // 还没有初始化，则监听注册事件，当初始化之后 开始初始化
+      ipcMain.on(renderRegisterName, ({ sender }, { filter, clientId: nowClientId }) => {
+        if (nowClientId === clientId) {
+          this.changeClientAction(clientId, params);
+        }
+      });
+    }
   }
 }

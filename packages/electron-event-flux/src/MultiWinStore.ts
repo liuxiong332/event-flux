@@ -66,7 +66,7 @@ export default class MultiWinStore extends StoreBase {
       return clientId;
     } else {
       let clientId = this.namedWinIdMap[winId];
-      this._appStore.mainClient.changeClientAction(clientId, url);
+      this.changeClientAction(clientId, url);
       this.activeWindow(clientId);
       return clientId;
     }
@@ -119,7 +119,7 @@ export default class MultiWinStore extends StoreBase {
   }
 
   changeClientAction(clientId, url) {
-    this._appStore.mainClient.changeClientAction(clientId, url);
+    this._appStore.mainClient.changeClientAction(clientId, { url });
   }
 
   getWinRootStore(clientId) {
