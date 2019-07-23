@@ -26,6 +26,7 @@ export class RendererAppStore extends AppStore {
   storeShape: any;
   storeProxyHandler = new StoreProxyHandler();
 
+  storeResolve: () => void;
   winInitParams: any;
   log: Log;
 
@@ -41,18 +42,25 @@ export class RendererAppStore extends AppStore {
     this.emitter = new Emitter();
 
     let filter = true;
+
+    // 先初始化，防止由于promise的异步 漏掉某些消息
+    this.client = new RendererClient(
+      filter,
+      this.handleStorePromise, 
+      this.handleAction.bind(this), 
+      this.handleResult.bind(this), 
+      this.handleMessage.bind(this),
+      this.handleWinMessage.bind(this),
+      this.handleInitWindow.bind(this)
+    );
     return new Promise((resolve) => {
-      this.client = new RendererClient(
-        filter,
-        this.handleStore.bind(this, resolve, filter), 
-        this.handleAction.bind(this), 
-        this.handleResult.bind(this), 
-        this.handleMessage.bind(this),
-        this.handleWinMessage.bind(this),
-        this.handleInitWindow.bind(this)
-      );
+      this.storeResolve = resolve;
     });
   }
+
+  handleStorePromise = (state, store) => {
+    this.handleStore(this.storeResolve, true, state, store);
+  };
 
   handleStore(resolve, filter, state, store) {
     const storeData = deserialize(state);
