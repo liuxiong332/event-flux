@@ -1,118 +1,116 @@
 import { Log } from "./utils/loggerApply";
-
-const { 
+import IMainClientCallbacks from "./IMainClientCallbacks";
+import IErrorObj from "./IErrorObj";
+import { 
   mainInitName, mainDispatchName, mainReturnName, renderDispatchName, renderRegisterName, messageName, winMessageName
-} = require('./constants');
-const { ipcMain } = require('electron');
+} from './constants';
+import { ipcMain, WebContents, BrowserWindow, Event } from 'electron';
 const findIndex = require('lodash/findIndex');
 
+interface IClientInfo {
+  webContents: WebContents;
+  window: BrowserWindow;
+  clientId: string;
+};
+
 export default class ElectronMainClient {
-  unregisterRenderer: any;
-  clientInfos: any;
-  clientMap: any;
+  clientInfos: IClientInfo[] = [];
+  clientMap: { [key: string]: IClientInfo } = {};
   log: Log;
+  mainClientCallbacks: IMainClientCallbacks;
 
-  constructor(callbacks, log: Log) {
+  constructor(callbacks: IMainClientCallbacks, log: Log) {
     this.log = log;
+    this.mainClientCallbacks = callbacks;
 
-    let clientInfos = []; // webContentsId -> {webContents, filter, clientId, windowId, active}
-    let clientMap = {};
     // Need to keep track of windows, as when a window refreshes it creates a new
     // webContents, and the old one must be unregistered
   
     // Cannot delete data, as events could still be sent after close
     // events when a BrowserWindow is created using remote
-    let unregisterRenderer = (clientId) => {
-      let existIndex = findIndex(clientInfos, (item) => item.clientId === clientId);
-      if (existIndex !== -1) {
-        clientInfos.splice(existIndex, 1);
-        clientMap[clientId] = null;
-        callbacks.deleteWin(clientId);
-      }
-    };
-    this.unregisterRenderer = unregisterRenderer;
+    
   
-    ipcMain.on(renderRegisterName, ({ sender }, { filter, clientId }) => {
-      let existIndex = findIndex(clientInfos, (item) => item.clientId === clientId);
-      if (existIndex !== -1) {
-        unregisterRenderer(clientId);        
-      }
+    ipcMain.once(renderRegisterName, this.handleRegister);
   
-      let clientInfo = {
-        webContents: sender,
-        filter,
-        clientId,
-        window: sender.getOwnerBrowserWindow(),
-      };
-      clientInfos.push(clientInfo);
-      clientMap[clientId] = clientInfo;
-      
-      // Add window first, then get window info, The window info should has prepared
-      callbacks.addWin(clientId);
+    ipcMain.on(renderDispatchName, this.handleRendererDispatch);
 
-      if (!sender.isGuest()) { // For windowMap (not webviews)
-        let browserWindow = sender.getOwnerBrowserWindow();
-        
-        // Webcontents aren't automatically destroyed on window close
-        browserWindow.on('closed', () => unregisterRenderer(clientId));
-      }
-
-      sender.send(mainInitName, callbacks.getStores(clientId), callbacks.getInitStates(clientId));
-    });
-  
-    // Give renderers a way to sync the current state of the store, but be sure we don't
-    // expose any remote objects. In other words, we need to rely exclusively on primitive
-    // data types, Arrays, or Buffers. Refer to:
-    // https://github.com/electron/electron/blob/master/docs/api/remote.md#remote-objects
-  
-    // global[mainInitName + 'Stores'] = function(clientId) {
-    //   return callbacks.getStores(clientId, clientMap[clientId].filter);
-    // }
-  
-    // global[mainInitName] = (clientId) => {
-    //   return callbacks.getInitStates(clientId, clientMap[clientId].filter);
-    // }
-  
-    ipcMain.on(renderDispatchName, (event, clientId, invokeId, stringifiedAction) => {
-      if (!clientMap[clientId]) return;
-      let webContents = clientMap[clientId].webContents;
-
-      callbacks.handleRendererMessage(stringifiedAction).then(result => {
-        if (this.checkWebContents(webContents)) {        
-          webContents.send(mainReturnName, invokeId, undefined, result);
-        }
-      }, (err) => {
-        let errObj = null;
-
-        if (err) {
-          errObj = { name: err.name, message: err.message };
-          Object.keys(err).forEach(key => errObj[key] = err[key]);
-        }
-        
-        if (this.checkWebContents(webContents)) {
-          webContents.send(mainReturnName, invokeId, errObj, undefined);
-        }
-      });
-      
-    });
-
-    ipcMain.on(winMessageName, (event, clientId, data) => {
-      if (!clientMap[clientId]) return;
-      let webContents = clientMap[clientId].webContents;
-      let existIndex = findIndex(clientInfos, (item) => item.webContents === event.sender);
-      if (existIndex !== -1) {
-        webContents.send(winMessageName, clientInfos[existIndex].clientId, data);
-      }
-    });
-    this.clientInfos = clientInfos;
-    this.clientMap = clientMap;
+    ipcMain.on(winMessageName, this.handleWinMessage);
   }
   
-  getForwardClients() {
+  private handleUnregisterRenderer(clientId: string) {
+    let existIndex = findIndex(this.clientInfos, (item: IClientInfo) => item.clientId === clientId);
+    if (existIndex !== -1) {
+      this.clientInfos.splice(existIndex, 1);
+      this.clientMap[clientId] = null;
+      this.mainClientCallbacks.deleteWin(clientId);
+    }
+  };
+
+  // Renderer process register self, Then the main process will send the store the initial state to the renderer process
+  private handleRegister = ({ sender }: { sender: WebContents }, { clientId }: { clientId: string }) => {
+    let existIndex = findIndex(this.clientInfos, (item: IClientInfo) => item.clientId === clientId);
+    if (existIndex !== -1) {
+      this.handleUnregisterRenderer(clientId);        
+    }
+
+    let clientInfo: IClientInfo = {
+      webContents: sender,
+      clientId,
+      window: BrowserWindow.fromWebContents(sender), // sender.getOwnerBrowserWindow(),
+    };
+    this.clientInfos.push(clientInfo);
+    this.clientMap[clientId] = clientInfo;
+    
+    // Add window first, then get window info, The window info should has prepared
+    this.mainClientCallbacks.addWin(clientId);
+
+    let browserWindow = BrowserWindow.fromWebContents(sender);
+    
+    // Webcontents aren't automatically destroyed on window close
+    browserWindow.on('closed', () => this.handleUnregisterRenderer(clientId));
+
+    this._sendForWebContents(
+      sender,
+      mainInitName, 
+      this.mainClientCallbacks.getStores(clientId), 
+      this.mainClientCallbacks.getInitStates(clientId) 
+    );
+  };
+
+  // When renderer process dispatch an action to main process, the handleRendererDispatch will invoke
+  // The main process will invoke handleRendererMessage to handle the message and send the result back to renderer process
+  private handleRendererDispatch = (event: Event, clientId: string, invokeId: string, stringifiedAction: string) => {
+    if (!this.clientMap[clientId]) return;
+    let webContents = this.clientMap[clientId].webContents;
+
+    this.mainClientCallbacks.handleRendererMessage(stringifiedAction).then(result => {
+      this._sendForWebContents(webContents, mainReturnName, invokeId, undefined, result);
+    }, (err) => {
+      let errObj: IErrorObj = null;
+
+      if (err) {
+        errObj = { name: err.name, message: err.message };
+        Object.keys(err).forEach(key => errObj[key] = err[key]);
+      }
+      
+      this._sendForWebContents(webContents, mainReturnName, invokeId, errObj, undefined);
+    });
+  };
+
+  handleWinMessage = (event: Event, clientId: string, data: any) => {
+    if (!this.clientMap[clientId]) return;
+    let webContents = this.clientMap[clientId].webContents;
+    let existIndex = findIndex(this.clientInfos, (item: IClientInfo) => item.webContents === event.sender);
+    if (existIndex !== -1) {
+      this._sendForWebContents(webContents, winMessageName, this.clientInfos[existIndex].clientId, data);
+    }
+  };
+
+  getForwardClients(): IClientInfo[] {
     return this.clientInfos;
   }
 
-  checkWebContents(webContents) {
+  checkWebContents(webContents: WebContents) {
     return !webContents.isDestroyed() && !webContents.isCrashed();
   }
 
@@ -126,13 +124,23 @@ export default class ElectronMainClient {
     }
   }
 
-  sendMessage(win, message) {
+  private _sendForWebContents(webContents: WebContents, channel: string, ...args: any[]) {
+    if (this.checkWebContents(webContents)) {
+      webContents.send(channel, ...args);
+    }
+  }
+
+  sendMessage(win: BrowserWindow, message: string) {
     if (this.checkWebContents(win.webContents)) {
       win.webContents.send(messageName, message);
     }
   }
 
-  sendMessageByClientId(clientId, message) {
+  sendMessageByWinName(winName: string, message: string) {
+
+  }
+  
+  sendMessageByClientId(clientId: string, message: string) {
     let webContents = this.clientMap[clientId].webContents;
     if (this.checkWebContents(webContents)) {
       webContents.send(messageName, message);
@@ -147,23 +155,28 @@ export default class ElectronMainClient {
     });
   }
 
-  getWindowByClientId(clientId) {
+  getWindowByClientId(clientId: string) {
     return this.clientMap[clientId].window;
   }
 
-  changeClientAction(clientId, params) {
+  changeClientAction(clientId: string, params: any) {
     if (this.clientMap[clientId]) {
-      let win = this.clientMap[clientId].window;
+
+      let webContents = this.clientMap[clientId].webContents;
       // this.sendMessage(win, { action: 'change-props', url });
-      win.webContents.send("__INIT_WINDOW__", params);
+      // win.webContents.send("__INIT_WINDOW__", params);
+      this._sendForWebContents(webContents, "__INIT_WINDOW__", params);
       this.log((logger) => logger("ElectronMainClient", "init Window", params));
+
     } else {
+
       // 还没有初始化，则监听注册事件，当初始化之后 开始初始化
-      ipcMain.on(renderRegisterName, ({ sender }, { filter, clientId: nowClientId }) => {
+      ipcMain.on(renderRegisterName, (event: Event, { clientId: nowClientId }: { clientId: string }) => {
         if (nowClientId === clientId) {
           this.changeClientAction(clientId, params);
         }
       });
+
     }
   }
 }

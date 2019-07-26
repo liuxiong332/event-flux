@@ -4,7 +4,9 @@
   ],
   "compilerOptions": {
     "module": "commonjs",
-    "noImplicitAny": false,
+    "noImplicitAny": true,
+    "noImplicitReturns": true,
+    "noImplicitThis": true,
     "target": "es5",
     "jsx": "react",
     "moduleResolution": "node",
