@@ -1,4 +1,5 @@
-import StoreBase from 'event-flux/lib/StoreBase';
+import StoreBase from './StoreBase';
+import { Disposable } from 'event-kit';
 
 class SubIdGenerator {
   count = 0;
@@ -12,17 +13,17 @@ class SubIdGenerator {
 
 // The StoreBase that can subscribe and unsubscribe
 export default class SubStoreBase extends StoreBase {
-  subMap = {};
+  subMap: { [subId: string]: Disposable } = {};
   idGenerator = new SubIdGenerator();
 
-  unsubscribe(subId) {
+  unsubscribe(subId: string) {
     let dispose = this.subMap[subId];
     if (!dispose) console.error(`The subId ${subId} isnot subscribed`);
     dispose && dispose.dispose();
-    this.subMap[subId] = null;
+    delete this.subMap[subId];
   }
 
-  genSubId(dispose) {
+  genSubId(dispose: Disposable) {
     let id = this.idGenerator.genId();
     this.subMap[id] = dispose;
     return id;

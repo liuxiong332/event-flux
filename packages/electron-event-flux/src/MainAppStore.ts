@@ -1,4 +1,4 @@
-import AppStore from 'event-flux/lib/AppStore';
+import AppStore from './AppStore';
 import objectDifference from './utils/objectDifference';
 import filterDifference from './utils/filterDifference';
 import filterApply from './utils/filterApply';
@@ -15,7 +15,7 @@ import loggerApply, { Log, Logger } from './utils/loggerApply';
 import { isEmpty, isObject } from './utils/objUtils';
 import { winManagerStoreName, winManagerKey } from './constants';
 import { serialize, deserialize } from 'json-immutable-bn';
-import StoreBase from 'event-flux/lib/StoreBase';
+import IStoresDeclarer from './IStoresDeclarer';
 
 function findStore(stores, storePath) {
   if (!storePath) return;

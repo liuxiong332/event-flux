@@ -1,25 +1,23 @@
 import { Emitter } from 'event-kit';
+import { StoreBaseConstructor } from '../StoreBase';
+import IStoresDeclarer from '../IStoresDeclarer';
 const omit = require('lodash/omit');
 
-export const addStateFilter = (StoreClass) => {
+export const addStateFilter = (StoreClass: StoreBaseConstructor) => {
   return class MainStoreBase extends StoreClass {
     _stateListeners = {};
     _stateFilters = {};
     _stateFiltersInit = false;  // Check if or not the stateFilters has init
 
     appStores: any;
-    static innerStores;
-    
-    constructor(...args) {
-      super(...args);
-    }
-
+    static innerStores: IStoresDeclarer;
+      
     getDefaultFilter() {
       if (this.options && this.options.defaultFilter) return { '*': true };
       return { '*': false };
     }
 
-    _initForClientId = (clientId) => {
+    _initForClientId = (clientId: string) => {
       let clientFilters = this.getDefaultFilter();
       this.getSubStoreInfos && this.getSubStoreInfos().forEach((storeInfo) => {
         let storeName = storeInfo[2]; 
@@ -133,14 +131,14 @@ export interface IFilterStoreMap {
   dispose(): void;
 }
 
-export function addStateFilterForMap(StoreClass) {
+export function addStateFilterForMap(StoreClass: StoreBaseConstructor) {
   return class MainStoreBase extends StoreClass implements IFilterStoreMap {
     _stateListeners = {};
     _stateFilters = {};
     _filterDisposables = {};
     _stateFiltersInit = false;  // Check if or not the stateFilters has init
 
-    constructor(...args) {
+    constructor(...args: any[]) {
       super(...args);
     }
 
@@ -150,7 +148,7 @@ export function addStateFilterForMap(StoreClass) {
       return { '*': false };
     }
 
-    _initForClientId = (clientId) => {
+    _initForClientId = (clientId: string) => {
       let defaultFilter = this.options && this.options.defaultFilter;
       let clientFilters = this.getDefaultFilter();
       if (defaultFilter) {

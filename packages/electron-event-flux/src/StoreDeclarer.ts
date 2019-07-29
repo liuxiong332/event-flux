@@ -1,4 +1,4 @@
-import StoreBase from "event-flux/lib/StoreBase";
+import StoreBase, { StoreBaseConstructor } from "./StoreBase";
 
 interface StoreDeclarerOptions {
   args?: [any];
@@ -8,10 +8,10 @@ interface StoreDeclarerOptions {
 
 const IS_STORE = '@@__STORE_ITEM__@@';
 class StoreDeclarer {
-  Store: StoreBase;
+  Store: StoreBaseConstructor;
   options: StoreDeclarerOptions | undefined;
 
-  constructor(Store: StoreBase, options?: StoreDeclarerOptions) {
+  constructor(Store: StoreBaseConstructor, options?: StoreDeclarerOptions) {
     this.Store = Store;
     this.options = options;
   }
@@ -24,7 +24,7 @@ class StoreDeclarer {
 }
 
 
-function declareStore(Store: StoreBase, options?: StoreDeclarerOptions) {
+function declareStore(Store: StoreBaseConstructor, options?: StoreDeclarerOptions) {
   return new StoreDeclarer(Store, options);
 }
 
@@ -36,10 +36,10 @@ interface StoreListDeclarerOptions {
 const IS_STORE_LIST = '@@__STORE_LIST__@@';
 
 class StoreListDeclarer {
-  Store: StoreBase;
+  Store: StoreBaseConstructor;
   options: StoreListDeclarerOptions | undefined;
 
-  constructor(Store: StoreBase, options?: StoreListDeclarerOptions) {
+  constructor(Store: StoreBaseConstructor, options?: StoreListDeclarerOptions) {
     this.Store = Store;
     this.options = options;
   }
@@ -51,7 +51,7 @@ class StoreListDeclarer {
   }
 }
 
-function declareStoreList(Store: StoreBase, options?: StoreListDeclarerOptions) {
+function declareStoreList(Store: StoreBaseConstructor, options?: StoreListDeclarerOptions) {
   return new StoreListDeclarer(Store, options);
 }
 
@@ -67,10 +67,10 @@ interface StoreMapDeclarerOptions {
 const IS_STORE_MAP = '@@__STORE_MAP__@@';
 
 class StoreMapDeclarer {
-  Store: StoreBase;
+  Store: StoreBaseConstructor;
   options: StoreMapDeclarerOptions | undefined;
 
-  constructor(Store: StoreBase, options?: StoreMapDeclarerOptions) {
+  constructor(Store: StoreBaseConstructor, options?: StoreMapDeclarerOptions) {
     this.Store = Store;
     this.options = options;
   }
@@ -82,7 +82,7 @@ class StoreMapDeclarer {
   }
 }
 
-function declareStoreMap(Store: StoreBase, options?: StoreMapDeclarerOptions) {
+function declareStoreMap(Store: StoreBaseConstructor, options?: StoreMapDeclarerOptions) {
   return new StoreMapDeclarer(Store, options);
 }
 

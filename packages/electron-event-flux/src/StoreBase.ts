@@ -1,11 +1,12 @@
 import { Emitter } from 'event-kit';
 import AppStore from './AppStore';
 import IStoresDeclarer from './IStoresDeclarer';
+import IExtendStoreBase, { IExtendStoreBaseConstructor } from './IExtendStoreBase';
 
 const IS_STORE = '@@__FLUX_STORE__@@';
 
 // storeClass must be factory or class.
-export function buildStore(appStore: AppStore, storeClass: StoreBaseConstructor, args: any[], options?: any) {
+export function buildStore(appStore: AppStore, storeClass: IExtendStoreBaseConstructor, args: any[], options?: any): IExtendStoreBase {
   let store = new storeClass(...args);
   store._appStore = appStore;
   store.appStores = appStore.stores;
@@ -15,6 +16,8 @@ export function buildStore(appStore: AppStore, storeClass: StoreBaseConstructor,
 
 export interface StoreBaseConstructor {
   new (...args: any[]): StoreBase;
+
+  innerStores: IStoresDeclarer;
 }
 
 export default class StoreBase {
@@ -48,8 +51,11 @@ export default class StoreBase {
   init() {}
 
   // Create new store from storeClass. storeClass must be factory or class.  
-  buildStore(storeClass: StoreBaseConstructor, args: any[], options?: any) {
-    if (!this._appStore) return console.error('Can not invoke buildStore in constructor');
+  buildStore(storeClass: IExtendStoreBaseConstructor, args: any[], options?: any): IExtendStoreBase | undefined {
+    if (!this._appStore) {
+      console.error('Can not invoke buildStore in constructor');
+      return;
+    }
     return buildStore(this._appStore, storeClass, args, options);
   }
 

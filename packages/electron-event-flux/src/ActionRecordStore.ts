@@ -1,10 +1,10 @@
-import StoreBase from 'event-flux/lib/StoreBase';
+import StoreBase from './StoreBase';
 const { winManagerStoreName, winManagerKey } = require('./constants');
 
 export default class ActionRecordStore extends StoreBase {
-  clientId: string;
+  clientId: string = '';
 
-  setAction(action) {
-    this.appStores.multiWinStore.actionChanged(this.clientId, action);
+  setAction(action: string) {
+    // this.appStores.multiWinStore.actionChanged(this.clientId, action);
   }
 }

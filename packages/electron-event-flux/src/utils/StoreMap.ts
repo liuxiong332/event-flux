@@ -1,5 +1,6 @@
 import { initStore, disposeStore } from './storeBuilder';
 import { Emitter } from 'event-kit';
+import IExtendStoreBase from '../IExtendStoreBase';
 
 export default class StoreMap {
   storeMap = new Map();
@@ -22,7 +23,7 @@ export default class StoreMap {
     // this._isInit = true;
   }
 
-  add(key, prevInit) {
+  add(key: string, prevInit?: (store: IExtendStoreBase) => void) {
     if (this.storeMap.has(key)) return;
     let newStore = this.builder();
     newStore.mapStoreKey = key;
