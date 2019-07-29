@@ -5,7 +5,8 @@ import {
   mainInitName, mainDispatchName, mainReturnName, renderDispatchName, renderRegisterName, messageName, winMessageName
 } from './constants';
 import { ipcMain, WebContents, BrowserWindow, Event } from 'electron';
-const findIndex = require('lodash/findIndex');
+import findIndex from './utils/findIndex';
+import IMainClient from './IMainClient';
 
 interface IClientInfo {
   webContents: WebContents;
@@ -13,7 +14,7 @@ interface IClientInfo {
   clientId: string;
 };
 
-export default class ElectronMainClient {
+export default class ElectronMainClient implements IMainClient {
   clientInfos: IClientInfo[] = [];
   clientMap: { [key: string]: IClientInfo } = {};
   log: Log;
@@ -35,13 +36,15 @@ export default class ElectronMainClient {
     ipcMain.on(renderDispatchName, this.handleRendererDispatch);
 
     ipcMain.on(winMessageName, this.handleWinMessage);
+
+    return this;
   }
   
   private handleUnregisterRenderer(clientId: string) {
-    let existIndex = findIndex(this.clientInfos, (item: IClientInfo) => item.clientId === clientId);
+    let existIndex: number = findIndex(this.clientInfos, (item: IClientInfo) => item.clientId === clientId);
     if (existIndex !== -1) {
       this.clientInfos.splice(existIndex, 1);
-      this.clientMap[clientId] = null;
+      delete this.clientMap[clientId];
       this.mainClientCallbacks.deleteWin(clientId);
     }
   };
@@ -71,7 +74,7 @@ export default class ElectronMainClient {
 
     this._sendForWebContents(
       sender,
-      mainInitName, 
+      mainInitName,
       this.mainClientCallbacks.getStores(clientId), 
       this.mainClientCallbacks.getInitStates(clientId) 
     );
@@ -86,11 +89,13 @@ export default class ElectronMainClient {
     this.mainClientCallbacks.handleRendererMessage(stringifiedAction).then(result => {
       this._sendForWebContents(webContents, mainReturnName, invokeId, undefined, result);
     }, (err) => {
-      let errObj: IErrorObj = null;
+      let errObj: IErrorObj | null = null;
 
       if (err) {
-        errObj = { name: err.name, message: err.message };
-        Object.keys(err).forEach(key => errObj[key] = err[key]);
+        errObj = { name: err.name, message: err.message } as IErrorObj;
+        if (errObj) {
+          Object.keys(err).forEach(key => errObj![key] = err[key]);
+        }
       }
       
       this._sendForWebContents(webContents, mainReturnName, invokeId, errObj, undefined);
@@ -106,22 +111,8 @@ export default class ElectronMainClient {
     }
   };
 
-  getForwardClients(): IClientInfo[] {
-    return this.clientInfos;
-  }
-
-  checkWebContents(webContents: WebContents) {
+  private checkWebContents(webContents: WebContents) {
     return !webContents.isDestroyed() && !webContents.isCrashed();
-  }
-
-  sendToRenderer(client, payload) {
-    let webContents = client.webContents;
-    // if (webContents.isDestroyed() || webContents.isCrashed()) {
-    //   return this.unregisterRenderer(client.clientId);
-    // }
-    if (this.checkWebContents(webContents)) {
-      webContents.send(mainDispatchName, payload);
-    }
   }
 
   private _sendForWebContents(webContents: WebContents, channel: string, ...args: any[]) {
@@ -130,33 +121,28 @@ export default class ElectronMainClient {
     }
   }
 
-  sendMessage(win: BrowserWindow, message: string) {
-    if (this.checkWebContents(win.webContents)) {
-      win.webContents.send(messageName, message);
-    }
+  getForwardClients(): IClientInfo[] {
+    return this.clientInfos;
   }
 
-  sendMessageByWinName(winName: string, message: string) {
-
+  dispatchToRenderer(client: IClientInfo, payload: any) {
+    let webContents = client.webContents;
+    // if (webContents.isDestroyed() || webContents.isCrashed()) {
+    //   return this.unregisterRenderer(client.clientId);
+    // }
+    if (this.checkWebContents(webContents)) {
+      webContents.send(mainDispatchName, payload);
+    }
   }
   
-  sendMessageByClientId(clientId: string, message: string) {
-    let webContents = this.clientMap[clientId].webContents;
-    if (this.checkWebContents(webContents)) {
-      webContents.send(messageName, message);
-    }
-  }
-
-  closeAllWindows() {
-    this.clientInfos.slice().forEach(client => {
-      if (!client.window.isDestroyed()) {
-        client.window.close()
-      }
-    });
-  }
-
-  getWindowByClientId(clientId: string) {
+  // 通过clientId获取BrowserWindow
+  getWindow(clientId: string): BrowserWindow {
     return this.clientMap[clientId].window;
+  }
+
+  // 通过clientId获取WebContents
+  getWebContents(clientId: string): WebContents {
+    return this.clientMap[clientId].webContents;
   }
 
   changeClientAction(clientId: string, params: any) {
@@ -171,12 +157,30 @@ export default class ElectronMainClient {
     } else {
 
       // 还没有初始化，则监听注册事件，当初始化之后 开始初始化
-      ipcMain.on(renderRegisterName, (event: Event, { clientId: nowClientId }: { clientId: string }) => {
+      ipcMain.once(renderRegisterName, (event: Event, { clientId: nowClientId }: { clientId: string }) => {
         if (nowClientId === clientId) {
           this.changeClientAction(clientId, params);
         }
       });
-
     }
+  }
+
+  isRegister(clientId: string): boolean {
+    return !!this.clientMap[clientId];
+  }
+
+  whenRegister(clientId: string, callback: () => void): void {
+    if (this.isRegister(clientId)) {
+      return callback();
+    }
+    ipcMain.once(renderRegisterName, (event: Event, { clientId: nowClientId }: { clientId: string }) => {
+      if (nowClientId === clientId) {
+        callback();
+      }
+    });
+  }
+
+  isClose(clientId: string): boolean {
+    return !this.clientMap[clientId];
   }
 }

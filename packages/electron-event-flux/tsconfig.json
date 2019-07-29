@@ -4,6 +4,7 @@
   ],
   "compilerOptions": {
     "module": "commonjs",
+    "strict": true,
     "noImplicitAny": true,
     "noImplicitReturns": true,
     "noImplicitThis": true,

@@ -4,18 +4,18 @@ import filterDifference from './utils/filterDifference';
 import filterApply from './utils/filterApply';
 import { filterOneStore } from './utils/filterStore';
 import { filterWindowStore, filterWindowState, filterWindowDelta } from './utils/filterWindowStore';
-import { declareStore } from './StoreDeclarer';
+import { declareStore, StoreDeclarer, StoreListDeclarer, StoreMapDeclarer } from './StoreDeclarer';
 import MainClient from './MainClient';
 import MultiWinManagerStore, { WinPackStore } from './MultiWinManagerStore';
 import ActionRecordStore from './ActionRecordStore';
 import MultiWinStore from './MultiWinStore';
 import { addStateFilter } from './utils/stateFilterDecorator';
-import loggerApply, { Log } from './utils/loggerApply';
+import loggerApply, { Log, Logger } from './utils/loggerApply';
 
-const isEmpty = require('lodash/isEmpty');
-const isObject = require('lodash/isObject');
-const { winManagerStoreName, winManagerKey } = require('./constants');
-const { serialize, deserialize } = require('json-immutable-bn');
+import { isEmpty, isObject } from './utils/objUtils';
+import { winManagerStoreName, winManagerKey } from './constants';
+import { serialize, deserialize } from 'json-immutable-bn';
+import StoreBase from 'event-flux/lib/StoreBase';
 
 function findStore(stores, storePath) {
   if (!storePath) return;
@@ -206,14 +206,14 @@ class MultiWindowAppStore extends AppStore {
 }
 
 export default function buildMultiWinAppStore(
-  stores, 
-  winStores, 
+  stores: IStoresDeclarer, 
+  winStores: IStoresDeclarer, 
   { 
     WindowsManagerStore = MultiWinManagerStore, 
     ActionStore = ActionRecordStore, 
     WinHandleStore = MultiWinStore, 
   },
-  logger
+  logger: Logger
 ) {
   WinPackStore.innerStores = { ...winStores, actionRecord: ActionStore };
   let allStores = {
