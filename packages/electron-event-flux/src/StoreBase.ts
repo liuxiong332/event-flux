@@ -103,6 +103,8 @@ export default class StoreBase {
     this.emitter.dispose();
   }
 
+  destroy() {}
+  
   getState() {
     return this.state;
   }

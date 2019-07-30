@@ -1,8 +1,8 @@
 import StoreBase from './MainStoreBase';
 import { declareStoreMap } from './StoreDeclarer';
+import IExtendStoreBase from './IExtendStoreBase';
 
 export class WinPackStore extends StoreBase {
-  getSubStores: Function;
 
   destroy() {
     (this.getSubStores() || []).map(store => {
@@ -19,18 +19,18 @@ export default class MultiWinManagerStore extends StoreBase {
     this.state = { clientIds: [] };
   }
 
-  addWin(winId) {
+  addWin(winId: string) {
     let { clientIds } = this.state;
     if (clientIds.indexOf(winId) === -1) {
       this.setState({ clientIds: [ ...clientIds, winId ] });
-      this.winPackMapStore.add(winId, (store) => {
-        store.clientId = winId;
+      this.winPackMapStore.add(winId, (store: IExtendStoreBase) => {
+        (store as any).clientId = winId;
       });
       this.emitter.emit('did-add-win', winId);
     }
   }
 
-  deleteWin(winId) {
+  deleteWin(winId: string) {
     let { clientIds } = this.state;
     let index = clientIds.indexOf(winId);
     if (index !== -1) {
@@ -39,7 +39,7 @@ export default class MultiWinManagerStore extends StoreBase {
       });
       this.emitter.emit('did-remove-win', winId);
     }
-    if (!this._appStore.willQuit) {
+    if (!(this._appStore as any).willQuit) {
       this.winPackMapStore.get(winId).destroy();
     }
     this.winPackMapStore.delete(winId);
@@ -49,11 +49,11 @@ export default class MultiWinManagerStore extends StoreBase {
     return this.state.clientIds;
   }
 
-  onDidAddWin(callback) {
+  onDidAddWin(callback: (clientId: string) => void) {
     return this.emitter.on('did-add-win', callback);
   }
 
-  onDidRemoveWin(callback) {
+  onDidRemoveWin(callback: (clientId: string) => void) {
     return this.emitter.on('did-remove-win', callback);
   }
 }

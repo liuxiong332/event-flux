@@ -7,11 +7,11 @@ import { app, BrowserWindow, screen } from 'electron';
 const isDevelopment = process.env.NODE_ENV !== 'production'
 
 export class WindowManager {
-  windows = [];
+  windows: { clientId: string, window: BrowserWindow }[] = [];
   winHandler: any;
   winSize = 1;
 
-  constructor(winHandler) {
+  constructor(winHandler: MultiWinCacheStore) {
     this.windows = [];
     this.winHandler = winHandler;
     app.whenReady().then(() => this.ensureWindows());
@@ -22,14 +22,14 @@ export class WindowManager {
     return clientId;
   }
   
-  createWin(clientId) {
+  createWin(clientId: string) {
     return this.winHandler.createWindow(clientId);
   }
 
   ensureWindows() {
     if (!this.windows) return;
     while (this.windows.length < this.winSize) {
-      let clientId = this.genClientId()
+      let clientId = this.genClientId();
       this.windows.push({ clientId, window: this.createWin(clientId) });
     }
   }
@@ -47,7 +47,7 @@ export class WindowManager {
         window.close()
       }
     });
-    this.windows = null;
+    this.windows = [];
   }
 }
 
@@ -57,9 +57,7 @@ class MultiWinCacheStore extends MultiWinStore {
   clientIds = [];
   createWins = [];
   willQuit = false;
-  windowManager: WindowManager;
-
-  static createWindow;
+  windowManager?: WindowManager;
 
   init() {
     let clients = this.getStorage().get('clients');
