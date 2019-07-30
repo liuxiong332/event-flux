@@ -134,7 +134,7 @@ export default function addStateFilterForMap(StoreClass: StoreMapConstructor) {
     };
 
     add(key: string, prevInit: (store: IExtendStoreBase) => void) {
-      let newStore = super.add(key, prevInit) as ;
+      let newStore = super.add(key, prevInit) as any;
       if (newStore) {
         let defaultFilter = this.options && this.options.defaultFilter;
         if (defaultFilter) {

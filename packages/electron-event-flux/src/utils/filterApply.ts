@@ -33,7 +33,7 @@ interface IFilterObject {
   [key: string]: any;
 }
 
-export default function filterApply(origin: IFilterObject, updated: IFilterObject, deleted: IFilterObject) {
+export default function filterApply(origin: IFilterObject, updated: IFilterObject, deleted: IFilterObject | null) {
   let merged: IFilterObject = {};
   if (updated['*']) {
     if (Array.isArray(origin)) {
@@ -59,7 +59,7 @@ export default function filterApply(origin: IFilterObject, updated: IFilterObjec
     });
   }
   if (isObject(deleted)) {
-    Object.keys(deleted).forEach(key => {
+    Object.keys(deleted!).forEach(key => {
       merged[key] = undefined;
     });
   }

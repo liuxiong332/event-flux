@@ -1,35 +1,36 @@
-import { addStateFilter, addStateFilterForMap } from '../stateFilterDecorator';
+import addStateFilter from '../stateFilterDecorator';
+import addStateFilterForMap from '../stateFilterMapDecorator';
 import { Emitter } from 'event-kit';
 
 class MockManagerStore {
   emitter = new Emitter();
-  clientIds = [];
+  clientIds: string[] = [];
 
   getClienIds() { 
     return this.clientIds; 
   }
 
-  addWin(clientId) {
+  addWin(clientId: string) {
     this.clientIds.push(clientId);
     this.emitter.emit('add-win', clientId);
   }
 
-  removeWin(clientId) {
+  removeWin(clientId: string) {
     let index = this.clientIds.indexOf(clientId);
     if (index !== -1) this.clientIds.splice(index, 1);
     this.emitter.emit('remove-win', clientId);
   }
 
-  onDidAddWin(callback) {
+  onDidAddWin(callback: (win: any) => void) {
     return this.emitter.on('add-win', callback);
   }
 
-  onDidRemoveWin(callback) {
+  onDidRemoveWin(callback: (clientId: string) => void) {
     return this.emitter.on('remove-win', callback);
   }
 }
 
-let managerStore, Base1Class;
+let managerStore: MockManagerStore, Base1Class: any;
 
 beforeEach(() => {
   managerStore = new MockManagerStore();
@@ -39,7 +40,7 @@ beforeEach(() => {
       winManagerStore: managerStore  
     };
     batchUpdater = {
-      addTask: (fn) => { fn() }
+      addTask: (fn: () => void) => { fn() }
     };
 
     getSubStoreInfos() { return []; }
@@ -55,7 +56,7 @@ test('addStateFilter', () => {
     getSubStoreInfos() { return [[null, null, 'subStore', 'subState']]; }
   }
 
-  let StateFilterClass = addStateFilter(Base2Class);
+  let StateFilterClass = addStateFilter(Base2Class as any);
   let stateFilterInstance = new StateFilterClass();
 
   base1Instance._initWrap();
@@ -102,7 +103,7 @@ test('addStateFilter for defaultFilter option', () => {
     getSubStoreInfos() { return [[null, null, 'subStore', 'subState']]; }
   }
   
-  let StateFilterClass = addStateFilter(Base2Class);
+  let StateFilterClass = addStateFilter(Base2Class as any);
   let stateFilterInstance = new StateFilterClass();
   base1Instance._initWrap();
   stateFilterInstance._initWrap();
@@ -123,7 +124,7 @@ test('addStateFilterForMap', () => {
     storeMap = new Map([['item1', base1Instance], ['item2', base2Instance]]);
   }
 
-  let StateFilterClass = addStateFilterForMap(Base2Class);
+  let StateFilterClass: any = addStateFilterForMap(Base2Class as any);
   let stateFilterInstance = new StateFilterClass();
 
   base1Instance._initWrap();
@@ -167,7 +168,7 @@ test('addStateFilterForMap for multi listen and unlisten', () => {
     storeMap = new Map([['item1', base1Instance], ['item2', base2Instance]]);
   }
 
-  let StateFilterClass = addStateFilterForMap(Base2Class);
+  let StateFilterClass: any = addStateFilterForMap(Base2Class as any);
   let stateFilterInstance = new StateFilterClass();
 
   base1Instance._initWrap();
@@ -225,15 +226,15 @@ test('addStateFilterForMap for defaultFilter option', () => {
   class Base2Class extends Base1Class {
     options = { defaultFilter: true };
     storeMap = new Map([['item1', base1Instance], ['item2', base2Instance]]);
-    add(key, prevInit) { 
+    add(key: string) { 
       let newStore = new Base1DeriveClass();
       newStore._initWrap();
       return newStore;
     }
-    delete(key) { }
+    delete(key: string) { }
   }
 
-  let StateFilterClass = addStateFilterForMap(Base2Class);
+  let StateFilterClass: any = addStateFilterForMap(Base2Class as any);
   let stateFilterInstance = new StateFilterClass();
 
   base1Instance._initWrap();
