@@ -1,4 +1,4 @@
 import StoreBase from './StoreBase';
-import { addStateFilter } from './utils/stateFilterDecorator';
+import stateFilterDecorator from './utils/stateFilterDecorator';
 
-export default addStateFilter(StoreBase);
+export default stateFilterDecorator(StoreBase);

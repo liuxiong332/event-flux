@@ -26,3 +26,14 @@ export function pick(obj: { [key: string]: any }, keys: string[]) {
   }
   return resObj;
 }
+
+export function omit(obj: { [key: string]: any }, ...keys: (string | string[])[]) {
+  if (Array.isArray(keys[0])) {
+    keys = keys[0] as string[];
+  }
+  let resObj: { [key: string]: any } = { ...obj };
+  for (let key of keys) {
+    delete resObj[key as string];
+  }
+  return resObj;
+}

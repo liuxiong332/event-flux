@@ -9,7 +9,7 @@ import MainClient from './MainClient';
 import MultiWinManagerStore, { WinPackStore } from './MultiWinManagerStore';
 import ActionRecordStore from './ActionRecordStore';
 import MultiWinStore from './MultiWinStore';
-import { addStateFilter } from './utils/stateFilterDecorator';
+import stateFilterDecorator from './utils/stateFilterDecorator';
 import loggerApply, { Log, Logger } from './utils/loggerApply';
 
 import { isEmpty, isObject } from './utils/objUtils';
@@ -221,7 +221,7 @@ export default function buildMultiWinAppStore(
     multiWin: WinHandleStore,
     [winManagerKey]: declareStore(WindowsManagerStore, { storeKey: winManagerStoreName }),
   };
-  let MultiWinAppStore = addStateFilter(MultiWindowAppStore);
+  let MultiWinAppStore = stateFilterDecorator(MultiWindowAppStore);
   MultiWinAppStore.innerStores = allStores;
   const storeShape = filterOneStore(MultiWinAppStore, { applyFilter: true });
   const appStore = new MultiWinAppStore(loggerApply(logger));

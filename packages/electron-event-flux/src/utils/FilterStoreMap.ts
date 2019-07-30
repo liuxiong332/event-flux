@@ -1,4 +1,4 @@
-import { addStateFilterForMap } from './stateFilterDecorator';
+import stateFilterDecorator from './stateFilterMapDecorator';
 import StoreMap from './StoreMap';
 
-export default addStateFilterForMap(StoreMap);
+export default stateFilterDecorator(StoreMap);
