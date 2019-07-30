@@ -1,16 +1,17 @@
-let { 
+import { 
   renderDispatchName, renderRegisterName, mainDispatchName, mainInitName, mainReturnName, winMessageName, messageName 
-} = require('./constants');
+} from './constants';
+import { IStoreCallback, IActionCallback, IResultCallback, IMessageCallback, IWinMessageCallback } from './IRendererClient';
 
 export default class BrowserRendererClient {
   clientId: any;
 
-  constructor(filter, callback, onGetAction, onGetResult, onGetMessage, onGetWinMessage) {
-    let clientId = window['clientId'] || 'mainClient';
+  constructor(callback: IStoreCallback, onGetAction: IActionCallback, onGetResult: IResultCallback, onGetMessage: IMessageCallback, onGetWinMessage: IWinMessageCallback) {
+    let clientId = (window as any)['clientId'] || 'mainClient';
     this.clientId = clientId;
         
-    let mainWin = window['isMainClient'] ? window : window.opener;
-    mainWin.postMessage({ action: renderRegisterName, clientId, data: { filter } }, '*');
+    let mainWin = (window as any)['isMainClient'] ? window : window.opener;
+    mainWin.postMessage({ action: renderRegisterName, clientId, data: {} }, '*');
     window.addEventListener('message', (event) => {
       let { action, error, data, senderId, invokeId } = event.data || {} as any;
       if (action === mainInitName) {
@@ -31,19 +32,19 @@ export default class BrowserRendererClient {
   }
 
   // Forward update to the main process so that it can forward the update to all other renderers
-  forward(invokeId, action) {
+  forward(invokeId: number, action: any) {
     let clientId = this.clientId;
-    let mainWin = window['isMainClient'] ? window : window.opener;
+    let mainWin = (window as any)['isMainClient'] ? window : window.opener;
     mainWin.postMessage({ action: renderDispatchName, data: action, invokeId, clientId }, '*');
   }
 
-  sendMessage(args) {
-    let mainWin = window['isMainClient'] ? window : window.opener;
+  sendMessage(args: any) {
+    let mainWin = (window as any)['isMainClient'] ? window : window.opener;
     mainWin.postMessage({ action: messageName, data: args }, '*');
   }
 
-  sendWindowMessage(clientId, args) {
-    let mainWin = window['isMainClient'] ? window : window.opener;
+  sendWindowMessage(clientId: string, args: any) {
+    let mainWin = (window as any)['isMainClient'] ? window : window.opener;
     let senderId = this.clientId;
     mainWin.postMessage({ action: winMessageName, senderId, clientId, data: args }, '*');
   }

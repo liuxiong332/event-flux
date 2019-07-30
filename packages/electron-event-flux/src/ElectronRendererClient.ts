@@ -1,12 +1,22 @@
-const { 
+import { 
   mainInitName, renderRegisterName, renderDispatchName, mainDispatchName, mainReturnName, winMessageName, messageName
-} = require('./constants');
-const { ipcRenderer, remote } = require('electron');
+} from './constants';
+import { ipcRenderer, remote } from 'electron';
+import { 
+  IStoreCallback, IActionCallback, IResultCallback, IMessageCallback, IWinMessageCallback, IInitWindowCallback 
+} from './IRendererClient';
 
 export default class ElectronRendererClient {
   clientId: any;
 
-  constructor(filter, callback, onGetAction, onGetResult, onGetMessage, onGetWinMessage, onInitWindow) {
+  constructor(
+    callback: IStoreCallback, 
+    onGetAction: IActionCallback, 
+    onGetResult: IResultCallback, 
+    onGetMessage: IMessageCallback, 
+    onGetWinMessage: IWinMessageCallback, 
+    onInitWindow: IInitWindowCallback
+  ) {
     let clientId = (window as any).clientId;
     if (!clientId) {
       const rendererId = (process as any).guestInstanceId || remote.getCurrentWindow().id;
@@ -15,40 +25,40 @@ export default class ElectronRendererClient {
     this.clientId = clientId;
     
     // Allows the main process to forward updates to this renderer automatically
-    ipcRenderer.send(renderRegisterName, { filter: filter, clientId });
+    ipcRenderer.send(renderRegisterName, { clientId });
   
     // Dispatches from other processes are forwarded using this ipc message
-    ipcRenderer.on(mainInitName, (event, storeFilters, stateData) => {
+    ipcRenderer.on(mainInitName, (event: Event, storeFilters: any, stateData: any) => {
       callback(stateData, storeFilters);
     });
-    ipcRenderer.on(mainDispatchName, (event, stringifiedAction) => {
+    ipcRenderer.on(mainDispatchName, (event: Event, stringifiedAction: string) => {
       onGetAction(stringifiedAction);
     });
-    ipcRenderer.on(mainReturnName, (event, invokeId, error, result) => {
+    ipcRenderer.on(mainReturnName, (event: Event, invokeId: number, error: Error, result: any) => {
       onGetResult(invokeId, error, result);
     });
-    ipcRenderer.on(messageName, (event, params) => {
+    ipcRenderer.on(messageName, (event: Event, params: any) => {
       onGetMessage(params);
     });
-    ipcRenderer.on(winMessageName, (event, senderId, params) => {
+    ipcRenderer.on(winMessageName, (event: Event, senderId: string, params: any) => {
       onGetWinMessage(senderId, params);
     });
 
-    ipcRenderer.on("__INIT_WINDOW__", (event, params) => {
+    ipcRenderer.on("__INIT_WINDOW__", (event: Event, params: any) => {
       onInitWindow(params);
     });
   }
 
   // Forward update to the main process so that it can forward the update to all other renderers
-  forward(invokeId, action) {
+  forward(invokeId: string, action: any) {
     ipcRenderer.send(renderDispatchName, this.clientId, invokeId, action);
   }
 
-  sendMessage(args) {
+  sendMessage(args: any) {
     ipcRenderer.send(messageName, args);
   }
 
-  sendWindowMessage(clientId, args) {
+  sendWindowMessage(clientId: string, args: any) {
     ipcRenderer.send(winMessageName, clientId, args);
   }
 }

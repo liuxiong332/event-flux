@@ -1,11 +1,14 @@
-import AppStore from 'event-flux/lib/AppStore';
+import AppStore from './AppStore';
 import objectMerge from './utils/objectMerge';
 import { serialize, deserialize } from 'json-immutable-bn';
 import StoreProxyHandler from './utils/StoreProxyHandler';
 import RendererClient from './RendererClient';
 import { Emitter } from 'event-kit';
 import { filterOneStore } from './utils/filterStore';
-import loggerApply, { Log } from './utils/loggerApply';
+import loggerApply, { Log, Logger } from './utils/loggerApply';
+import IStoresDeclarer, { IStoresObjDeclarer } from './IStoresDeclarer';
+import IExtendStoreBase, { IExtendStoreBaseConstructor } from './IExtendStoreBase';
+import { StoreBaseConstructor } from './StoreBase';
 
 class IDGenerator {
   count = 0;
@@ -14,23 +17,23 @@ class IDGenerator {
     return ++this.count;
   }
 
-  dispose(id) {
+  dispose(id: number) {
   }
 }
 
 export class RendererAppStore extends AppStore {
-  emitter: Emitter;
+  emitter: Emitter = new Emitter();
   client: any;
   idGenerator = new IDGenerator();
-  resolveMap = {};
+  resolveMap: { [invokeId: string]: { resolve: (res: any) => void, reject: (err: Error) => void } } = {};
   storeShape: any;
   storeProxyHandler = new StoreProxyHandler();
 
-  storeResolve: () => void;
+  storeResolve?: () => void;
   winInitParams: any;
   log: Log;
 
-  static innerStores;
+  static innerStores: IStoresDeclarer;
 
   constructor(log: Log) {
     super();
@@ -39,13 +42,9 @@ export class RendererAppStore extends AppStore {
 
   asyncInit() {
     super.init();
-    this.emitter = new Emitter();
-
-    let filter = true;
 
     // 先初始化，防止由于promise的异步 漏掉某些消息
     this.client = new RendererClient(
-      filter,
       this.handleStorePromise, 
       this.handleAction.bind(this), 
       this.handleResult.bind(this), 
@@ -58,17 +57,17 @@ export class RendererAppStore extends AppStore {
     });
   }
 
-  handleStorePromise = (state, store) => {
-    this.handleStore(this.storeResolve, true, state, store);
+  handleStorePromise = (state: any, store: any) => {
+    this.handleStore(this.storeResolve!, state, store);
   };
 
-  handleStore(resolve, filter, state, store) {
+  handleStore(resolve: () => void, state: any, store: any) {
     const storeData = deserialize(state);
     const initialState = storeData;
     this.state = initialState;
 
     const storeFilters = JSON.parse(store);
-    let stores = this.storeProxyHandler.proxyStores(storeFilters, (action) => {
+    let stores = this.storeProxyHandler.proxyStores(storeFilters, (action: any) => {
       let invokeId = this.idGenerator.genID();
       this.client.forward(invokeId, serialize(action));
       return new Promise((resolve, reject) => this.resolveMap[invokeId] = {resolve, reject});
@@ -78,8 +77,8 @@ export class RendererAppStore extends AppStore {
     resolve();
   }
 
-  handleAction(action) {
-    action = deserialize(action);
+  handleAction(actionStr: string) {
+    let action = deserialize(actionStr);
     const { updated, deleted } = action.payload;
     // const withDeletions = filterObject(this.state, deleted);
     if (!this.state) return;
@@ -87,10 +86,10 @@ export class RendererAppStore extends AppStore {
     this.batchUpdater.requestUpdate();
   }
 
-  handleResult(invokeId, error, result) {
+  handleResult(invokeId: number, error: Error, result: any) {
     this.idGenerator.dispose(invokeId);
     let {resolve, reject} = this.resolveMap[invokeId];
-    this.resolveMap[invokeId] = null;
+    delete this.resolveMap[invokeId];
     if (error) {
       reject(error);
     } else {
@@ -99,21 +98,21 @@ export class RendererAppStore extends AppStore {
     }
   }
 
-  handleMessage(message) {
+  handleMessage(message: any) {
     this.emitter.emit('did-message', message);
   }
 
-  handleWinMessage(senderId, message) {
+  handleWinMessage(senderId: string, message: any) {
     this.emitter.emit('did-win-message', {senderId, message});
   }
 
-  handleInitWindow(params) {
+  handleInitWindow(params: any) {
     this.winInitParams = params;
     this.emitter.emit('did-init-window', params);
     this.log((logger) => logger("RendererAppStore", "init window", params))
   }
 
-  observeInitWindow(callback) {
+  observeInitWindow(callback: (params: any) => void) {
     if (this.winInitParams) {
       callback(this.winInitParams);
     } else {
@@ -121,21 +120,21 @@ export class RendererAppStore extends AppStore {
     }
   }
 
-  sendWindowMessage(clientId, args) {
+  sendWindowMessage(clientId: string, args: any) {
     this.client.sendWindowMessage(clientId, args);
   }
 
-  onDidMessage(callback) {
+  onDidMessage(callback: (message: any) => void) {
     return this.emitter.on('did-message', callback);
   }
 
-  onDidClose(callback) {
+  onDidClose(callback: () => void) {
     return this.emitter.on('did-message', (message) => {
       if (message && message.action === 'did-close') callback();
     });
   }
 
-  onDidWinMessage(callback) {
+  onDidWinMessage(callback: ({ senderId, message }: { senderId: string, message: any }) => void) {
     return this.emitter.on('did-win-message', callback);
   }
 
@@ -145,25 +144,25 @@ export class RendererAppStore extends AppStore {
     this.startObserve();
   }
 
-  getStore(key) {
+  getStore(key: string) {
     return this.stores[key]
   }
 
-  setStore(key, store) {
+  setStore(key: string, store: IExtendStoreBase) {
     return this.stores[key] = store;
   }
 
   // 构建子Stores
   buildStores() {}
   // 初始化子Stores
-  initStores(parent) {}
+  initStores(parent: AppStore) {}
   // 开始监听子Store改变
   startObserve() {}
 }
 
-export default function buildRendererAppStore(stores, onChange, logger) {
+export default function buildRendererAppStore(stores: IStoresObjDeclarer, onChange: (state: any) => void, logger: Logger) {
   RendererAppStore.innerStores = stores;
-  const storeShape = filterOneStore(RendererAppStore);
+  const storeShape = filterOneStore(RendererAppStore as any as IExtendStoreBaseConstructor);
   const appStore = new RendererAppStore(loggerApply(logger));
   appStore.onDidChange(onChange);
   appStore.storeShape = storeShape;

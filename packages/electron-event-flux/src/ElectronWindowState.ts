@@ -1,22 +1,43 @@
 'use strict';
 
+import { BrowserWindow, Rectangle } from "electron";
+
 var electron = require('electron');
 var deepEqual = require('deep-equal');
 
 const isInteger = (Number as any).isInteger;
 const eventHandlingDelay = 100;
 
-function isNumber(num) {
+function isNumber(num: any) {
   return typeof typeof(num) === 'number' && !isNaN(num);
 }
 
+type OnSave = (state: any) => void;
+
+interface IWinState {
+  x?: number;
+  y?: number;
+  width?: number;
+  height?: number;
+  useContentSize?: boolean;
+  displayBounds?: Rectangle;
+  isMaximized?: boolean;
+  isFullScreen?: boolean;
+}
+
+interface IWinConfig {
+  defaultWidth?: number;
+  defaultHeight?: number;
+  useContentSize?: boolean;
+}
+
 export default class ElectronWindowState {
-  onSave: any;
-  state: any;
+  onSave: OnSave;
+  state: IWinState = {};
   winRef: any;
   stateChangeTimer: any;
 
-  constructor(config, state, onSave) {
+  constructor(config: any, state: any, onSave: OnSave) {
     this.onSave = onSave;
     this.stateChangeHandler = this.stateChangeHandler.bind(this);
     this.closeHandler = this.closeHandler.bind(this);
@@ -24,7 +45,7 @@ export default class ElectronWindowState {
     this.loadState(state, config || {});
   }
 
-  loadState(state, config) {
+  loadState(state: IWinState, config: IWinConfig) {
     this.state = this.normState(state);
     // Check state validity
     this.validateState();
@@ -36,23 +57,23 @@ export default class ElectronWindowState {
     }, this.state);
   }
 
-  normState(state) {
+  normState(state: IWinState) {
     if (isNumber(state.x)) {
-      state.x = Math.floor(state.x);
+      state.x = Math.floor(state.x as number);
     }
     if (isNumber(state.y)) {
-      state.y = Math.floor(state.y);
+      state.y = Math.floor(state.y as number);
     }
     if (isNumber(state.width)) {
-      state.width = Math.floor(state.width);
+      state.width = Math.floor(state.width as number);
     }
     if (isNumber(state.height)) {
-      state.height = Math.floor(state.height);
+      state.height = Math.floor(state.height as number);
     }
     return state;
   }
 
-  isNormal(win) {
+  isNormal(win: BrowserWindow) {
     return !win.isMaximized() && !win.isMinimized() && !win.isFullScreen();
   }
 
@@ -61,8 +82,8 @@ export default class ElectronWindowState {
     return state &&
       isInteger(state.x) &&
       isInteger(state.y) &&
-      isInteger(state.width) && state.width > 0 &&
-      isInteger(state.height) && state.height > 0;
+      isInteger(state.width) && (state.width as number) > 0 &&
+      isInteger(state.height) && (state.height as number) > 0;
   }
 
   validateState() {
@@ -71,25 +92,25 @@ export default class ElectronWindowState {
 
     if (this.hasBounds() && state.displayBounds) {
       // Check if the display where the window was last open is still available
-      var displayBounds = electron.screen.getDisplayMatching(state).bounds;
+      var displayBounds = electron.screen.getDisplayMatching(state as Rectangle).bounds;
       var sameBounds = deepEqual(state.displayBounds, displayBounds, {strict: true});
       if (!sameBounds) {
         if (displayBounds.width < state.displayBounds.width) {
-          if (state.x > displayBounds.width) {
+          if ((state.x as number) > displayBounds.width) {
             state.x = 0;
           }
 
-          if (state.width > displayBounds.width) {
+          if ((state.width as number) > displayBounds.width) {
             state.width = displayBounds.width;
           }
         }
 
         if (displayBounds.height < state.displayBounds.height) {
-          if (state.y > displayBounds.height) {
+          if ((state.y as number) > displayBounds.height) {
             state.y = 0;
           }
 
-          if (state.height > displayBounds.height) {
+          if ((state.height as number) > displayBounds.height) {
             state.height = displayBounds.height;
           }
         }
@@ -137,7 +158,7 @@ export default class ElectronWindowState {
     this.onSave(this.state);
   }
 
-  manage(win) {
+  manage(win: BrowserWindow) {
     let state = this.state;
     if (state.isMaximized) {
       win.maximize();
