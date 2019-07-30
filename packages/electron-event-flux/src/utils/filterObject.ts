@@ -9,13 +9,12 @@
   The value of the leaf elment has to be true to be ignored
 */
 
-const keys = require('lodash/keys');
-const isObject = require('lodash/isObject');
+import { isObject } from './objUtils';
 
-module.exports = function filterObject(source, filter) {
+module.exports = function filterObject(source: { [key: string]: any }, filter: any) {
   if (!source || filter === true) return {};
-  let filtered = {};
-  keys(source).forEach((key) => {
+  let filtered: { [key: string]: any } = {};
+  Object.keys(source).forEach((key) => {
     if (isObject(filter[key])) {
       filtered[key] = filterObject(source[key], filter[key]);
     } else if (filter[key] && filter[key] !== true) {

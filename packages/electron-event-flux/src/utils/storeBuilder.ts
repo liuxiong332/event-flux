@@ -1,11 +1,13 @@
-export function beforeInit(store, parentStore) {
+import IExtendStoreBase from "../IExtendStoreBase";
+
+export function beforeInit(store: IExtendStoreBase, parentStore: IExtendStoreBase) {
   store.parentStore = parentStore;
-  if (parentStore.clientId) {
-    store.clientId = parentStore.clientId;
+  if ((parentStore as any).clientId) {
+    (store as any).clientId = (parentStore as any).clientId;
   }
 }
 
-export const initStore = function(store, parentStore) {
+export const initStore = function(store: IExtendStoreBase, parentStore: IExtendStoreBase) {
   store.buildStores && store.buildStores();
 
   beforeInit(store, parentStore);
@@ -16,7 +18,7 @@ export const initStore = function(store, parentStore) {
   store.startObserve && store.startObserve();
 }
 
-export const disposeStore = function(store) {
+export const disposeStore = function(store: IExtendStoreBase) {
   store.disposeStores && store.disposeStores();
   store.dispose();
 }

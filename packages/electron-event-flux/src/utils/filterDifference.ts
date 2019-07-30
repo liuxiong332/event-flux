@@ -12,12 +12,15 @@
     {updated: {*: false, '*@exclude': ['b'] }}
 */
 
-const isObject = require('lodash/isObject');
-const isEmpty = require('lodash/isEmpty');
+import { isObject, isEmpty } from './objUtils';
 
-const isShallow = val => Array.isArray(val) || !isObject(val);
+const isShallow = (val: any) => Array.isArray(val) || !isObject(val);
 
-function checkUpdateVal(key, old, curr, updated, deleted) {
+interface IFilterObject {
+  [key: string]: any;
+}
+
+function checkUpdateVal(key: string, old: IFilterObject, curr: IFilterObject, updated: IFilterObject, deleted: IFilterObject) {
   let oldVal = old[key];
   let currVal = curr[key];
   if (currVal === oldVal) return;
@@ -39,11 +42,11 @@ function checkUpdateVal(key, old, curr, updated, deleted) {
   }
 }
 
-function filterDifference(old, curr) {
+function filterDifference(old: IFilterObject, curr: IFilterObject) {
   if (old == null || curr == null) return { updated: curr, deleted: {} };
 
-  const updated = {};
-  const deleted = {};
+  const updated: IFilterObject = {};
+  const deleted: IFilterObject = {};
 
   Object.keys(curr).forEach(key => checkUpdateVal(key, old, curr, updated, deleted));
   Object.keys(old).forEach(key => {

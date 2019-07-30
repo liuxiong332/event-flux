@@ -1,7 +1,7 @@
 const isEmpty = require('lodash/isEmpty');
 
 interface ListStorePathUnit {
-  index: string;
+  index?: string;
   name: string;
   type: 'Map' | 'List';
 };
@@ -29,42 +29,44 @@ const IndexForwardKeys = [
   'listen', 'unlisten', 'listenForKeys', 'unlistenForKeys'
 ];
 
+type Stores = { [storeKey: string]: any };
+
 export default class StoreProxyHandler {
   storeProxyCache = new Map();
 
   /* Gen proxy for the storePath such as [todoMapStore, todoStore] 
     forwardStore standard for the forward path
   */
-  genProxy(storePath, forwardStore, forwarder) {
+  genProxy(storePath: StorePathUnit[], forwardStore: Stores | null, forwarder: Function) {
     return new Proxy(forwarder, {
       get: function(target, propName) {
         if (!propName) return;
-        if (forwardStore && forwardStore[propName]) return forwardStore[propName];
+        if (forwardStore && forwardStore[propName as string]) return forwardStore[propName as string];
         if (ListenForwardKeys.indexOf(propName as string) !== -1) {
-          return function(...args) {
-            args.unshift(window['clientId']);
+          return function(...args: any[]) {
+            args.unshift((window as any)['clientId']);
             return forwarder({ store: storePath, method: propName, args });
           };
         }
-        return function(...args) {
+        return function(...args: any[]) {
           return forwarder({ store: storePath, method: propName, args });
         };
       }
     })
   }
 
-  genIndexProxy(storePath, childFilters, forwarder) {
+  genIndexProxy(storePath: StorePathUnit[], childFilters: { [key: string]: StoreShape }, forwarder: Function) {
     let storePathKey = storePath.slice(0, storePath.length - 1).toString();
     let newProxy = new Proxy(forwarder, {
       get: (target, propName) => {
         if (!propName) return;
-        const retIndexFunc = (index) => {
+        const retIndexFunc = (index: string) => {
           let cacheStore = this.storeProxyCache.get(storePathKey + index);
           if (cacheStore) return cacheStore;
 
           let mapStorepath = [
             ...storePath.slice(0, -1), 
-            { ...storePath[storePath.length - 1], index }
+            { ...(storePath[storePath.length - 1] as ListStorePathUnit), index }
           ];
           let childStores = this.proxyStore(mapStorepath, childFilters, forwarder);
           let newStore = this.genProxy(mapStorepath, childStores, forwarder);
@@ -73,30 +75,30 @@ export default class StoreProxyHandler {
         }
         if (IndexForwardKeys.indexOf(propName as string) !== -1) {
           let oneStorePath = [
-            ...storePath.slice(0, -1), storePath[storePath.length - 1].name
+            ...storePath.slice(0, -1), (storePath[storePath.length - 1] as ListStorePathUnit).name
           ];
-          return function(...args) {
-            args.unshift(window['clientId']);
+          return function(...args: any[]) {
+            args.unshift((window as any)['clientId']);
             return forwarder({ store: oneStorePath, method: propName, args });
           };
         }
         if (propName === 'get') {
           return retIndexFunc;
         }
-        return retIndexFunc(propName);
+        return retIndexFunc(propName as string);
       }
     });
     return newProxy;
   }
 
-  proxyStore(parentStore: StorePathUnit[], storeFilters: StoreFilters, forwarder: Function) {
+  proxyStore(parentStore: StorePathUnit[], storeFilters: StoreFilters, forwarder: Function): Stores | null {
     if (isEmpty(storeFilters)) return null;
-    let stores = {};
+    let stores: { [storeKey: string]: any } = {};
     for (let name in storeFilters) {
       let storeInfo = storeFilters[name];
       if (storeInfo) {
         let { type, filters, path = parentStore } = storeInfo;
-        let names;
+        let names: StorePathUnit[] = [];
         if (type === 'Store') {
           names = [...path, name];
         } else if (type === 'StoreList') {
@@ -105,10 +107,10 @@ export default class StoreProxyHandler {
           names = [...path, { name, type: 'Map' }];
         }
         if (type === 'Store') {
-          let childStores = this.proxyStore(names, filters, forwarder);
+          let childStores = this.proxyStore(names, filters!, forwarder);
           stores[name] = this.genProxy(names, childStores, forwarder);
         } else {
-          stores[name] = this.genIndexProxy(names, filters, forwarder);
+          stores[name] = this.genIndexProxy(names, filters!, forwarder);
         }
       }
     }

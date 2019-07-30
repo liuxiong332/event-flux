@@ -48,6 +48,8 @@ export default class StoreBase {
     }
   }
 
+  willInit() {}
+  
   init() {}
 
   // Create new store from storeClass. storeClass must be factory or class.  
@@ -104,7 +106,7 @@ export default class StoreBase {
   }
 
   destroy() {}
-  
+
   getState() {
     return this.state;
   }

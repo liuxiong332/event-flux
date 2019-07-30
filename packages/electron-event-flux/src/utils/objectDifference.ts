@@ -13,11 +13,11 @@ const isObject = require('lodash/isObject');
 const isEmpty = require('lodash/isEmpty');
 const keys = require('lodash/keys');
 
-const isShallow = val => Array.isArray(val) || !isObject(val) || List.isList(val);
+const isShallow = (val: any) => Array.isArray(val) || !isObject(val) || List.isList(val);
 
-const isDiffType = (val1, val2) => (Map.isMap(val1) && !Map.isMap(val2)) || (!Map.isMap(val1) && Map.isMap(val2));
+const isDiffType = (val1: any, val2: any) => (Map.isMap(val1) && !Map.isMap(val2)) || (!Map.isMap(val1) && Map.isMap(val2));
 
-function checkUpdateVal(key, oldVal, currVal, updated, deleted) {
+function checkUpdateVal(key: string, oldVal: any, currVal: any, updated: { [key: string]: any }, deleted: { [key: string]: any }) {
   if (currVal === oldVal) return;
   
   if (isShallow(currVal) || isShallow(oldVal)) {
@@ -31,19 +31,19 @@ function checkUpdateVal(key, oldVal, currVal, updated, deleted) {
   }
 }
 
-function objectDifference(old, curr) {
-  const updated = {};
-  const deleted = {};
+function objectDifference(old: any, curr: any) {
+  const updated: { [key: string]: any } = {};
+  const deleted: { [key: string]: any } = {};
 
   if (Map.isMap(old) && Map.isMap(curr)) {
-    curr.forEach((val, key) => checkUpdateVal(JSON.stringify(key), old.get(key), val, updated, deleted));
+    curr.forEach((val: any, key: string) => checkUpdateVal(JSON.stringify(key), old.get(key), val, updated, deleted));
 
-    old.forEach((val, key) => {
+    old.forEach((val: any, key: string) => {
       if (curr.get(key) === undefined) deleted[JSON.stringify(key)] = true;
     });
   } else {
-    keys(curr).forEach(key => checkUpdateVal(key, old[key], curr[key], updated, deleted));
-    keys(old).forEach(key => {
+    keys(curr).forEach((key: string) => checkUpdateVal(key, old[key], curr[key], updated, deleted));
+    keys(old).forEach((key: string) => {
       if (curr[key] === undefined) deleted[key] = true;
     });
   }

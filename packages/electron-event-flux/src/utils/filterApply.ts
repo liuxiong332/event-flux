@@ -27,11 +27,14 @@
   ) would return
     { a: { d: 1 } }
 */
+import { isObject } from './objUtils';
 
-const isObject = require('lodash/isObject');
+interface IFilterObject {
+  [key: string]: any;
+}
 
-export default function filterApply(origin, updated, deleted) {
-  let merged = {};
+export default function filterApply(origin: IFilterObject, updated: IFilterObject, deleted: IFilterObject) {
+  let merged: IFilterObject = {};
   if (updated['*']) {
     if (Array.isArray(origin)) {
       return origin;

@@ -1,3 +1,5 @@
+import IStoreFilters from "../IStoreFilters";
+
 /*
   1. filterWindowStore({
     winManagerStore: {
@@ -24,20 +26,20 @@
 */
 const omit = require('lodash/omit');
 
-function filterWindowStore(storeFilters, winStoreKey, winId) {
+function filterWindowStore(storeFilters: IStoreFilters, winStoreKey: string, winId: string) {
     let winFilters = storeFilters[winStoreKey].filters;
     if (!winFilters) return storeFilters;
     winFilters = winFilters.winPackMapStore.filters;
     if (!winFilters) return omit(storeFilters, [winStoreKey]);
-    let winOnlyShape = {};
+    let winOnlyShape: { [storeKey: string]: any } = {};
     let path = [winStoreKey, { type: 'Map', name: 'winPackMapStore', index: winId }];
     Object.keys(winFilters).forEach(storeKey => {
-      winOnlyShape[storeKey] = { ...winFilters[storeKey], path };
+      winOnlyShape[storeKey] = { ...winFilters![storeKey], path };
     });
     return { ...omit(storeFilters, [winStoreKey]), ...winOnlyShape };
   }
   
-  function filterWindowState(allState, winStateKey, winId) {
+  function filterWindowState(allState: any, winStateKey: string, winId: string) {
     if (!allState[winStateKey]) return allState;
     let { winPackMap } = allState[winStateKey];
     if (!winPackMap) return omit(allState, [winStateKey]);
@@ -46,7 +48,7 @@ function filterWindowStore(storeFilters, winStoreKey, winId) {
     return { ...omit(allState, [winStateKey]), ...winState };
   }
   
-  function filterWindowDelta(updated, deleted, winStateKey, winId) {
+  function filterWindowDelta(updated: any, deleted: any, winStateKey: string, winId: string) {
     return [
       filterWindowState(updated, winStateKey, winId),
       filterWindowState(deleted, winStateKey, winId)
