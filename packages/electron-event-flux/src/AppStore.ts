@@ -1,4 +1,5 @@
 import StoreBase, { buildStore, StoreBaseConstructor } from './StoreBase';
+import { IExtendStoreBaseConstructor } from './IExtendStoreBase';
 
 const IS_APP_STORE = '@@__APP_STORE__@@';
 
@@ -46,7 +47,7 @@ export default class AppStore {
 
   [IS_APP_STORE]: true;
 
-  buildStore(storeClass: StoreBaseConstructor, args: any[], options?: any) {
+  buildStore(storeClass: IExtendStoreBaseConstructor, args: any[], options?: any) {
     return buildStore(this, storeClass, args, options);
   }
 

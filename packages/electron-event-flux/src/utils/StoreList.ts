@@ -1,19 +1,23 @@
 import { initStore, disposeStore } from './storeBuilder';
-import { Emitter } from 'event-kit';
+import { Emitter, Disposable } from 'event-kit';
+import IExtendStoreBase from '../IExtendStoreBase';
 // import { addStateFilter } from './stateFilterDecorator';
+
+type StoreBuilder = () => IExtendStoreBase;
+type StoreObserver = (store: IExtendStoreBase, i: number) => Disposable;
 
 export default class StoreList {
   length: number = 0;
-  storeArray = [];
-  disposables = [];
+  storeArray: IExtendStoreBase[] = [];
+  disposables: Disposable[] = [];
   options: any;
-  builder: any;
-  observer: any;
+  builder: StoreBuilder;
+  observer: StoreObserver;
   parentStore: any = null;
   appStores: any;
   emitter = new Emitter();
 
-  constructor(size, builder, observer, options) {
+  constructor(size: number, builder: StoreBuilder, observer: StoreObserver, options: any) {
     this.builder = builder;
     this.observer = observer;
     this.options = options;
@@ -24,12 +28,12 @@ export default class StoreList {
     // this._isInit = true;
   }
 
-  setSize(count) {
+  setSize(count: number) {
     if (this.length === count) return;
     if (this.length < count) {
       for (let i = this.length; i < count; ++i) {
         let newStore = this.builder();
-        newStore.listStoreKey = i;
+        (newStore as any).listStoreKey = i;
 
         // if (this._isInit) initStore(newStore);
         initStore(newStore, this.parentStore);
@@ -51,10 +55,17 @@ export default class StoreList {
     this.setSize(0);
   }
 
-  forEach(callback) { return this.storeArray.forEach(callback); }
-  map(callback) { return this.storeArray.map(callback); }
-  filter(callback) { return this.storeArray.filter(callback); }
-  get(index) { return this.storeArray[index]; }
-  slice(begin, end) { return this.storeArray.slice(begin, end); }
-  indexOf(item) { return this.storeArray.indexOf(item); }
+  forEach(callback: (value: IExtendStoreBase, index: number, array: IExtendStoreBase[]) => void) { 
+    return this.storeArray.forEach(callback); 
+  }
+
+  map(callback: (value: IExtendStoreBase, index: number, array: IExtendStoreBase[]) => any) { 
+    return this.storeArray.map(callback); 
+  }
+  filter(callback: (value: IExtendStoreBase, index: number, array: IExtendStoreBase[]) => boolean) { 
+    return this.storeArray.filter(callback); 
+  }
+  get(index: number) { return this.storeArray[index]; }
+  slice(begin: number, end: number) { return this.storeArray.slice(begin, end); }
+  indexOf(item: IExtendStoreBase) { return this.storeArray.indexOf(item); }
 }

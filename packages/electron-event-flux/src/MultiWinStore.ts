@@ -1,7 +1,7 @@
-import StoreBase from 'event-flux/lib/StoreBase';
+import StoreBase from './StoreBase';
 const { winManagerStoreName } = require('./constants');
 
-function genBrowserUrl(url = '', clientId, parentId) {
+function genBrowserUrl(url = '', clientId: string, parentId: string) {
   let genUrl = new URL(url, location.href);
   if (genUrl.search) {
     genUrl.search += `&clientId=${clientId}`;
@@ -30,8 +30,8 @@ export default class MultiWinStore extends StoreBase {
         if (action === 'close') {
           let winId = this.clientNamedWinIdMap[clientId];
           if (winId) {
-            this.clientNamedWinIdMap[clientId] = undefined;
-            this.namedWinIdMap[winId] = undefined;
+            delete this.clientNamedWinIdMap[clientId]
+            delete this.namedWinIdMap[winId];
           }
         }
       });
@@ -41,12 +41,12 @@ export default class MultiWinStore extends StoreBase {
     }
   }
 
-  createWin(url, parentClientId, params) {
+  createWin(url: string, parentClientId: string, params: any) {
     let clientId;
     if (typeof window === 'object') {
       clientId = this.genClientId();
       let win = this.createBrowserWin(genBrowserUrl(url, clientId, parentClientId), clientId, params);
-      this._appStore.mainClient.addWin(clientId, win);
+      (this._appStore! as any).mainClient.addWin(clientId, win);
     } else {
       try {
         clientId = this.createElectronWin(url, clientId, parentClientId, params);
@@ -58,7 +58,7 @@ export default class MultiWinStore extends StoreBase {
   }
 
   // Create new win if the specific winId is not exists
-  createOrOpenWin(winId, url, parentClientId, params) {
+  createOrOpenWin(winId: string, url: string, parentClientId: string, params: any) {
     if (!this.namedWinIdMap[winId]) {
       let clientId = this.createWin(url, parentClientId, params);
       this.namedWinIdMap[winId] = clientId;
@@ -71,19 +71,7 @@ export default class MultiWinStore extends StoreBase {
       return clientId;
     }
   }
-
-  closeWin(clientId) {
-    if (typeof window === 'object') {
-    } else {
-
-    }
-  }
-
-  closeWinByWinId(winId) {
-    let clientId = this.namedWinIdMap[winId];
-    clientId && this.closeWin(clientId);
-  }
-
+  
   sendWinMsg(winId: string, message: any) {
     this._appStore.mainClient.sendMessageByClientId(winId, message);
   }

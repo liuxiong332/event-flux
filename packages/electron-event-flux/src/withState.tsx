@@ -1,21 +1,23 @@
 import * as React from 'react';
 import { StoreContext } from './Provider';
-import { pick } from 'event-flux/lib/utils';
+import { pick } from './utils/objUtils';
+
+type SelectorFunc = (state: any, props: any) => any;
 
 const notUsed = () => null;
-function unifySelector(selector) {
+function unifySelector(selector: string[] | SelectorFunc) {
   if (!selector) return notUsed;
   if (typeof selector !== 'function') {
     if (!Array.isArray(selector)) selector = [selector];
-    return (state) => pick(state, selector); 
+    return (state: any) => pick(state, selector as string[]); 
   }
   return selector;
 }
 
-export default function withState(stateSelector, storeSelector) {
-  storeSelector = unifySelector(storeSelector);
-  stateSelector = unifySelector(stateSelector);
-  return function(Component) {
+export default function withState(stateSelector: string[] | SelectorFunc, storeSelector: string[] | SelectorFunc) {
+  const storeSelectorFn = unifySelector(storeSelector) as SelectorFunc;
+  const stateSelectorFn = unifySelector(stateSelector) as SelectorFunc;
+  return function(Component: React.ComponentClass) {
 
     return class Injector extends React.PureComponent<any> {
       render() {
@@ -24,8 +26,8 @@ export default function withState(stateSelector, storeSelector) {
           <StoreContext.Consumer>
             {value => <Component 
               {...props}
-              {...storeSelector(value.stores, props)} 
-              {...stateSelector(value.state, props)}
+              {...storeSelectorFn(value.stores, props)} 
+              {...stateSelectorFn(value.state, props)}
             />}
           </StoreContext.Consumer>
         );

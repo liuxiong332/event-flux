@@ -15,14 +15,19 @@ import loggerApply, { Log, Logger } from './utils/loggerApply';
 import { isEmpty, isObject } from './utils/objUtils';
 import { winManagerStoreName, winManagerKey } from './constants';
 import { serialize, deserialize } from 'json-immutable-bn';
-import IStoresDeclarer from './IStoresDeclarer';
+import IStoresDeclarer, { IStoresObjDeclarer } from './IStoresDeclarer';
+import IExtendStoreBase, { IExtendStoreBaseConstructor } from './IExtendStoreBase';
+import StoreBase from './StoreBase';
+import IMainClient, { IClientInfo } from './IMainClient';
+import IStoreFilters from './IStoreFilters';
 
-function findStore(stores, storePath) {
+type OneStorePath = { name: string, type: string, index: string } | string;
+function findStore(stores: { [storeKey: string]: any }, storePath: OneStorePath[] | undefined) {
   if (!storePath) return;
   return storePath.reduce((subStores, entry) => {
     if (!subStores) return undefined;
-    if (!isObject(entry)) return subStores[entry];    
-    let { name, type, index } = entry;
+    if (!isObject(entry)) return subStores[entry as string];    
+    let { name, type, index } = entry as { name: string, type: string, index: string };
     let storeCol = subStores[name];
     if (type === 'List' || type === 'Map') {
       return storeCol.get(index);
@@ -30,19 +35,19 @@ function findStore(stores, storePath) {
   }, stores);
 }
 
-function storeEnhancer(appStore: MultiWindowAppStore, stores, storeShape, log: Log) {
+function storeEnhancer(appStore: MultiWindowAppStore, stores: { [storeKey: string]: any }, storeShape: IStoreFilters, log: Log) {
   const callbacks = {
-    addWin(clientId) {
+    addWin(clientId: string) {
       stores[winManagerStoreName].addWin(clientId);
     },
-    deleteWin(clientId) {
+    deleteWin(clientId: string) {
       stores[winManagerStoreName].deleteWin(clientId);
     },
-    getStores(clientId, filter) {
+    getStores(clientId: string) {
       let stores = filterWindowStore(storeShape, winManagerStoreName, clientId);
       return JSON.stringify(stores);
     },
-    getInitStates(clientId, filter) {
+    getInitStates(clientId: string) {
       if (process.env.NODE_ENV === 'development') {
         if (!appStore._prevStateFilters || !appStore._prevStateFilters[clientId]) {
           console.error('The filter should has init, If not, then should has a bug!');
@@ -59,7 +64,7 @@ function storeEnhancer(appStore: MultiWindowAppStore, stores, storeShape, log: L
       let filterState = filterWindowState(updateState, winManagerKey, clientId);
       return serialize(filterState);
     },
-    handleRendererMessage(payload) {
+    handleRendererMessage(payload: any) {
       try {
         const { store: storePath, method, args } = deserialize(payload);
         let store = findStore(stores, storePath);
@@ -78,9 +83,9 @@ function storeEnhancer(appStore: MultiWindowAppStore, stores, storeShape, log: L
     }
   }
   
-  const mainClient = new MainClient(callbacks, log);
+  const mainClient: IMainClient = new MainClient(callbacks, log);
   appStore.mainClient = mainClient;
-  const forwarder = (prevState, state, prevFilters, filters) => {
+  const forwarder = (prevState: any, state: any, prevFilters: any, filters: any) => {
     // Forward all actions to the listening renderers
     let clientInfo = mainClient.getForwardClients();
 
@@ -94,14 +99,14 @@ function storeEnhancer(appStore: MultiWindowAppStore, stores, storeShape, log: L
         
         updateState = filterWindowState(updateState, winManagerKey, clientId);
         if (isEmpty(updateState)) return;
-        mainClient.sendToRenderer(client, serialize({ payload: { updated: updateState } }));
+        mainClient.dispatchToRenderer(client, serialize({ payload: { updated: updateState } }));
       }
     });
 
     const delta = objectDifference(prevState, state);
     if (isEmpty(delta.updated) && isEmpty(delta.deleted)) return;
    
-    clientInfo.forEach(client => {
+    clientInfo.forEach((client: IClientInfo) => {
       let { clientId } = client;
 
       let filterUpdated = filterApply(delta.updated, filters[clientId], null);
@@ -117,7 +122,7 @@ function storeEnhancer(appStore: MultiWindowAppStore, stores, storeShape, log: L
 
       const action = { payload: { updated, deleted } };
 
-      mainClient.sendToRenderer(client, serialize(action));
+      mainClient.dispatchToRenderer(client, serialize(action));
     });
   };
   return forwarder;
@@ -126,15 +131,15 @@ function storeEnhancer(appStore: MultiWindowAppStore, stores, storeShape, log: L
 class MultiWindowAppStore extends AppStore {
   storeShape: any;
   forwarder: any;
-  willQuit: boolean;
+  willQuit: boolean = false;
   _stateFilters: any;
   _prevStateFilters: any;
 
-  filterCallbacks = [];
+  filterCallbacks: ((filter: any) => void)[] = [];
   mainClient: any;
   log: Log;
 
-  static innerStores;
+  static innerStores: { [storeKey: string]: any };
 
   constructor(log: Log) {
     super();
@@ -147,11 +152,11 @@ class MultiWindowAppStore extends AppStore {
 
     this._initStateFilters();
     let winManagerStore = this.stores.winManagerStore;
-    winManagerStore.onDidAddWin((clientId) => {
+    winManagerStore.onDidAddWin((clientId: string) => {
       this._handleAddWin(clientId);
       this._sendUpdate();
     });
-    winManagerStore.onDidRemoveWin((clientId) => this._handleRemoveWin(clientId));
+    winManagerStore.onDidRemoveWin((clientId: string) => this._handleRemoveWin(clientId));
     this._prevStateFilters = Object.assign({}, this._stateFilters);
 
     this.startObserve();
@@ -160,11 +165,11 @@ class MultiWindowAppStore extends AppStore {
     return this;
   }
 
-  handleWillFilterChange(prevState, state, prevFilters, filters) {
+  handleWillFilterChange(prevState: any, state: any, prevFilters: any, filters: any) {
     return this.forwarder(prevState, state, prevFilters, filters);
   };
 
-  onDidFilterChange(callback) {
+  onDidFilterChange(callback: (stateFilter: any) => void) {
     this.filterCallbacks.push(callback);
   }
 
@@ -180,15 +185,15 @@ class MultiWindowAppStore extends AppStore {
     this._prevStateFilters = Object.assign({}, this._stateFilters);
   }
 
-  getStore(key) {
+  getStore(key: string) {
     return this.stores[key]
   }
 
-  setStore(key, store) {
+  setStore(key: string, store: any) {
     return this.stores[key] = store;
   }
 
-  getWinSpecificStore(clientId, storeName) {
+  getWinSpecificStore(clientId: string, storeName: string) {
     let winStores = this.stores[winManagerStoreName].winPackMap[clientId];
     if (winStores) return winStores[storeName];
   }
@@ -196,18 +201,18 @@ class MultiWindowAppStore extends AppStore {
   // 构建子Stores
   buildStores() {}
   // 初始化子Stores
-  initStores(parent) {}
+  initStores(parent: MultiWindowAppStore) {}
   // 开始监听子Store改变
   startObserve() {}
 
   _initStateFilters() {}
-  _handleAddWin(clientId) {}
-  _handleRemoveWin(clientId) {}
+  _handleAddWin(clientId: string) {}
+  _handleRemoveWin(clientId: string) {}
 }
 
 export default function buildMultiWinAppStore(
-  stores: IStoresDeclarer, 
-  winStores: IStoresDeclarer, 
+  stores: IStoresObjDeclarer, 
+  winStores: IStoresObjDeclarer, 
   { 
     WindowsManagerStore = MultiWinManagerStore, 
     ActionStore = ActionRecordStore, 
@@ -216,16 +221,16 @@ export default function buildMultiWinAppStore(
   logger: Logger
 ) {
   WinPackStore.innerStores = { ...winStores, actionRecord: ActionStore };
-  let allStores = {
+  let allStores: IStoresObjDeclarer = {
     ...stores, 
     multiWin: WinHandleStore,
     [winManagerKey]: declareStore(WindowsManagerStore, { storeKey: winManagerStoreName }),
   };
-  let MultiWinAppStore = stateFilterDecorator(MultiWindowAppStore);
+  let MultiWinAppStore = stateFilterDecorator(MultiWindowAppStore as any as IExtendStoreBaseConstructor);
   MultiWinAppStore.innerStores = allStores;
   const storeShape = filterOneStore(MultiWinAppStore, { applyFilter: true });
   const appStore = new MultiWinAppStore(loggerApply(logger));
-  appStore.storeShape = storeShape;
+  (appStore as any).storeShape = storeShape;
   appStore.init();
   return appStore;
 }
