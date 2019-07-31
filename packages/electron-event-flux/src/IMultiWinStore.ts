@@ -1,3 +1,5 @@
+import StoreBase from "./StoreBase";
+
 export interface IWinParams {
   x?: number;
   y?: number;
@@ -12,16 +14,16 @@ export interface IWinParams {
 }
 
 export interface IWinProps {
-  path: string;   // The path of the window
+  path?: string;   // The path of the window
   name?: string; // The name of this window
   groups?: string[];  // The groups that the window belongs to
 }
 
 export default interface IMultiWinStore {
   // Create new win if the name is not exists, else will change the window url only
-  createWin(url: IWinProps | string, parentId: string, params: IWinParams, winProps: any): string;
+  createWin(url: IWinProps | string, parentId: string, params: IWinParams): string | null;
 
-  createOrOpenWin(winName: string, url: string | IWinProps, parentClientId: string, params: IWinParams): string;
+  createOrOpenWin(winName: string, url: string | IWinProps, parentClientId: string, params: IWinParams): string | null;
 
   closeWin(clientId: string): void;
 
@@ -41,5 +43,7 @@ export default interface IMultiWinStore {
 
   sendWinMsgByGroup(group: string, message: any): void;
 
-  sendMsg(message: any): void;
+  onChangeAction(clientId: string, action: string): void;
+
+  getWinRootStore(clientId: string): StoreBase;
 }

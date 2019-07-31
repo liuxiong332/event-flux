@@ -1,5 +1,6 @@
 import StoreBase from './StoreBase';
-const { winManagerStoreName } = require('./constants');
+import IMultiWinStore, { IWinProps, IWinParams } from './IMultiWinStore';
+import { winManagerStoreName } from './constants';
 
 function genBrowserUrl(url = '', clientId: string, parentId: string) {
   let genUrl = new URL(url, location.href);
@@ -13,106 +14,208 @@ function genBrowserUrl(url = '', clientId: string, parentId: string) {
   return genUrl.toString();
 }
 
-export default class MultiWinStore extends StoreBase {
+interface IWindow {
+  close(): void;
+}
+
+export default class MultiWinStore extends StoreBase implements IMultiWinStore {
+
+  clientIds: string[] = [];
   // namedWinId to clientId map
-  namedWinIdMap: { [winId: string]: string } = {};
+  clientIdNameMap: { [clientId: string]: string } = {};
   // clientId to namedWinId map
-  clientNamedWinIdMap: { [winId: string]: string } = {};
+  clientNameIdMap: { [winName: string]: string } = {};
+
+  groupsMap: { [clientId: string]: string[] } = {};
+
+  clientWins: { [clientId: string]: IWindow } = {};
 
   init() {
-    this.appStores[winManagerStoreName].observe((state) => {
-      this.setState({ clientIds: state.clientIds });
-    });
-
     if (typeof window === 'object') {
       window.addEventListener("message", (event) => {
         let { action, clientId } = event.data || {} as any;
         if (action === 'close') {
-          let winId = this.clientNamedWinIdMap[clientId];
-          if (winId) {
-            delete this.clientNamedWinIdMap[clientId]
-            delete this.namedWinIdMap[winId];
-          }
+          this._removeClientId(clientId);
         }
       });
       window.addEventListener("beforeunload", (event) => {
         this.closeAllWindows();
       });
+      // 将main window加入到 新创建窗口列表中
+      this._addWinProps("mainClient", window, { name: "mainClient", groups: ["main"] });
     }
   }
 
-  createWin(url: string, parentClientId: string, params: any) {
-    let clientId;
-    if (typeof window === 'object') {
-      clientId = this.genClientId();
-      let win = this.createBrowserWin(genBrowserUrl(url, clientId, parentClientId), clientId, params);
-      (this._appStore! as any).mainClient.addWin(clientId, win);
-    } else {
-      try {
-        clientId = this.createElectronWin(url, clientId, parentClientId, params);
-      } catch(err) {
-        console.error(err, err.stack);
-      }
+  // 新增clientId对应的 winProps
+  _addWinProps(clientId: string, win: IWindow | null, winProps: IWinProps) {
+    if (!win) return;
+    this.clientIds.push(clientId);
+    this.clientWins[clientId] = win;
+
+    if (winProps.name) {
+      this.clientNameIdMap[winProps.name] = clientId;
+      this.clientIdNameMap[clientId] = winProps.name;
     }
+    if (winProps.groups) {
+      this.groupsMap[clientId] = winProps.groups;
+    }
+  }
+
+  _parseWinProps(winProps: string | IWinProps): IWinProps {
+    let parseProps: IWinProps = typeof winProps === 'string' ? { path: winProps } : winProps;
+    // 默认窗口被分组到main分组
+    if (parseProps.groups === undefined) {
+      parseProps.groups = ['main'];
+    }
+    return parseProps;
+  }
+
+  // 删除窗口的clientId
+  _removeClientId(clientId: string) {
+    let name = this.clientIdNameMap[clientId];
+    delete this.clientWins[clientId];
+    if (name) {
+      delete this.clientNameIdMap[name]
+      delete this.clientIdNameMap[clientId];
+    }
+    delete this.groupsMap[clientId];
+
+    let index = this.clientIds.indexOf(clientId);
+    if (index !== -1) this.clientIds.splice(index, 1);
+  }
+
+  _createWinForBrowser(winProps: IWinProps | string, parentClientId: string, params: IWinParams): string {
+    let clientId = this._genClientId();
+    // get url from winProps
+    winProps = this._parseWinProps(winProps);
+    // create new browser window
+    let win = this.createBrowserWin(genBrowserUrl(winProps.path, clientId, parentClientId), clientId, params);
+
+    this._addWinProps(clientId, win, winProps);
+
+    (this._appStore! as any).mainClient.addWin(clientId, win);
     return clientId;
   }
 
-  // Create new win if the specific winId is not exists
-  createOrOpenWin(winId: string, url: string, parentClientId: string, params: any) {
-    if (!this.namedWinIdMap[winId]) {
-      let clientId = this.createWin(url, parentClientId, params);
-      this.namedWinIdMap[winId] = clientId;
-      this.clientNamedWinIdMap[clientId] = winId;
-      return clientId;
+  _createWinForElectron(winProps: IWinProps | string, parentClientId: string, params: IWinParams): string | null {
+    return "";
+  }
+
+  createWin(winProps: IWinProps | string, parentClientId: string, params: IWinParams): string | null {
+    if (typeof window === 'object') {
+      return this._createWinForBrowser(winProps, parentClientId, params);
     } else {
-      let clientId = this.namedWinIdMap[winId];
-      this.changeClientAction(clientId, url);
-      this.activeWindow(clientId);
+      return this._createWinForElectron(winProps, parentClientId, params);
+    }
+  }
+
+  // Create new win if the specific winId is not exists
+  createOrOpenWin(winName: string, url: string | IWinProps, parentClientId: string, params: any): string | null {
+    // winName对应的窗口未存在，则创建新窗口
+    if (!this.clientNameIdMap[winName]) {
+      let winProps: IWinProps = typeof url === 'string' ? { path: url, name: winName } : { ...url, name: winName };
+      return this.createWin(winProps, parentClientId, params);
+    } else {
+      let clientId = this.clientNameIdMap[winName];
+      this.changeClientAction(clientId, typeof url === 'string' ? url : url.path!);
+      this.activeWin(clientId);
       return clientId;
     }
   }
   
-  sendWinMsg(winId: string, message: any) {
-    this._appStore.mainClient.sendMessageByClientId(winId, message);
+  closeWin(clientId: string) {
+    let win: IWindow | undefined = this.clientWins[clientId];
+    if (win) win.close();
   }
 
-  genClientId(): string {
+  closeWinByName(name: string) {
+    let clientId = this.clientNameIdMap[name];
+    if (clientId) this.closeWin(clientId);
+  }
+
+  closeWinByGroup(group: string) {
+    for (let clientId of this.clientIds) {
+      let groups = this.groupsMap[clientId];
+      if (groups && groups.indexOf(group) !== -1) {
+        this.closeWin(clientId);
+      }
+    }
+  }
+
+  activeWin(clientId: string) {}
+
+  activeWindow(clientId: string) {
+    this.activeWin(clientId);
+  }
+
+  activeWinByName(name: string) {
+    let clientId = this.clientNameIdMap[name];
+    if (clientId) this.activeWin(clientId);
+  }
+
+  activeWinByGroup(group: string) {
+    for (let clientId of this.clientIds) {
+      let groups = this.groupsMap[clientId];
+      if (groups && groups.indexOf(group) !== -1) {
+        this.activeWin(clientId);
+      }
+    }
+  }
+
+  sendWinMsg(clientId: string, message: any) {
+    (this._appStore as any).mainClient.sendWinMsg(clientId, message);
+  }
+
+  sendWinMsgByName(name: string, message: any) {
+    let clientId = this.clientNameIdMap[name];
+    if (clientId) this.sendWinMsg(clientId, message);
+  }
+
+  sendWinMsgByGroup(group: string, message: any) {
+    for (let clientId of this.clientIds) {
+      let groups = this.groupsMap[clientId];
+      if (groups && groups.indexOf(group) !== -1) {
+        this.sendWinMsg(clientId, message);
+      }
+    }
+  }
+
+  _genClientId(): string {
     let clientId = 'win' + Math.floor(Math.random() * 10000);
     if (this.state.clientIds.indexOf(clientId) !== -1) {
-      return this.genClientId();
+      return this._genClientId();
     }
     return clientId;
   }
 
   closeAllWindows() {
-    this._appStore.mainClient.closeAllWindows();
-    this.namedWinIdMap = {};
-    this.clientNamedWinIdMap = {};
+    this.clientIds.slice(0).forEach(clientId => {
+      this.closeWin(clientId);
+    });
   }
 
-  createBrowserWin(url, clientId, params: any = {}) {
+  createBrowserWin(url: string, clientId: string, params: any = {}): Window | null {
     if (!params.width) params.width = 400;
     if (!params.height) params.height = 400;
     let featureStr = Object.keys(params).map(key => `${key}=${params[key]}`).join(',');
     let childWin = window.open(url, "newwindow", featureStr + ", toolbar=no, menubar=no, scrollbars=no, resizable=no, location=no, status=no, titlebar=no");
+    if (childWin) childWin.onbeforeunload = () => this._removeClientId(clientId);
     return childWin;
   }
 
-  createElectronWin(url, clientId, parentClientId, params) {
+  createElectronWin(url: string, clientId: string, parentClientId: string, params: any): string {
     console.error('Please provide the createElectronWin');
   }
 
-  actionChanged(clientId, action) {
+  onChangeAction(clientId: string, action: string) {
     
   }
 
-  changeClientAction(clientId, url) {
-    this._appStore.mainClient.changeClientAction(clientId, { url });
+  changeClientAction(clientId: string, url: string) {
+    ((this._appStore as any).mainClient as any).changeClientAction(clientId, { url });
   }
 
-  getWinRootStore(clientId) {
-    return this.appStores[winManagerStoreName].winPackMapStore.get(clientId);
+  getWinRootStore(clientId: string) {
+    return (this.appStores[winManagerStoreName] as any).winPackMapStore.get(clientId);
   }
-
-  activeWindow(clientId) {}
 }

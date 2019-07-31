@@ -1,10 +1,11 @@
-const Store = require('electron-store');
+import IStorage from "./IStorage";
+import Store = require("electron-store");
 
-export default class ElectronStore {
+export default class ElectronStore implements IStorage {
   store: any;
   ns: string;
 
-  constructor(version, store, ns) {
+  constructor(version: string | null, store: Store<string>, ns: string) {
     this.store = store || new Store();
     this.ns = ns;
     if (version) {
@@ -16,16 +17,16 @@ export default class ElectronStore {
     }
   }
 
-  getNSStore(ns) {
+  getNSStore(ns: string): IStorage {
     ns = this.ns ? this.ns + '.' + ns : ns;
     return new ElectronStore(null, this.store, ns);
   }
 
-  set(key, value) {
+  set(key: string | { [key: string]: any }, value: any) {
     if (!this.ns) return this.store.set(key, value);
     let ns = this.ns;
     if (typeof key === 'object') {
-      let newObj = {};
+      let newObj: { [key: string]: any } = {};
       for (let k in key) {
         newObj[ns + '.' + k] = key[k];
       }
@@ -34,13 +35,13 @@ export default class ElectronStore {
     this.store.set(ns + '.' + key, value);
   }
 
-  get(key, defaultValue) {
+  get(key: string, defaultValue?: any) {
     let ns = this.ns;
     if (!ns) return this.store.get(key, defaultValue);
     return this.store.get(ns + '.' + key, defaultValue);
   }
 
-  delete(key) {
+  delete(key: string) {
     let ns = this.ns;
     if (!ns) return this.store.delete(key);
     return this.store.delete(ns + '.' + key);

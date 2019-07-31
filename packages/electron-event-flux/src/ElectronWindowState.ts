@@ -14,7 +14,7 @@ function isNumber(num: any) {
 
 type OnSave = (state: any) => void;
 
-interface IWinState {
+export interface IWinState {
   x?: number;
   y?: number;
   width?: number;
@@ -32,12 +32,12 @@ interface IWinConfig {
 }
 
 export default class ElectronWindowState {
-  onSave: OnSave;
+  onSave: OnSave | null;
   state: IWinState = {};
   winRef: any;
   stateChangeTimer: any;
 
-  constructor(config: any, state: any, onSave: OnSave) {
+  constructor(config: any, state: any, onSave: OnSave | null) {
     this.onSave = onSave;
     this.stateChangeHandler = this.stateChangeHandler.bind(this);
     this.closeHandler = this.closeHandler.bind(this);
@@ -155,7 +155,7 @@ export default class ElectronWindowState {
     // Unregister listeners and save state
     this.unmanage();
     this.updateState();
-    this.onSave(this.state);
+    this.onSave && this.onSave(this.state);
   }
 
   manage(win: BrowserWindow) {

@@ -135,6 +135,13 @@ export default class ElectronMainClient implements IMainClient {
     }
   }
   
+  sendWinMsg(clientId: string, message: any) {
+    let webContents = this.clientMap[clientId].webContents;
+    if (this.checkWebContents(webContents)) {
+      webContents.send(messageName, message);
+    }
+  }
+
   // 通过clientId获取BrowserWindow
   getWindow(clientId: string): BrowserWindow {
     return this.clientMap[clientId].window;

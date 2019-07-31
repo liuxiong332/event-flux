@@ -84,10 +84,10 @@ export default class BrowserMainClient implements IMainClient {
   //   win && win.postMessage({ action: messageName, data: message }, '*');
   // }
 
-  // sendMessageByClientId(clientId, message) {
-  //   let win = this.clients[clientId];
-  //   win && win.postMessage({ action: messageName, data: message }, '*');
-  // }
+  sendWinMsg(clientId: string, message: any) {
+    let win = this.clients[clientId];
+    win && win.postMessage({ action: messageName, data: message }, '*');
+  }
 
   // closeAllWindows() {
   //   Object.keys(this.clients).forEach(clientId => {

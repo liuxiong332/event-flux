@@ -131,7 +131,6 @@ function storeEnhancer(appStore: MultiWindowAppStore, stores: { [storeKey: strin
 class MultiWindowAppStore extends AppStore {
   storeShape: any;
   forwarder: any;
-  willQuit: boolean = false;
   _stateFilters: any;
   _prevStateFilters: any;
 
