@@ -6,7 +6,7 @@ import IExtendStoreBase, { IExtendStoreBaseConstructor } from './IExtendStoreBas
 export const IS_STORE = '@@__FLUX_STORE__@@';
 
 // storeClass must be factory or class.
-export function buildStore(appStore: AppStore, storeClass: IExtendStoreBaseConstructor, args: any[], options?: any): IExtendStoreBase {
+export function buildStore(appStore: AppStore, storeClass: IExtendStoreBaseConstructor, args: any[] = [], options?: any): IExtendStoreBase {
   let store = new storeClass(...args);
   store._appStore = appStore;
   store.appStores = appStore.stores;
@@ -21,7 +21,7 @@ export interface StoreBaseConstructor {
 }
 
 export default class StoreBase {
-  appStores: { [name: string]: StoreBase } = {};
+  appStores: { [name: string]: any } = {};
   _appStore: AppStore | undefined;
   options: any;
   parentStore: StoreBase | undefined;

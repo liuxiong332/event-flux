@@ -45,7 +45,7 @@ export default class AppStore {
     this.batchUpdater = new BatchUpdateHost(this);  
   }
 
-  [IS_APP_STORE]: true;
+  [IS_APP_STORE] = true;
 
   buildStore(storeClass: IExtendStoreBaseConstructor, args: any[], options?: any) {
     return buildStore(this, storeClass, args, options);

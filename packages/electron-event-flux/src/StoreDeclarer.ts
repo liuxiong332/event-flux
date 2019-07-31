@@ -16,7 +16,7 @@ class StoreDeclarer {
     this.options = options;
   }
   
-  [IS_STORE]: true;
+  [IS_STORE] = true;
 
   static isStore(maybeStore: any) {
     return !!(maybeStore && maybeStore[IS_STORE]);
@@ -44,7 +44,7 @@ class StoreListDeclarer {
     this.options = options;
   }
 
-  [IS_STORE_LIST]: true;
+  [IS_STORE_LIST] = true;
 
   static isStoreList(maybeList: any) {
     return !!(maybeList && maybeList[IS_STORE_LIST]);
@@ -75,7 +75,7 @@ class StoreMapDeclarer {
     this.options = options;
   }
 
-  [IS_STORE_MAP]: true;
+  [IS_STORE_MAP] = true;
  
   static isStoreMap(maybeMap: any) {
     return !!(maybeMap && maybeMap[IS_STORE_MAP]);

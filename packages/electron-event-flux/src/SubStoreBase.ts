@@ -1,5 +1,5 @@
 import StoreBase from './StoreBase';
-import { Disposable } from 'event-kit';
+import { DisposableLike } from 'event-kit';
 
 class SubIdGenerator {
   count = 0;
@@ -13,7 +13,7 @@ class SubIdGenerator {
 
 // The StoreBase that can subscribe and unsubscribe
 export default class SubStoreBase extends StoreBase {
-  subMap: { [subId: string]: Disposable } = {};
+  subMap: { [subId: string]: DisposableLike } = {};
   idGenerator = new SubIdGenerator();
 
   unsubscribe(subId: string) {
@@ -23,7 +23,7 @@ export default class SubStoreBase extends StoreBase {
     delete this.subMap[subId];
   }
 
-  genSubId(dispose: Disposable) {
+  genSubId(dispose: DisposableLike) {
     let id = this.idGenerator.genId();
     this.subMap[id] = dispose;
     return id;

@@ -16,7 +16,7 @@ const ContextProvider = StoreContext.Provider;
 export default class Provider extends React.PureComponent<ProviderProps, ContextValue> {
   appStore: any;
 
-  constructor(props) {
+  constructor(props: ProviderProps) {
     super(props);
     this.appStore = props.appStore;
     this.appStore.onDidChange(this.handleStateChange);
@@ -27,7 +27,7 @@ export default class Provider extends React.PureComponent<ProviderProps, Context
     };
   }
   
-  handleStateChange = (state) => {
+  handleStateChange = (state: any) => {
     this.setState({ state });
   };
 
