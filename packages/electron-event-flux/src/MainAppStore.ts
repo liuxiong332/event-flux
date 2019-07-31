@@ -17,7 +17,6 @@ import { winManagerStoreName, winManagerKey } from './constants';
 import { serialize, deserialize } from 'json-immutable-bn';
 import IStoresDeclarer, { IStoresObjDeclarer } from './IStoresDeclarer';
 import IExtendStoreBase, { IExtendStoreBaseConstructor } from './IExtendStoreBase';
-import StoreBase from './StoreBase';
 import IMainClient, { IClientInfo } from './IMainClient';
 import IStoreFilters from './IStoreFilters';
 

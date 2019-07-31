@@ -1,4 +1,4 @@
-import Storage from 'electron-event-flux/lib/storage';
+import Storage from '../../../src/storage';
 
 const storage = new Storage('1.0');
 

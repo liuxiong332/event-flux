@@ -3,7 +3,7 @@ import AppStore from './AppStore';
 import IStoresDeclarer from './IStoresDeclarer';
 import IExtendStoreBase, { IExtendStoreBaseConstructor } from './IExtendStoreBase';
 
-const IS_STORE = '@@__FLUX_STORE__@@';
+export const IS_STORE = '@@__FLUX_STORE__@@';
 
 // storeClass must be factory or class.
 export function buildStore(appStore: AppStore, storeClass: IExtendStoreBaseConstructor, args: any[], options?: any): IExtendStoreBase {
@@ -35,11 +35,11 @@ export default class StoreBase {
   _isInit = false
 
   static isStore(maybeStore: any) {
-    return !!(maybeStore && maybeStore[IS_STORE]);
+    return !!(maybeStore && maybeStore["__FLUX_STORE__"]);
   };
   static innerStores: IStoresDeclarer;
 
-  [IS_STORE]: true;
+  __FLUX_STORE__ = true;
 
   _initWrap() {
     if (!this._isInit) {
@@ -49,7 +49,7 @@ export default class StoreBase {
   }
 
   willInit() {}
-  
+
   init() {}
 
   // Create new store from storeClass. storeClass must be factory or class.  

@@ -193,7 +193,7 @@ export function filterOneStore(StoreClass: IExtendStoreBaseConstructor, filterOp
       store.buildStores && store.buildStores();
     });
   };
-  StoreClass.prototype.initStores = function(parentStore: StoreBase) {
+  StoreClass.prototype.initStores = function(parentStore: IExtendStoreBase) {
     subStoreInfos.forEach((info) => {
       let storeKey = info[2];
       let store = this.getStore ? this.getStore(storeKey) : this[storeKey];

@@ -203,8 +203,9 @@ export default class MultiWinStore extends StoreBase implements IMultiWinStore {
     return childWin;
   }
 
-  createElectronWin(url: string, clientId: string, parentClientId: string, params: any): string {
+  createElectronWin(url: string, clientId: string, parentClientId: string, params: any): string | undefined {
     console.error('Please provide the createElectronWin');
+    return;
   }
 
   onChangeAction(clientId: string, action: string) {

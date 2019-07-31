@@ -1,4 +1,4 @@
-import StoreBase from 'event-flux/lib/StoreBase';
+import StoreBase from '../StoreBase';
 import { declareStore, declareStoreMap, declareStoreList } from '../src/StoreDeclarer';
 import buildAppStore from '../src/MainAppStore';
 

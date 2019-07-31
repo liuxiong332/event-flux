@@ -183,8 +183,7 @@ class MultiWinCacheStore extends MultiWinStore {
   
     win.on('closed', () => {
       if (clientId === 'mainClient') {
-        this.willQuit = true;
-        this.closeAllWindows();
+        this.onCloseMainClient();
       }
       this.onDidWinClose && this.onDidWinClose(clientId!);
       let index = this.clientIds.indexOf(clientId!);
@@ -303,7 +302,8 @@ class MultiWinCacheStore extends MultiWinStore {
   }
 
   onCloseMainClient() {
-    
+    this.willQuit = true;
+    this.closeAllWindows();
   }
 
   activeWin(clientId: string) {

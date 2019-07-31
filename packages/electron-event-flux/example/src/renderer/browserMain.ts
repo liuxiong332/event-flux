@@ -12,7 +12,7 @@ class MyMultiWinStore extends MultiWinStore {
 if (!query.isSlave) {
   const appStore = buildMultiWinAppStore({ todo: TodoStore }, { winTodo: TodoStore }, {
     WinHandleStore: MyMultiWinStore
-  });
+  }, console.log);
 }
 
 require('./index');
