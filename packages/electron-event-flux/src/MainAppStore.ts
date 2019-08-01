@@ -191,6 +191,10 @@ class MultiWindowAppStore extends AppStore {
     return this.stores[key] = store;
   }
 
+  getStores() {
+    return this.stores;
+  }
+
   getWinSpecificStore(clientId: string, storeName: string) {
     let winStores = this.stores[winManagerStoreName].winPackMap[clientId];
     if (winStores) return winStores[storeName];

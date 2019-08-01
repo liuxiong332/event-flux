@@ -1,4 +1,4 @@
-import { Log } from "./utils/loggerApply";
+import { Log, Logger } from "./utils/loggerApply";
 import IMainClientCallbacks from "./IMainClientCallbacks";
 import IErrorObj from "./IErrorObj";
 import { 
@@ -31,7 +31,7 @@ export default class ElectronMainClient implements IMainClient {
     // events when a BrowserWindow is created using remote
     
   
-    ipcMain.once(renderRegisterName, this.handleRegister);
+    ipcMain.on(renderRegisterName, this.handleRegister);
   
     ipcMain.on(renderDispatchName, this.handleRendererDispatch);
 
@@ -72,6 +72,7 @@ export default class ElectronMainClient implements IMainClient {
     // Webcontents aren't automatically destroyed on window close
     browserWindow.on('closed', () => this.handleUnregisterRenderer(clientId));
 
+    this.log((logger: Logger) => logger("ElectronMainClient", "main init"));
     this._sendForWebContents(
       sender,
       mainInitName,
@@ -163,12 +164,14 @@ export default class ElectronMainClient implements IMainClient {
 
     } else {
 
-      // 还没有初始化，则监听注册事件，当初始化之后 开始初始化
-      ipcMain.once(renderRegisterName, (event: Event, { clientId: nowClientId }: { clientId: string }) => {
+      const onRegister = (event: Event, { clientId: nowClientId }: { clientId: string }) => {
         if (nowClientId === clientId) {
           this.changeClientAction(clientId, params);
+          ipcMain.removeListener(renderRegisterName, onRegister);
         }
-      });
+      };
+      // 还没有初始化，则监听注册事件，当初始化之后 开始初始化
+      ipcMain.on(renderRegisterName, onRegister);
     }
   }
 
@@ -180,11 +183,14 @@ export default class ElectronMainClient implements IMainClient {
     if (this.isRegister(clientId)) {
       return callback();
     }
-    ipcMain.once(renderRegisterName, (event: Event, { clientId: nowClientId }: { clientId: string }) => {
+    const onRegister = (event: Event, { clientId: nowClientId }: { clientId: string }) => {
       if (nowClientId === clientId) {
         callback();
+        ipcMain.removeListener(renderRegisterName, onRegister);
       }
-    });
+    };
+
+    ipcMain.on(renderRegisterName, onRegister);
   }
 
   isClose(clientId: string): boolean {

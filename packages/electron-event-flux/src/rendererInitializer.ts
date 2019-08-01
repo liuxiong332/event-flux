@@ -115,6 +115,7 @@ export default function rendererInit(rendererStores: IStoresObjDeclarer, options
     })
   }
 
+  logger("rendererInitializer", "start async init", query);
   return store.asyncInit().then((state) => {
     store.stores['multiWinStore'] = genProxy(store, store.stores['multiWinStore']);
     if ((window as any)['parentId']) {

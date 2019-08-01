@@ -30,6 +30,8 @@ export class RendererAppStore extends AppStore {
   storeProxyHandler = new StoreProxyHandler();
 
   storeResolve?: () => void;
+  storeReject?: (err: Error) => void;
+
   winInitParams: any;
   log: Log;
 
@@ -50,31 +52,37 @@ export class RendererAppStore extends AppStore {
       this.handleResult.bind(this), 
       this.handleMessage.bind(this),
       this.handleWinMessage.bind(this),
-      this.handleInitWindow.bind(this)
+      this.handleInitWindow.bind(this),
+      this.log
     );
-    return new Promise((resolve) => {
+    return new Promise((resolve, reject) => {
       this.storeResolve = resolve;
+      this.storeReject = reject;
     });
   }
 
   handleStorePromise = (state: any, store: any) => {
-    this.handleStore(this.storeResolve!, state, store);
+    this.handleStore(this.storeResolve!, this.storeReject!, state, store);
   };
 
-  handleStore(resolve: () => void, state: any, store: any) {
-    const storeData = deserialize(state);
-    const initialState = storeData;
-    this.state = initialState;
-
-    const storeFilters = JSON.parse(store);
-    let stores = this.storeProxyHandler.proxyStores(storeFilters, (action: any) => {
-      let invokeId = this.idGenerator.genID();
-      this.client.forward(invokeId, serialize(action));
-      return new Promise((resolve, reject) => this.resolveMap[invokeId] = {resolve, reject});
-    });
-    this.stores = stores;
-    this.initRenderStores();
-    resolve();
+  handleStore(resolve: () => void, reject: (err: Error) => void, state: any, store: any) {
+    try {
+      const storeData = deserialize(state);
+      const initialState = storeData;
+      this.state = initialState;
+  
+      const storeFilters = JSON.parse(store);
+      let stores = this.storeProxyHandler.proxyStores(storeFilters, (action: any) => {
+        let invokeId = this.idGenerator.genID();
+        this.client.forward(invokeId, serialize(action));
+        return new Promise((resolve, reject) => this.resolveMap[invokeId] = {resolve, reject});
+      });
+      this.stores = stores;
+      this.initRenderStores();
+      resolve();
+    } catch (err) {
+      reject(err);
+    }
   }
 
   handleAction(actionStr: string) {

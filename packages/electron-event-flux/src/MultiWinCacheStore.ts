@@ -16,8 +16,8 @@ export class WindowManager {
   constructor(winHandler: MultiWinCacheStore) {
     this.windows = [];
     this.winHandler = winHandler;
-    // app.whenReady().then(() => this.ensureWindows());
-    this.ensureWindows();
+    app.whenReady().then(() => this.ensureWindows());
+    // this.ensureWindows();
   }
 
   genClientId() {
@@ -78,12 +78,16 @@ class MultiWinCacheStore extends MultiWinStore {
     if (!clients || clients.length === 0) {
       clients = this.getDefaultClients();
     } 
-    this.windowManager = new WindowManager(this);
 
-    // app.whenReady().then(() => {
-    //   clients.forEach(item => this.createElectronWin(item.url, item.clientId, item.parentId, item.winState));
-    // });
-    clients.forEach((item: IClientCacheInfo) => this.createWinForClientId(item, item.clientId, item.parentId, item.winState!));
+    if (!this.windowManager) {
+      this.windowManager = new WindowManager(this);
+    }
+
+    app.whenReady().then(() => {
+      clients.forEach((item: IClientCacheInfo) => {
+        this.createWinForClientId({ path: item.url, groups: item.groups, name: item.name }, item.clientId, item.parentId, item.winState!)
+      });
+    });
   }
 
   saveClients() {
@@ -304,6 +308,15 @@ class MultiWinCacheStore extends MultiWinStore {
   onCloseMainClient() {
     this.willQuit = true;
     this.closeAllWindows();
+  }
+
+  closeAllWindows() {
+    super.closeAllWindows();
+    // 关掉隐藏窗口
+    if (this.windowManager) {
+      this.windowManager.dispose();
+      this.windowManager = undefined;
+    }
   }
 
   activeWin(clientId: string) {

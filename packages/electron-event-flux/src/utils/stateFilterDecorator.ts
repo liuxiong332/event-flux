@@ -38,7 +38,7 @@ export default function(StoreClass: StoreBaseConstructor) {
 
     _initStateFilters() {
       // Init the state filters for the window with clientId
-      let winManagerStore = (this.appStores || this.getSubStores).winManagerStore;
+      let winManagerStore = (this.appStores || this.getStores!()).winManagerStore;
       winManagerStore.getClienIds().forEach(this._initForClientId);
       this._stateFiltersInit = true;
 
