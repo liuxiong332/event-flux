@@ -61,12 +61,13 @@ export default class ElectronMainClient implements IMainClient {
       clientId,
       window: BrowserWindow.fromWebContents(sender), // sender.getOwnerBrowserWindow(),
     };
+
+    // Add window first, then get window info, The window info should has prepared
+    this.mainClientCallbacks.addWin(clientId);
+    
     this.clientInfos.push(clientInfo);
     this.clientMap[clientId] = clientInfo;
     
-    // Add window first, then get window info, The window info should has prepared
-    this.mainClientCallbacks.addWin(clientId);
-
     let browserWindow = BrowserWindow.fromWebContents(sender);
     
     // Webcontents aren't automatically destroyed on window close
@@ -137,6 +138,7 @@ export default class ElectronMainClient implements IMainClient {
   }
   
   sendWinMsg(clientId: string, message: any) {
+    if (!this.clientMap[clientId]) return;
     let webContents = this.clientMap[clientId].webContents;
     if (this.checkWebContents(webContents)) {
       webContents.send(messageName, message);
@@ -144,12 +146,14 @@ export default class ElectronMainClient implements IMainClient {
   }
 
   // 通过clientId获取BrowserWindow
-  getWindow(clientId: string): BrowserWindow {
+  getWindow(clientId: string): BrowserWindow | undefined {
+    if (!this.clientMap[clientId]) return undefined;
     return this.clientMap[clientId].window;
   }
 
   // 通过clientId获取WebContents
-  getWebContents(clientId: string): WebContents {
+  getWebContents(clientId: string): WebContents | undefined {
+    if (!this.clientMap[clientId]) return undefined;
     return this.clientMap[clientId].webContents;
   }
 

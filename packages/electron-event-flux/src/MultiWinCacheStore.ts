@@ -185,18 +185,7 @@ class MultiWinCacheStore extends MultiWinStore {
 
     this.saveClients();   // Save clients into Storage
   
-    win.on('closed', () => {
-      if (clientId === 'mainClient') {
-        this.onCloseMainClient();
-      }
-      this.onDidWinClose && this.onDidWinClose(clientId!);
-      let index = this.clientIds.indexOf(clientId!);
-      if (index !== -1) {
-        this.clientIds.splice(index, 1);
-      }
-      if (!this.willQuit) this.saveClients();
-      this._removeClientId(clientId!);
-    });
+    win.on('closed', this.onCloseWin.bind(this, clientId));
     return clientId;
   }
 
@@ -308,6 +297,19 @@ class MultiWinCacheStore extends MultiWinStore {
   onCloseMainClient() {
     this.willQuit = true;
     this.closeAllWindows();
+  }
+
+  onCloseWin(clientId: string) {
+    if (clientId === 'mainClient') {
+      this.onCloseMainClient();
+    }
+    this.onDidWinClose && this.onDidWinClose(clientId!);
+    let index = this.clientIds.indexOf(clientId!);
+    if (index !== -1) {
+      this.clientIds.splice(index, 1);
+    }
+    if (!this.willQuit) this.saveClients();
+    this._removeClientId(clientId!);
   }
 
   closeAllWindows() {
