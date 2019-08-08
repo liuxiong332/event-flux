@@ -44,12 +44,12 @@ export default class ElectronMainClient {
         clientId,
         window: sender.getOwnerBrowserWindow(),
       };
+      // Add window first, then get window info, The window info should has prepared
+      callbacks.addWin(clientId);
+      
       clientInfos.push(clientInfo);
       clientMap[clientId] = clientInfo;
       
-      // Add window first, then get window info, The window info should has prepared
-      callbacks.addWin(clientId);
-
       if (!sender.isGuest()) { // For windowMap (not webviews)
         let browserWindow = sender.getOwnerBrowserWindow();
         
