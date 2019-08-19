@@ -154,7 +154,7 @@ class MultiWinCacheStore extends MultiWinStore {
     }
     let clientId = null;
     try {
-      clientId = this._createElectronWin(winProps.path!, null, parentClientId, params);
+      clientId = this._createElectronWin(winProps, null, parentClientId, params);
     } catch(err) {
       console.error(err, err.stack);
     }
