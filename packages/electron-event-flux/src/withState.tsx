@@ -2,10 +2,10 @@ import * as React from 'react';
 import { StoreContext } from './Provider';
 import { pick } from './utils/objUtils';
 
-type SelectorFunc = (state: any, props: any) => any;
+export type SelectorFunc = (state: any, props: any) => any;
 
 const notUsed = () => null;
-function unifySelector(selector: string[] | SelectorFunc) {
+export function unifySelector(selector: string[] | SelectorFunc) {
   if (!selector) return notUsed;
   if (typeof selector !== 'function') {
     if (!Array.isArray(selector)) selector = [selector];
