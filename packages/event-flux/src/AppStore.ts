@@ -6,24 +6,24 @@ const IS_APP_STORE = '@@__APP_STORE__@@';
 
 export default class AppStore {
   _init = false;
-  didChangeCallbacks = [];
+  didChangeCallbacks: Function[] = [];
 
   batchUpdater: BatchUpdateHost;
   prevState: any = {};
   state: any = {};
   stores: any = {};
 
-  static isAppStore;
+  static isAppStore: Function;
   
   constructor() {
     this.batchUpdater = new BatchUpdateHost(this);  
   }
 
-  buildStore(storeClass, args, options) {
-    return buildStore(this, storeClass, args, options);
-  }
+  // buildStore(storeClass, args, options) {
+  //   return buildStore(this, storeClass, args, options);
+  // }
 
-  setState(state) {
+  setState(state: any) {
     if (!this._init) {  // 未初始化完成
       Object.assign(this.state, state);
     } else {
@@ -38,10 +38,10 @@ export default class AppStore {
     this.prevState = this.state;
   }
 
-  handleWillChange(prevState, state) {
+  handleWillChange(prevState: any, state: any) {
   }
   
-  onDidChange(callback) {
+  onDidChange(callback: Function) {
     this.didChangeCallbacks.push(callback);
   }
 
@@ -51,20 +51,24 @@ export default class AppStore {
     return this;
   }
 
+  removeStore(storeName: string) {
+    delete this.stores[storeName];
+  }
+
   dispose() {
-    this.didChangeCallbacks = null;
+    this.didChangeCallbacks = [];
     this.prevState = this.state = this.stores = null;
     for (var key in this.stores) {
-      let store = this[key];
+      let store = this.stores[key];
       if (store instanceof StoreBase) {
         store.dispose();
-        this[key] = null;
+        this.stores[key] = null;
       }
     }
   }
 }
 
-AppStore.prototype[IS_APP_STORE] = true;
-AppStore.isAppStore = function(maybeAppStore) {
+(AppStore.prototype as any)[IS_APP_STORE] = true;
+AppStore.isAppStore = function(maybeAppStore: any) {
   return !!(maybeAppStore && maybeAppStore[IS_APP_STORE]);
 }

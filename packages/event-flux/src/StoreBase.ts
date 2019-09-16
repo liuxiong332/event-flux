@@ -1,22 +1,48 @@
-import { Emitter } from 'event-kit';
-import { buildStore } from './buildStore';
+import { Emitter, Disposable, CompositeDisposable } from 'event-kit';
+// import { buildStore } from './buildStore';
 
 const IS_STORE = '@@__FLUX_STORE__@@';
 
-export default class StoreBase {
-  state: any = {};
-  appStores: any;
-  parentStore: StoreBase;
+export function eventListener(target: any, propertyKey: string, descriptor: PropertyDescriptor) {
+  console.log("event listener");
+  return target[propertyKey];
+}
 
-  emitter = new Emitter();
-  inWillUpdate = false;
-  willUpdateStates = [];
+export function reducer(callback: Function) {
+  return callback;
+}
 
-  _isInit = false
-  _appStore = null;
+export function returnReducer(callback: Function) {
+  return callback;
+}
 
-  static isStore;
-  static innerStores;
+export default class StoreBase<StateT> {
+  state: StateT = {} as StateT;
+
+  _emitter = new Emitter();
+  disposables = new CompositeDisposable();
+
+  _inWillUpdate = false;
+  _willUpdateStates: any[] = [];
+
+  _isInit = false;
+  _appStore: any = null;
+  _args: any = null;
+
+  _refCount = 0;
+
+  [storeKey: string]: any;
+
+  static isStore: (store: any) => boolean;
+  // static innerStores;
+
+  StoreBase(appStore: any, depStores: { [key: string]: StoreBase<any> }, args: any) {
+    this._appStore = appStore;
+    for (let storeKey in depStores) {
+      this[storeKey] = depStores[storeKey];
+    }
+    this._args = args;
+  }
 
   _initWrap() {
     if (!this._isInit) {
@@ -25,60 +51,85 @@ export default class StoreBase {
     }
   }
 
+  willInit() {}
+
   init() {}
 
   // Create new store from storeClass. storeClass must be factory or class.  
-  buildStore(storeClass, args, options) {
-    if (!this._appStore) return console.error('Can not invoke buildStore in constructor');
-    return buildStore(this._appStore, storeClass, args, options);
-  }
+  // buildStore(storeClass, args, options) {
+  //   if (!this._appStore) return console.error('Can not invoke buildStore in constructor');
+  //   return buildStore(this._appStore, storeClass, args, options);
+  // }
 
-  setState(state) {
+  setState(state: any) {
     // 当will-update，将状态保存到缓存队列中
-    if (this.inWillUpdate) {
-      return this.willUpdateStates.push(state);
+    if (this._inWillUpdate) {
+      this._willUpdateStates.push(state);
+      return;
     }
     // Make the update delay to next tick that can collect many update into one operation.
     let nextState = Object.assign({}, this.state, state); 
-    this.inWillUpdate = true;   
-    this.emitter.emit('will-update', nextState);
-    this.inWillUpdate = false;
-    if (this.willUpdateStates.length > 0) {
-      this.state = this.willUpdateStates.reduce((allState, state) => 
+    this._inWillUpdate = true;   
+    this._emitter.emit('will-update', nextState);
+    this._inWillUpdate = false;
+    if (this._willUpdateStates.length > 0) {
+      this.state = this._willUpdateStates.reduce((allState, state) => 
         Object.assign(allState, state
       ), nextState);
-      this.willUpdateStates = [];
+      this._willUpdateStates = [];
     } else {
       this.state = nextState;
     }
 
     // Send update notification.
-    this.emitter.emit('did-update', this.state);
+    this._emitter.emit('did-update', this.state);
   }
 
-  onDidUpdate(callback) {
-    return this.emitter.on('did-update', callback);
+  @eventListener
+  onDidUpdate(callback: (value: StateT) => void): Disposable {
+    return this._emitter.on('did-update', callback);
   }
 
-  onWillUpdate(callback) {
-    return this.emitter.on('will-update', callback);    
+  @eventListener
+  onWillUpdate(callback: (value: StateT) => void) {
+    return this._emitter.on('will-update', callback);    
   }
 
-  observe(callback) {
+  @eventListener
+  observe(callback: (value: StateT) => void) {
     callback(this.state);
-    return this.emitter.on('did-update', callback);    
+    return this._emitter.on('did-update', callback);    
+  }
+
+  addDisposable(item: Disposable) {
+    this.disposables.add(item);
   }
 
   dispose() {
-    this.emitter.dispose();
+    this.disposables.dispose();
+    this._emitter.dispose();
   }
 
   getState() {
     return this.state;
   }
+
+  // Add the ref count and avaoid recycle this store
+  _addRef() {
+    this._refCount += 1;
+  }
+
+  // Decrease the store's ref count, if this ref count decrease to 0, this store  will be disposed.
+  _decreaseRef() {
+    this._refCount -= 1;
+    if (this._refCount === 0 && this._appStore.recycleStrategy === RecycleStrategy.Urgent) {
+      this.dispose();
+      this._appStore.removeStore(this.storeKey);
+    }
+  }
 }
 
-StoreBase.prototype[IS_STORE] = true;
-StoreBase.isStore = function(maybeStore) {
+(StoreBase.prototype as any)[IS_STORE] = true;
+StoreBase.isStore = function(maybeStore: any) {
   return !!(maybeStore && maybeStore[IS_STORE]);
 }

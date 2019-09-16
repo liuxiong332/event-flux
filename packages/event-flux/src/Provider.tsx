@@ -8,7 +8,7 @@ export default class Provider extends React.PureComponent<any, any> {
   appStore: any;
   state: any;
 
-  constructor(props) {
+  constructor(props: any) {
     super(props);
     let inStores = props.stores;
     if (!Array.isArray(inStores)) {
@@ -26,7 +26,7 @@ export default class Provider extends React.PureComponent<any, any> {
     this.appStore.init();
   }
 
-  stateChanged = (state) => {
+  stateChanged = (state: any) => {
     this.setState({ state });
   };
 

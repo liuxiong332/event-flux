@@ -1,0 +1,4 @@
+enum RecycleStrategy {
+  Urgent,
+  Never,
+}
