@@ -67,6 +67,7 @@ function declareStoreList<T>(Store: StoreBaseConstructor<T>, options?: StoreList
 export interface StoreMapDeclarerOptions {
   args?: [any];
   storeKey?: string;
+  depStoreNames?: string[];
   keys?: [string];
   directInsert?: boolean;
   defaultFilter?: boolean;

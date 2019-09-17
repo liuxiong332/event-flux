@@ -1,3 +1,5 @@
+declare var requestIdleCallback: (callback: () => void, options?: { timeout: number }) => void;
+ 
 export default class BatchUpdateHost {
   appStore: any;
   runState = 'idle';
@@ -11,7 +13,11 @@ export default class BatchUpdateHost {
     if (this.runState === 'idle') {
       this.runState = 'prepare';
       // Collect all of the update request and update AppStore After 20ms
-      setTimeout(() => this.runUpdate(), 20);
+      if (requestIdleCallback) {
+        requestIdleCallback(() => this.runUpdate());
+      } else {
+        setTimeout(() => this.runUpdate(), 0);
+      }
     }
   }
 

@@ -1,6 +1,5 @@
 import { Emitter, Disposable, CompositeDisposable, DisposableLike } from 'event-kit';
 // import { buildStore } from './buildStore';
-import RecycleStrategy from "./RecycleStrategy";
 
 const IS_STORE = '@@__FLUX_STORE__@@';
 
@@ -36,14 +35,21 @@ export default class StoreBase<StateT> {
   static isStore: (store: any) => boolean;
   // static innerStores;
 
-  constructor(appStore?: any, depStores?: { [key: string]: StoreBase<any> }, args?: any) {
+  constructor(appStore?: any, args?: any) {
     this._appStore = appStore;
+    this._args = args;
+  }
+
+  /**
+   * Inject the store's dependency stores into this store, It will be invoked before willInit and init
+   * @param depStores: the store's dependencies, the dependency stores will be injected to this store
+   */
+  _inject(depStores?: { [storeKey: string]: StoreBase<any> }) {
     if (depStores) {
       for (let storeKey in depStores) {
         this[storeKey] = depStores[storeKey];
       }
     }
-    this._args = args;
   }
 
   willInit() {}
@@ -117,10 +123,10 @@ export default class StoreBase<StateT> {
   // Decrease the store's ref count, if this ref count decrease to 0, this store  will be disposed.
   _decreaseRef() {
     this._refCount -= 1;
-    if (this._refCount === 0 && this._appStore.recycleStrategy === RecycleStrategy.Urgent) {
-      this.dispose();
-      this._appStore.removeStore(this.storeKey);
-    }
+  }
+
+  getRefCount() {
+    return this._refCount;
   }
 }
 
