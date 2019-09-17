@@ -1,4 +1,5 @@
-import StoreBase from '../src/StoreBase';
+import StoreBase from '../StoreBase';
+import RecycleStrategy from "../RecycleStrategy";
 
 jest.useFakeTimers();
 
@@ -51,5 +52,32 @@ describe('StoreBase', () => {
     jest.runAllTimers();
     expect(stateChangeMock).toHaveBeenCalledTimes(1);
     expect(store.state).toEqual({ hello: 'updateHello2', newKey: 'key' });
+  });
+
+  test("storeBase constructor and dispose test", () => {
+    let myAppStore = {
+      recycleStrategy:  RecycleStrategy.Urgent,
+      removeStore: jest.fn(),
+    };
+    let store = new StoreBase(myAppStore, {}, { hello: "arg" });
+    store.addDisposable({ dispose: () => {} });
+    store.onDidUpdate(jest.fn);
+    store.dispose();
+
+    expect(store._emitter.disposed).toBeTruthy();
+    expect(store._disposables.disposed).toBeTruthy();
+  });
+
+  test("storeBase addRef and decreaseRef test", () => {
+    let myAppStore = {
+      recycleStrategy:  RecycleStrategy.Urgent,
+      removeStore: jest.fn(),
+    };
+    let store = new StoreBase(myAppStore, {}, { hello: "arg" });
+
+    store._addRef();
+    store._decreaseRef();
+    expect(myAppStore.removeStore).toHaveBeenCalled();
+    expect(store._emitter.disposed).toBeTruthy();
   });
 });

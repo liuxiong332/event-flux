@@ -1,10 +1,10 @@
-import { Emitter, Disposable, CompositeDisposable } from 'event-kit';
+import { Emitter, Disposable, CompositeDisposable, DisposableLike } from 'event-kit';
 // import { buildStore } from './buildStore';
+import RecycleStrategy from "./RecycleStrategy";
 
 const IS_STORE = '@@__FLUX_STORE__@@';
 
 export function eventListener(target: any, propertyKey: string, descriptor: PropertyDescriptor) {
-  console.log("event listener");
   return target[propertyKey];
 }
 
@@ -36,19 +36,14 @@ export default class StoreBase<StateT> {
   static isStore: (store: any) => boolean;
   // static innerStores;
 
-  StoreBase(appStore: any, depStores: { [key: string]: StoreBase<any> }, args: any) {
+  constructor(appStore?: any, depStores?: { [key: string]: StoreBase<any> }, args?: any) {
     this._appStore = appStore;
-    for (let storeKey in depStores) {
-      this[storeKey] = depStores[storeKey];
+    if (depStores) {
+      for (let storeKey in depStores) {
+        this[storeKey] = depStores[storeKey];
+      }
     }
     this._args = args;
-  }
-
-  _initWrap() {
-    if (!this._isInit) {
-      this.init && this.init();
-      this._isInit = true;
-    }
   }
 
   willInit() {}
@@ -101,7 +96,7 @@ export default class StoreBase<StateT> {
     return this._emitter.on('did-update', callback);    
   }
 
-  addDisposable(item: Disposable) {
+  addDisposable(item: DisposableLike) {
     this._disposables.add(item);
   }
 

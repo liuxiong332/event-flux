@@ -4,7 +4,7 @@
   "description": "The flux framework for React",
   "main": "./lib/index.js",
   "scripts": {
-    "test": "jest --detectLeaks",
+    "test": "jest --detectLeaks --coverage",
     "prepublish": "gulp"
   },
   "repository": {
@@ -35,7 +35,8 @@
     "react-addons-test-utils": "^15.4.2",
     "react-test-renderer": "^16.9.0",
     "ts-jest": "^24.1.0",
-    "typescript": "^3.6.3"
+    "typescript": "^3.6.3",
+    "weak": "^1.0.1"
   },
   "dependencies": {
     "event-kit": "^2.5.3"

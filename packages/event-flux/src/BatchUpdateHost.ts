@@ -2,7 +2,7 @@ export default class BatchUpdateHost {
   appStore: any;
   runState = 'idle';
 
-  constructor(appStore) {
+  constructor(appStore: any) {
     this.appStore = appStore;
   }
 

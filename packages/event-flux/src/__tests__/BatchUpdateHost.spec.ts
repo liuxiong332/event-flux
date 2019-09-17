@@ -1,4 +1,4 @@
-import BatchUpdateHost from '../src/BatchUpdateHost';
+import BatchUpdateHost from '../BatchUpdateHost';
 
 jest.useFakeTimers();
 
