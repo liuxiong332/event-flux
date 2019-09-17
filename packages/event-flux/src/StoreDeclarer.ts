@@ -1,15 +1,15 @@
 import StoreBase from "./StoreBase";
 
+export interface StoreBaseConstructor<T> {
+  new (...args: any[]): StoreBase<T>;
+}
+
 export interface StoreDeclarerOptions {
   args?: [any];
   storeKey?: string;
   stateKey?: string;
   depStoreNames?: string[];
   defaultFilter?: boolean;
-}
-
-export interface StoreBaseConstructor<T> {
-  new (...args: any[]): StoreBase<T>;
 }
 
 const IS_STORE = '@@__STORE_ITEM__@@';

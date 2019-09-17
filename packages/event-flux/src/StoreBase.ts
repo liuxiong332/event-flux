@@ -8,19 +8,19 @@ export function eventListener(target: any, propertyKey: string, descriptor: Prop
   return target[propertyKey];
 }
 
-export function reducer(callback: Function) {
-  return callback;
+export function reducer(target: any, propertyKey: string, descriptor: PropertyDescriptor) {
+  return target[propertyKey];
 }
 
-export function returnReducer(callback: Function) {
-  return callback;
+export function returnReducer(target: any, propertyKey: string, descriptor: PropertyDescriptor) {
+  return target[propertyKey];
 }
 
 export default class StoreBase<StateT> {
   state: StateT = {} as StateT;
 
   _emitter = new Emitter();
-  disposables = new CompositeDisposable();
+  _disposables = new CompositeDisposable();
 
   _inWillUpdate = false;
   _willUpdateStates: any[] = [];
@@ -102,11 +102,11 @@ export default class StoreBase<StateT> {
   }
 
   addDisposable(item: Disposable) {
-    this.disposables.add(item);
+    this._disposables.add(item);
   }
 
   dispose() {
-    this.disposables.dispose();
+    this._disposables.dispose();
     this._emitter.dispose();
   }
 
@@ -114,7 +114,7 @@ export default class StoreBase<StateT> {
     return this.state;
   }
 
-  // Add the ref count and avaoid recycle this store
+  // Add the ref count and avoid recycle this store
   _addRef() {
     this._refCount += 1;
   }
