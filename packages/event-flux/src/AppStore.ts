@@ -1,6 +1,6 @@
 import StoreBase from './StoreBase';
 import BatchUpdateHost from './BatchUpdateHost';
-import { StoreDeclarer, StoreListDeclarer, StoreMapDeclarer } from './StoreDeclarer';
+import { StoreDeclarer, StoreListDeclarer, StoreMapDeclarer, StoreBaseConstructor } from './StoreDeclarer';
 import RecycleStrategy from "./RecycleStrategy";
 
 const IS_APP_STORE = '@@__APP_STORE__@@';
@@ -17,6 +17,8 @@ export default class AppStore {
   stores: { [storeKey: string]: StoreBase<any> } = {};
 
   _storeRegisterMap: { [storeName: string]: AnyStoreDeclarer } = {};
+  _storeToKeyMap: Map<StoreBaseConstructor<any>, string[]> = new Map();
+
   _recycleStrategy: RecycleStrategy = RecycleStrategy.Never;
   _depStoreList: { [storeName: string]: string[] } = {};
 
@@ -85,8 +87,18 @@ export default class AppStore {
    * Register the store into the appStore with storeDeclarer
    * @param storeDeclarer: AnyStoreDeclater
    */
-  _registerStore(storeDeclarer: AnyStoreDeclarer) {
-    this._storeRegisterMap[storeDeclarer.options!.storeKey!] = storeDeclarer;
+  registerStore(...storeDeclarers: AnyStoreDeclarer[]) {
+    for (let storeDeclarer of storeDeclarers) {
+      let storeKey = storeDeclarer.options!.storeKey!;
+      this._storeRegisterMap[storeKey] = storeDeclarer;
+
+      let storeClass = storeDeclarer.Store;
+      if (!this._storeToKeyMap.has(storeClass)) {
+        this._storeToKeyMap.set(storeDeclarer.Store, [storeKey]);
+      } else {
+        this._storeToKeyMap.set(storeDeclarer.Store, [...this._storeToKeyMap.get(storeClass), storeKey]);
+      }
+    }
   }
 
   /**
@@ -107,7 +119,7 @@ export default class AppStore {
           console.error(`The request store ${curStoreKey} is not registered!`);
           return;
         }
-        let depNames = storeInfo.options!.depStoreNames || [];
+        let depNames = storeInfo.depStoreNames || [];
 
         let filterDepNames = [];
         for (let depName of depNames) {
@@ -140,7 +152,7 @@ export default class AppStore {
       for (let i = depList.length - 1; i >= 0; i -= 1) {
         let storeKey = depList[i];
         let storeInfo = this._storeRegisterMap[storeKey];
-        let depNames = storeInfo.options!.depStoreNames || [];
+        let depNames = storeInfo.depStoreNames || [];
         let depStores: { [storeKey: string]: StoreBase<any> } = {};
         for (let depName of depNames) {
           depStores[depName] = this.stores[name];
@@ -176,7 +188,7 @@ export default class AppStore {
     if (this._recycleStrategy === RecycleStrategy.Urgent && store.getRefCount() === 0) {
       store.dispose();
       delete this.stores[storeKey];
-      (this._storeRegisterMap[storeKey].options!.depStoreNames || []).forEach(name => this.releaseStore(name));
+      (this._storeRegisterMap[storeKey].depStoreNames || []).forEach(name => this.releaseStore(name));
     }
   }
 }
