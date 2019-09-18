@@ -55,11 +55,8 @@ describe('StoreBase', () => {
   });
 
   test("storeBase constructor and dispose test", () => {
-    let myAppStore = {
-      recycleStrategy:  RecycleStrategy.Urgent,
-      removeStore: jest.fn(),
-    };
-    let store = new StoreBase(myAppStore, {}, { hello: "arg" });
+    let myAppStore = {};
+    let store = new StoreBase(myAppStore, { hello: "arg" });
     store.addDisposable({ dispose: () => {} });
     store.onDidUpdate(jest.fn);
     store.dispose();
@@ -69,15 +66,11 @@ describe('StoreBase', () => {
   });
 
   test("storeBase addRef and decreaseRef test", () => {
-    let myAppStore = {
-      recycleStrategy:  RecycleStrategy.Urgent,
-      removeStore: jest.fn(),
-    };
-    let store = new StoreBase(myAppStore, {}, { hello: "arg" });
+    let myAppStore = {};
+    let store = new StoreBase(myAppStore, { hello: "arg" });
 
     store._addRef();
     store._decreaseRef();
-    expect(myAppStore.removeStore).toHaveBeenCalled();
-    expect(store._emitter.disposed).toBeTruthy();
+    expect(store.getRefCount()).toEqual(0);
   });
 });

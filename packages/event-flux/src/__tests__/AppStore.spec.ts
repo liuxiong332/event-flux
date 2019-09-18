@@ -1,12 +1,9 @@
-import AppStore  from '../src/AppStore';
-import StoreBase from '../src/StoreBase';
+import AppStore  from '../AppStore';
+import StoreBase from '../StoreBase';
 
-class TodoDep1Store extends StoreBase {}
-
-class Todo2Store extends StoreBase {
-  static dependencies = [TodoDep1Store];
-  constructor() {
-    super();
+class TodoStore extends StoreBase<{ todo2: string }> {
+  constructor(...args: any[]) {
+    super(...args);
     this.state = { todo2: 'todo2' };
   }
 }
@@ -15,9 +12,9 @@ jest.useFakeTimers();
 
 describe('AppStore', () => {
   
-  test('appStore inject class dependencies', () => {
+  test('appStore observe store state change', () => {
     let appStore = new AppStore();
-    let todo2Store = new Todo2Store()
+    let todo2Store = new TodoStore()
     appStore.stores = { todo2Store };
     todo2Store.observe((state) => appStore.setState({ todo2: state }));
     expect(appStore.state.todo2).toEqual({ todo2: 'todo2' });
@@ -35,7 +32,7 @@ describe('AppStore', () => {
     appStore.onDidChange(onChange);
     appStore.handleWillChange = jest.fn();
 
-    let todo2Store = new Todo2Store(); 
+    let todo2Store = new TodoStore(); 
     todo2Store.observe((state) => appStore.setState({ todo2: state }));
     appStore.stores = { todo2Store };
     let prevState = appStore.state;

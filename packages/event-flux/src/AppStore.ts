@@ -1,6 +1,5 @@
 import StoreBase from './StoreBase';
 import BatchUpdateHost from './BatchUpdateHost';
-import { buildStore } from './buildStore';
 import { StoreDeclarer, StoreListDeclarer, StoreMapDeclarer } from './StoreDeclarer';
 import RecycleStrategy from "./RecycleStrategy";
 

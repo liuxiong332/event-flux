@@ -13,7 +13,7 @@ export default class BatchUpdateHost {
     if (this.runState === 'idle') {
       this.runState = 'prepare';
       // Collect all of the update request and update AppStore After 20ms
-      if (requestIdleCallback) {
+      if (typeof requestIdleCallback !== "undefined") {
         requestIdleCallback(() => this.runUpdate());
       } else {
         setTimeout(() => this.runUpdate(), 0);
