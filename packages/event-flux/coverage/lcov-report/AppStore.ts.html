@@ -20,14 +20,14 @@
     </h1>
     <div class='clearfix'>
       <div class='fl pad1y space-right2'>
-        <span class="strong">35.4% </span>
+        <span class="strong">33.06% </span>
         <span class="quiet">Statements</span>
-        <span class='fraction'>40/113</span>
+        <span class='fraction'>41/124</span>
       </div>
       <div class='fl pad1y space-right2'>
-        <span class="strong">13.33% </span>
+        <span class="strong">12.5% </span>
         <span class="quiet">Branches</span>
-        <span class='fraction'>4/30</span>
+        <span class='fraction'>4/32</span>
       </div>
       <div class='fl pad1y space-right2'>
         <span class="strong">53.33% </span>
@@ -35,9 +35,9 @@
         <span class='fraction'>8/15</span>
       </div>
       <div class='fl pad1y space-right2'>
-        <span class="strong">39.18% </span>
+        <span class="strong">37.5% </span>
         <span class="quiet">Lines</span>
-        <span class='fraction'>38/97</span>
+        <span class='fraction'>39/104</span>
       </div>
     </div>
     <p class="quiet">
@@ -232,7 +232,19 @@
 <a name='L184'></a><a href='#L184'>184</a>
 <a name='L185'></a><a href='#L185'>185</a>
 <a name='L186'></a><a href='#L186'>186</a>
-<a name='L187'></a><a href='#L187'>187</a></td><td class="line-coverage quiet"><span class="cline-any cline-yes">1x</span>
+<a name='L187'></a><a href='#L187'>187</a>
+<a name='L188'></a><a href='#L188'>188</a>
+<a name='L189'></a><a href='#L189'>189</a>
+<a name='L190'></a><a href='#L190'>190</a>
+<a name='L191'></a><a href='#L191'>191</a>
+<a name='L192'></a><a href='#L192'>192</a>
+<a name='L193'></a><a href='#L193'>193</a>
+<a name='L194'></a><a href='#L194'>194</a>
+<a name='L195'></a><a href='#L195'>195</a>
+<a name='L196'></a><a href='#L196'>196</a>
+<a name='L197'></a><a href='#L197'>197</a>
+<a name='L198'></a><a href='#L198'>198</a>
+<a name='L199'></a><a href='#L199'>199</a></td><td class="line-coverage quiet"><span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">1x</span>
@@ -251,6 +263,8 @@
 <span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -321,6 +335,16 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -420,7 +444,7 @@
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">import StoreBase from './StoreBase';
 import BatchUpdateHost from './BatchUpdateHost';
-import { StoreDeclarer, StoreListDeclarer, StoreMapDeclarer } from './StoreDeclarer';
+import { StoreDeclarer, StoreListDeclarer, StoreMapDeclarer, StoreBaseConstructor } from './StoreDeclarer';
 import RecycleStrategy from "./RecycleStrategy";
 &nbsp;
 const IS_APP_STORE = '@@__APP_STORE__@@';
@@ -437,6 +461,8 @@ export default class AppStore {
   stores: { [storeKey: string]: StoreBase&lt;any&gt; } = {};
 &nbsp;
   _storeRegisterMap: { [storeName: string]: AnyStoreDeclarer } = {};
+  _storeToKeyMap: Map&lt;StoreBaseConstructor&lt;any&gt;, string[]&gt; = new Map();
+&nbsp;
   _recycleStrategy: RecycleStrategy = RecycleStrategy.Never;
   _depStoreList: { [storeName: string]: string[] } = {};
 &nbsp;
@@ -505,8 +531,18 @@ export default class AppStore {
    * Register the store into the appStore with storeDeclarer
    * @param storeDeclarer: AnyStoreDeclater
    */
-<span class="fstat-no" title="function not covered" >  _registerStore(</span>storeDeclarer: AnyStoreDeclarer) {
-<span class="cstat-no" title="statement not covered" >    this._storeRegisterMap[storeDeclarer.options!.storeKey!] = storeDeclarer;</span>
+<span class="fstat-no" title="function not covered" >  registerStore(<span class="cstat-no" title="statement not covered" ></span>...storeDeclarers: AnyStoreDeclarer[])</span> {
+<span class="cstat-no" title="statement not covered" >    for (let storeDeclarer<span class="cstat-no" title="statement not covered" > of <span class="cstat-no" title="statement not covered" >s</span>toreDeclarers<span class="cstat-no" title="statement not covered" >) {</span></span></span>
+      let storeKey = <span class="cstat-no" title="statement not covered" >storeDeclarer.options!.storeKey!;</span>
+<span class="cstat-no" title="statement not covered" >      this._storeRegisterMap[storeKey] = storeDeclarer;</span>
+&nbsp;
+      let storeClass = <span class="cstat-no" title="statement not covered" >storeDeclarer.Store;</span>
+<span class="cstat-no" title="statement not covered" >      if (!this._storeToKeyMap.has(storeClass)) {</span>
+<span class="cstat-no" title="statement not covered" >        this._storeToKeyMap.set(storeDeclarer.Store, [storeKey]);</span>
+      } else {
+<span class="cstat-no" title="statement not covered" >        this._storeToKeyMap.set(storeDeclarer.Store, [...this._storeToKeyMap.get(storeClass), storeKey]);</span>
+      }
+    }
   }
 &nbsp;
   /**
@@ -527,7 +563,7 @@ export default class AppStore {
 <span class="cstat-no" title="statement not covered" >          console.error(`The request store ${curStoreKey} is not registered!`);</span>
 <span class="cstat-no" title="statement not covered" >          return;</span>
         }
-        let depNames = <span class="cstat-no" title="statement not covered" >storeInfo.options!.depStoreNames || [];</span>
+        let depNames = <span class="cstat-no" title="statement not covered" >storeInfo.depStoreNames || [];</span>
 &nbsp;
         let filterDepNames = <span class="cstat-no" title="statement not covered" >[];</span>
 <span class="cstat-no" title="statement not covered" >        for (let depName<span class="cstat-no" title="statement not covered" > of <span class="cstat-no" title="statement not covered" >d</span>epNames<span class="cstat-no" title="statement not covered" >) {</span></span></span>
@@ -560,7 +596,7 @@ export default class AppStore {
 <span class="cstat-no" title="statement not covered" >      for (let i = <span class="cstat-no" title="statement not covered" >depList.length - 1;</span> i &gt;= 0; i -= 1) {</span>
         let storeKey = <span class="cstat-no" title="statement not covered" >depList[i];</span>
         let storeInfo = <span class="cstat-no" title="statement not covered" >this._storeRegisterMap[storeKey];</span>
-        let depNames = <span class="cstat-no" title="statement not covered" >storeInfo.options!.depStoreNames || [];</span>
+        let depNames = <span class="cstat-no" title="statement not covered" >storeInfo.depStoreNames || [];</span>
         let depStores: { [storeKey: string]: StoreBase&lt;any&gt; } = <span class="cstat-no" title="statement not covered" >{};</span>
 <span class="cstat-no" title="statement not covered" >        for (let depName<span class="cstat-no" title="statement not covered" > of <span class="cstat-no" title="statement not covered" >d</span>epNames<span class="cstat-no" title="statement not covered" >) {</span></span></span>
 <span class="cstat-no" title="statement not covered" >          depStores[depName] = this.stores[name];</span>
@@ -596,7 +632,7 @@ export default class AppStore {
 <span class="cstat-no" title="statement not covered" >    if (this._recycleStrategy === RecycleStrategy.Urgent &amp;&amp; store.getRefCount() === 0) {</span>
 <span class="cstat-no" title="statement not covered" >      store.dispose();</span>
 <span class="cstat-no" title="statement not covered" >      delete this.stores[storeKey];</span>
-<span class="cstat-no" title="statement not covered" >      (this._storeRegisterMap[storeKey].options!.depStoreNames || []).forEach(<span class="fstat-no" title="function not covered" >name </span>=&gt; <span class="cstat-no" title="statement not covered" >this.releaseStore(name));</span></span>
+<span class="cstat-no" title="statement not covered" >      (this._storeRegisterMap[storeKey].depStoreNames || []).forEach(<span class="fstat-no" title="function not covered" >name </span>=&gt; <span class="cstat-no" title="statement not covered" >this.releaseStore(name));</span></span>
     }
   }
 }
@@ -610,7 +646,7 @@ AppStore.isAppStore = <span class="fstat-no" title="function not covered" >funct
 </div><!-- /wrapper -->
 <div class='footer quiet pad2 space-top1 center small'>
   Code coverage
-  generated by <a href="https://istanbul.js.org/" target="_blank">istanbul</a> at Wed Sep 18 2019 08:19:25 GMT+0800 (GMT+08:00)
+  generated by <a href="https://istanbul.js.org/" target="_blank">istanbul</a> at Wed Sep 18 2019 10:17:50 GMT+0800 (GMT+08:00)
 </div>
 </div>
 <script src="prettify.js"></script>

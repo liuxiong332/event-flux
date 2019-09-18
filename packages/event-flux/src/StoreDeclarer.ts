@@ -1,7 +1,13 @@
 import StoreBase from "./StoreBase";
 
+interface IGenericOptions {
+  stateKey?: string; 
+  storeKey?: string;
+  [key: string]: any;
+}
+
 const StoreReg = /(\w+)Store$/;
-function genDefaultStoreKey(StoreClass: StoreBaseConstructor<any>, options: { stateKey?: string, storeKey?: string } | undefined) {
+function genDefaultStoreKey(StoreClass: StoreBaseConstructor<any>, options: IGenericOptions | undefined) {
   if (!options) options = {} as { stateKey?: string, storeKey: string };
   if (!options.stateKey) {
     let storeName = StoreClass.name;
@@ -15,12 +21,22 @@ function genDefaultStoreKey(StoreClass: StoreBaseConstructor<any>, options: { st
   return options;
 }
 
+function parseOptions<OptionT extends IGenericOptions>(Store: any, depStoreNames?: string[] | IGenericOptions, options?: OptionT): [string[], OptionT] {
+  if (Array.isArray(depStoreNames)) {
+    options = genDefaultStoreKey(Store, options) as OptionT;
+  } else {
+    options = genDefaultStoreKey(Store, depStoreNames) as OptionT;
+    depStoreNames = [];
+  }
+  return [depStoreNames as string[], options];
+}
+
 export interface StoreBaseConstructor<T> {
   new (...args: any[]): StoreBase<T>;
 }
 
 export interface StoreDeclarerOptions {
-  args?: [any];
+  args?: any;
   storeKey?: string;
   stateKey?: string;
   defaultFilter?: boolean;
@@ -32,14 +48,11 @@ class StoreDeclarer<T> {
   depStoreNames: string[] | undefined;
   options: StoreDeclarerOptions | undefined;
 
-  constructor(Store: StoreBaseConstructor<T>, depStoreNames?: string[], options?: StoreDeclarerOptions) {
+  constructor(Store: StoreBaseConstructor<T>, depStoreNames?: string[] | StoreDeclarerOptions, options?: StoreDeclarerOptions) {
     this.Store = Store;
-    if (Array.isArray(depStoreNames)) {
-      this.depStoreNames = depStoreNames;
-      this.options = genDefaultStoreKey(Store, options);
-    } else {
-      this.options = genDefaultStoreKey(Store, depStoreNames);
-    }
+    let [names, storeOptions] = parseOptions(Store, depStoreNames, options);
+    this.depStoreNames = names;
+    this.options = storeOptions;
   }
   
   [IS_STORE] = true;
@@ -49,8 +62,7 @@ class StoreDeclarer<T> {
   }
 }
 
-
-function declareStore<T>(Store: StoreBaseConstructor<T>, depStoreNames?: string[], options?: StoreDeclarerOptions) {
+function declareStore<T>(Store: StoreBaseConstructor<T>, depStoreNames?: string[] | StoreDeclarerOptions, options?: StoreDeclarerOptions) {
   return new StoreDeclarer(Store, depStoreNames, options);
 }
 
@@ -67,14 +79,11 @@ class StoreListDeclarer<T> {
   depStoreNames: string[] | undefined;
   options: StoreListDeclarerOptions | undefined;
 
-  constructor(Store: StoreBaseConstructor<T>, depStoreNames?: string[], options?: StoreListDeclarerOptions) {
+  constructor(Store: StoreBaseConstructor<T>, depStoreNames?: string[] | StoreListDeclarerOptions, options?: StoreListDeclarerOptions) {
     this.Store = Store;
-    if (Array.isArray(depStoreNames)) {
-      this.depStoreNames = depStoreNames;
-      this.options = genDefaultStoreKey(Store, options);
-    } else {
-      this.options = genDefaultStoreKey(Store, depStoreNames);
-    }
+    let [names, storeOptions] = parseOptions(Store, depStoreNames, options);
+    this.depStoreNames = names;
+    this.options = storeOptions;
   }
 
   [IS_STORE_LIST] = true;
@@ -84,7 +93,7 @@ class StoreListDeclarer<T> {
   }
 }
 
-function declareStoreList<T>(Store: StoreBaseConstructor<T>, depStoreNames?: string[], options?: StoreListDeclarerOptions) {
+function declareStoreList<T>(Store: StoreBaseConstructor<T>, depStoreNames?: string[] | StoreListDeclarerOptions, options?: StoreListDeclarerOptions) {
   return new StoreListDeclarer(Store, depStoreNames, options);
 }
 
@@ -105,14 +114,11 @@ class StoreMapDeclarer<T> {
   depStoreNames: string[] | undefined;
   options: StoreMapDeclarerOptions | undefined;
 
-  constructor(Store: StoreBaseConstructor<T>, depStoreNames?: string[], options?: StoreMapDeclarerOptions) {
+  constructor(Store: StoreBaseConstructor<T>, depStoreNames?: string[] | StoreMapDeclarerOptions, options?: StoreMapDeclarerOptions) {
     this.Store = Store;
-    if (Array.isArray(depStoreNames)) {
-      this.depStoreNames = depStoreNames;
-      this.options = genDefaultStoreKey(Store, options);
-    } else {
-      this.options = genDefaultStoreKey(Store, depStoreNames);
-    }
+    let [names, storeOptions] = parseOptions(Store, depStoreNames, options);
+    this.depStoreNames = names;
+    this.options = storeOptions;;
   }
 
   [IS_STORE_MAP] = true;
@@ -122,7 +128,7 @@ class StoreMapDeclarer<T> {
   }
 }
 
-function declareStoreMap<T>(Store: StoreBaseConstructor<T>, depStoreNames?: string[], options?: StoreMapDeclarerOptions) {
+function declareStoreMap<T>(Store: StoreBaseConstructor<T>, depStoreNames?: string[] | StoreMapDeclarerOptions, options?: StoreMapDeclarerOptions) {
   return new StoreMapDeclarer(Store, depStoreNames, options);
 }
 

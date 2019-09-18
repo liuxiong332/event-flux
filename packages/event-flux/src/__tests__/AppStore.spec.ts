@@ -56,4 +56,5 @@ describe('AppStore', () => {
     );
     expect(onChange).toHaveBeenCalledWith({ hello: 'world', todo2: { todo2: 'todo3' } });
   });
+
 });
