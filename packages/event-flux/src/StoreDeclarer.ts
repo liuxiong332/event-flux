@@ -136,3 +136,5 @@ export {
   StoreDeclarer, StoreListDeclarer, StoreMapDeclarer, 
   declareStore, declareStoreList, declareStoreMap 
 };
+
+export type AnyStoreDeclarer = StoreDeclarer<any> | StoreListDeclarer<any> | StoreMapDeclarer<any>;

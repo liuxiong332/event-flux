@@ -1,5 +1,6 @@
 import AppStore  from '../AppStore';
 import StoreBase from '../StoreBase';
+import { declareStore } from '../StoreDeclarer';
 
 class TodoStore extends StoreBase<{ todo2: string }> {
   constructor(...args: any[]) {
@@ -12,7 +13,7 @@ jest.useFakeTimers();
 
 describe('AppStore', () => {
   
-  test('appStore observe store state change', () => {
+  test('can observe store state change', () => {
     let appStore = new AppStore();
     let todo2Store = new TodoStore()
     appStore.stores = { todo2Store };
@@ -26,7 +27,7 @@ describe('AppStore', () => {
     expect(appStore.state).toEqual({ todo2: { todo2: 'todo3' } });
   });
 
-  test('onChange', () => {
+  test('should invoke onChange', () => {
     let onChange = jest.fn();
     let appStore = new AppStore();
     appStore.onDidChange(onChange);
@@ -57,4 +58,22 @@ describe('AppStore', () => {
     expect(onChange).toHaveBeenCalledWith({ hello: 'world', todo2: { todo2: 'todo3' } });
   });
 
+  test("should register store declarer", () => {
+    let appStore = new AppStore();
+    appStore.registerStore(declareStore(StoreBase), declareStore(TodoStore));
+
+    expect(appStore._storeRegisterMap["storeBaseStore"].Store).toEqual(StoreBase);
+    expect(appStore._storeRegisterMap["todoStore"].Store).toEqual(TodoStore);
+  });
+
+  test("should request store for dependency store dependen on self", () => {
+    class Todo1Store extends StoreBase<any> {}
+    class Todo2Store extends StoreBase<any> {}
+    class Todo3Store extends StoreBase<any> {}
+
+    let appStore = new AppStore();
+    appStore.registerStore(declareStore(Todo1Store, ["todo2", "todo3"]));
+    appStore.registerStore(declareStore(Todo2Store, ["todo1"]));
+    appStore.registerStore(declareStore(Todo3Store));
+  });
 });

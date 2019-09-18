@@ -1,11 +1,10 @@
 import StoreBase from './StoreBase';
 import BatchUpdateHost from './BatchUpdateHost';
-import { StoreDeclarer, StoreListDeclarer, StoreMapDeclarer, StoreBaseConstructor } from './StoreDeclarer';
+import { StoreDeclarer, StoreListDeclarer, StoreMapDeclarer, StoreBaseConstructor, AnyStoreDeclarer } from './StoreDeclarer';
 import RecycleStrategy from "./RecycleStrategy";
 
 const IS_APP_STORE = '@@__APP_STORE__@@';
 
-type AnyStoreDeclarer = StoreDeclarer<any> | StoreListDeclarer<any> | StoreMapDeclarer<any>;
 
 export default class AppStore {
   _init = false;
@@ -24,16 +23,6 @@ export default class AppStore {
 
   // Check any object is AppStore object or not.
   static isAppStore: Function;
-
-  static _appStore: AppStore;
-  
-  // The AppStore is singleton, you should use getAppStore to get the singleton appStore instance.
-  static getAppStore(): AppStore {
-    if (!AppStore._appStore) {
-      AppStore._appStore = new AppStore();
-    }
-    return AppStore._appStore;
-  }
   
   constructor() {
     this.batchUpdater = new BatchUpdateHost(this);  
@@ -81,6 +70,11 @@ export default class AppStore {
       }
     }
     this.stores = {};
+  }
+
+  searchCycleCollection() {
+    let storeKeys = Object.keys(this._storeToKeyMap);
+    storeKeys
   }
 
   /**
