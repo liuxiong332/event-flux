@@ -1,5 +1,5 @@
 import { Emitter, Disposable, CompositeDisposable, DisposableLike } from 'event-kit';
-// import { buildStore } from './buildStore';
+import AppStore from './AppStore';
 
 const IS_STORE = '@@__FLUX_STORE__@@';
 
@@ -7,12 +7,22 @@ export function eventListener(target: any, propertyKey: string, descriptor: Prop
   return target[propertyKey];
 }
 
-export function reducer(target: any, propertyKey: string, descriptor: PropertyDescriptor) {
-  return target[propertyKey];
+export function reducer(target: StoreBase<any>, propertyKey: string, descriptor: PropertyDescriptor) {
+  return function(...args: any[]) {
+    target._disableUpdate();
+    Promise.resolve(target[propertyKey](...args)).finally(() => {
+      target._enableUpdate();
+    });
+  }
 }
 
 export function returnReducer(target: any, propertyKey: string, descriptor: PropertyDescriptor) {
-  return target[propertyKey];
+  return function(...args: any[]) {
+    target._disableUpdate();
+    return Promise.resolve(target[propertyKey](...args)).finally(() => {
+      target._enableUpdate();
+    });
+  }
 }
 
 export default class StoreBase<StateT> {
@@ -25,36 +35,74 @@ export default class StoreBase<StateT> {
   _willUpdateStates: any[] = [];
 
   _isInit = false;
-  _appStore: any = null;
+  _appStore: AppStore;
   _args: any = null;
+  _stateKey: string | undefined;
 
   _refCount = 0;
+  __enableUpdate: boolean = true;
+  _hasUpdate = false;
 
   [storeKey: string]: any;
 
   static isStore: (store: any) => boolean;
   // static innerStores;
 
-  constructor(appStore?: any, args?: any) {
+  constructor(appStore: AppStore) {
     this._appStore = appStore;
-    this._args = args;
   }
 
   /**
-   * Inject the store's dependency stores into this store, It will be invoked before willInit and init
+   * Inject the store's dependency stores into this store, It will be invoked before init
    * @param depStores: the store's dependencies, the dependency stores will be injected to this store
    */
-  _inject(depStores?: { [storeKey: string]: StoreBase<any> }) {
+  _inject(stateKey?: string, depStores?: { [storeKey: string]: StoreBase<any> }, initState?: any, args?: any) {
+    this._stateKey = stateKey;
     if (depStores) {
       for (let storeKey in depStores) {
         this[storeKey] = depStores[storeKey];
       }
     }
+    this.state = initState;
+    this._args = args;
+    // Observe this store's state and send the state to appStore
+    this.addDisposable(this.observe((state) => {
+      let stateKey = this._stateKey;
+      if (stateKey) {
+        this._appStore.setState({ [stateKey]: state });
+      } else {
+        this._appStore.setState(state);
+      }
+    }));  
   }
 
-  willInit() {}
+  __init() {
+    // Before init, we will disable update
+    this.__enableUpdate = false;
+    Promise.resolve(this.init()).finally(() => {
+      // After init, We will send the new state to appStore and enable update
+      this.__enableUpdate = true;
+      this._emitter.emit('did-update', this.state);
+    });
+  }
 
   init() {}
+
+  _disableUpdate() {
+    this.__enableUpdate = false;
+  }
+
+  _enableUpdate() {
+    this.__enableUpdate = true;
+    if (this._hasUpdate) {
+      this._hasUpdate = false;
+      this._emitter.emit('did-update', this.state);
+    }
+  }
+
+  getArgs() {
+    return this._args; 
+  }
 
   // Create new store from storeClass. storeClass must be factory or class.  
   // buildStore(storeClass, args, options) {
@@ -83,7 +131,11 @@ export default class StoreBase<StateT> {
     }
 
     // Send update notification.
-    this._emitter.emit('did-update', this.state);
+    if (this.__enableUpdate) {
+      this._emitter.emit('did-update', this.state);
+    } else {
+      this._hasUpdate = true;
+    }
   }
 
   @eventListener

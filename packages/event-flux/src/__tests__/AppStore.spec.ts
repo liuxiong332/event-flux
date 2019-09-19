@@ -4,8 +4,8 @@ import { declareStore } from '../StoreDeclarer';
 import RecycleStrategy from '../RecycleStrategy';
 
 class TodoStore extends StoreBase<{ todo2: string }> {
-  constructor(...args: any[]) {
-    super(...args);
+  constructor(appStore: AppStore) {
+    super(appStore);
     this.state = { todo2: 'todo2' };
   }
 }
@@ -16,7 +16,7 @@ describe('AppStore', () => {
   
   test('can observe store state change', () => {
     let appStore = new AppStore();
-    let todo2Store = new TodoStore()
+    let todo2Store = new TodoStore(appStore)
     appStore.stores = { todo2Store };
     todo2Store.observe((state) => appStore.setState({ todo2: state }));
     expect(appStore.state.todo2).toEqual({ todo2: 'todo2' });
@@ -34,7 +34,7 @@ describe('AppStore', () => {
     appStore.onDidChange(onChange);
     appStore.handleWillChange = jest.fn();
 
-    let todo2Store = new TodoStore(); 
+    let todo2Store = new TodoStore(appStore); 
     todo2Store.observe((state) => appStore.setState({ todo2: state }));
     appStore.stores = { todo2Store };
     let prevState = appStore.state;
@@ -136,5 +136,25 @@ describe('AppStore', () => {
     expect(appStore.stores.todo1Store).toBeFalsy();
     expect(appStore.stores.todo2Store).toBeFalsy();
     expect(appStore.stores.todo3Store).toBeFalsy();
+  });
+
+  test("should request store and init store", () => {
+    class Todo1Store extends StoreBase<any> {}
+    class Todo2Store extends StoreBase<any> {}
+    class Todo3Store extends StoreBase<any> {}
+
+    let appStore = new AppStore({ todo3: { hello: "world" } });
+    appStore.registerStore(declareStore(Todo1Store, ["todo2Store", "todo3Store"]));
+    appStore.registerStore(declareStore(Todo2Store, ["todo1Store"]));
+    appStore.registerStore(declareStore(Todo3Store, { args: "myArg" }));
+
+    appStore.init();
+
+    Todo3Store.prototype.init = jest.fn();
+
+    appStore.requestStore("todo3Store");
+    expect(appStore.stores.todo3Store._args).toBe("myArg");
+    expect(appStore.stores.todo3Store._stateKey).toBe("todo3");
+    expect(appStore.stores.todo3Store.state).toEqual({ hello: "world" });
   });
 });

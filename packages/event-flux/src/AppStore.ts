@@ -22,11 +22,21 @@ export default class AppStore {
   _recycleStrategy: RecycleStrategy = RecycleStrategy.Never;
   _depStoreList: { [storeName: string]: string[] } = {};
 
+  __initStates__: any;
+
   // Check any object is AppStore object or not.
   static isAppStore: Function;
   
-  constructor() {
+  constructor(storeDeclarers?: AnyStoreDeclarer[] | { [key: string]: any }, initStates?: any) {
     this.batchUpdater = new BatchUpdateHost(this);  
+    if (Array.isArray(storeDeclarers)) {
+      this.registerStore(...storeDeclarers);
+    } else {
+      initStates = storeDeclarers;
+    }
+    if (initStates) {
+      this.__initStates__ = initStates;
+    }
   }
 
   // buildStore(storeClass, args, options) {
@@ -53,6 +63,26 @@ export default class AppStore {
   
   onDidChange(callback: Function) {
     this.didChangeCallbacks.push(callback);
+  }
+
+  preloadStores(stores: string[]) {
+    let allDepList: string[] = [];
+    for (let storeKey of stores) {
+      let store = this.stores[storeKey];
+      if (!store) {
+        let depList = this._createStoreAndInject(storeKey);
+        allDepList = allDepList.concat(depList);
+        // For preload stores, it need not add reference count.
+        this.stores[storeKey]._decreaseRef(); 
+      }
+    }
+    // Wait for all the stores and the dependencies init.
+    let initPromises = [];
+    for (let i = allDepList.length - 1; i >= 0; i -= 1) {
+      let storeKey = allDepList[i];
+      initPromises.push(this.stores[storeKey].init());
+    }
+    return Promise.all(initPromises);
   }
 
   init() {
@@ -113,67 +143,13 @@ export default class AppStore {
   requestStore(storeKey: string) {
     let store = this.stores[storeKey];
     if (!store) {
-      // Search all of the dependency stores for this `storeKey` with Breadth first search
-      let depList = [storeKey];
-      for (let i = 0; i < depList.length; i += 1) {
-        let curStoreKey = depList[i];
-
-        let storeInfo = this._storeRegisterMap[curStoreKey];
-        if (!storeInfo) {
-          console.error(`The request store ${curStoreKey} is not registered!`);
-          continue;
-        }
-        let depNames = storeInfo.depStoreNames || [];
-
-        let filterDepNames = [];
-        for (let depName of depNames) {
-          // The depName is not registered
-
-          if (!this._storeRegisterMap[depName]) {
-            console.error(`The dependency store ${depName} is not registered!`);
-            continue;
-          }
-          let depStore = this.stores[depName];
-
-          // If the dependency store has exists, then this store don't need to appear in the depList
-          // And if this dependency is the recursive dependency, then we need to remove it from the depList
-          if (depStore) {
-            // This dependency store is exists, then we need add the reference count.
-            depStore._addRef();
-          } else if (depList.indexOf(depName) === -1) {
-            filterDepNames.push(depName);
-          }
-        }
-    
-        depList.splice(depList.length, 0, ...filterDepNames);
-      }
       
-      // Create all the dependency stores and add the reference count
-      for (let i = depList.length - 1; i >= 0; i -= 1) {
-        let storeKey = depList[i];
-        let storeInfo = this._storeRegisterMap[storeKey];
-        let curStore = new this._storeRegisterMap[storeKey].Store(this, storeInfo.options!.args);
-        curStore._addRef();
-        this.stores[storeKey] = curStore;
-      }
-
-      // Inject all of the dependency stores for depList
-      for (let i = depList.length - 1; i >= 0; i -= 1) {
-        let storeKey = depList[i];
-        let storeInfo = this._storeRegisterMap[storeKey];
-        let depNames = storeInfo.depStoreNames || [];
-        let depStores: { [storeKey: string]: StoreBase<any> } = {};
-        for (let depName of depNames) {
-          depStores[depName] = this.stores[name];
-        }
-        this.stores[storeKey]._inject(depStores);
-      }
-
+      let depList = this._createStoreAndInject(storeKey);
       // Invoke the depList's willInit, the dependency store's willInit will be invoked first
-      for (let i = depList.length - 1; i >= 0; i -= 1) {
-        let storeKey = depList[i];
-        this.stores[storeKey].willInit();
-      }
+      // for (let i = depList.length - 1; i >= 0; i -= 1) {
+      //   let storeKey = depList[i];
+      //   this.stores[storeKey].willInit();
+      // }
 
       // Invoke the depList's init, the dependency store's init will be invoked first
       for (let i = depList.length - 1; i >= 0; i -= 1) {
@@ -218,6 +194,67 @@ export default class AppStore {
     } else {
       store._decreaseRef();
     }
+  }
+
+  _createStoreAndInject(storeKey: string) {
+    // Search all of the dependency stores for this `storeKey` with Breadth first search
+    let depList = [storeKey];
+    for (let i = 0; i < depList.length; i += 1) {
+      let curStoreKey = depList[i];
+
+      let storeInfo = this._storeRegisterMap[curStoreKey];
+      if (!storeInfo) {
+        console.error(`The request store ${curStoreKey} is not registered!`);
+        continue;
+      }
+      let depNames = storeInfo.depStoreNames || [];
+
+      let filterDepNames = [];
+      for (let depName of depNames) {
+        // The depName is not registered
+
+        if (!this._storeRegisterMap[depName]) {
+          console.error(`The dependency store ${depName} is not registered!`);
+          continue;
+        }
+        let depStore = this.stores[depName];
+
+        // If the dependency store has exists, then this store don't need to appear in the depList
+        // And if this dependency is the recursive dependency, then we need to remove it from the depList
+        if (depStore) {
+          // This dependency store is exists, then we need add the reference count.
+          depStore._addRef();
+        } else if (depList.indexOf(depName) === -1) {
+          filterDepNames.push(depName);
+        }
+      }
+  
+      depList.splice(depList.length, 0, ...filterDepNames);
+    }
+    
+    // Create all the dependency stores and add the reference count
+    for (let i = depList.length - 1; i >= 0; i -= 1) {
+      let storeKey = depList[i];
+      // let storeInfo = this._storeRegisterMap[storeKey];
+      let curStore = new this._storeRegisterMap[storeKey].Store(this);
+      curStore._addRef();
+      this.stores[storeKey] = curStore;
+    }
+
+    // Inject all of the dependency stores for depList
+    for (let i = depList.length - 1; i >= 0; i -= 1) {
+      let storeKey = depList[i];
+      let storeInfo = this._storeRegisterMap[storeKey];
+      let depNames = storeInfo.depStoreNames || [];
+      let depStores: { [storeKey: string]: StoreBase<any> } = {};
+      for (let depName of depNames) {
+        depStores[depName] = this.stores[name];
+      }
+      let { stateKey, args } = storeInfo.options!;
+      let initState = this.__initStates__ ? stateKey ? this.__initStates__[stateKey] : this.__initStates__ : undefined;
+      this.stores[storeKey]._inject(stateKey, depStores, initState, args);
+    }
+    return depList;
   }
 
   _disposeStoreAndDeps(storeKey: string, store: StoreBase<any>) {
