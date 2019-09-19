@@ -17,9 +17,13 @@ function depthSearchStore(
   visitStoreSet: Set<string>, 
   cycleDepList: { [key: string]: Set<string> }
 ) {
+  
+  if (!storeMap[storeKey]) return;
+
   storeVisits[storeKey] = true;
   visitStoreList.push(storeKey);
   visitStoreSet.add(storeKey);
+
   let depNames = storeMap[storeKey].depStoreNames || [];
 
   for (let depName of depNames) {
@@ -36,6 +40,7 @@ function depthSearchStore(
     if (storeVisits[depName]) continue;
     depthSearchStore(depName, storeVisits, storeMap, visitStoreList, visitStoreSet, cycleDepList);
   }
+  
   visitStoreList.pop();
   visitStoreSet.delete(storeKey);
   storeVisits[storeKey] = false;

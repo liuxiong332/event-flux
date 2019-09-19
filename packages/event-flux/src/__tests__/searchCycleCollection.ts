@@ -1,4 +1,4 @@
-import searchCycleCollection from "../cycleCollectionSearch";
+import searchCycleCollection from "../searchCycleCollection";
 import { declareStore } from "../StoreDeclarer";
 import StoreBase from "../StoreBase";
 

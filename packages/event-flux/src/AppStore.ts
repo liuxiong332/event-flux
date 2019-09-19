@@ -1,10 +1,9 @@
 import StoreBase from './StoreBase';
 import BatchUpdateHost from './BatchUpdateHost';
-import { StoreDeclarer, StoreListDeclarer, StoreMapDeclarer, StoreBaseConstructor, AnyStoreDeclarer } from './StoreDeclarer';
+import { StoreBaseConstructor, AnyStoreDeclarer } from './StoreDeclarer';
 import RecycleStrategy from "./RecycleStrategy";
-
+import searchCycleCollection from "./searchCycleCollection";
 const IS_APP_STORE = '@@__APP_STORE__@@';
-
 
 export default class AppStore {
   _init = false;
@@ -17,6 +16,8 @@ export default class AppStore {
 
   _storeRegisterMap: { [storeName: string]: AnyStoreDeclarer } = {};
   _storeToKeyMap: Map<StoreBaseConstructor<any>, string[]> = new Map();
+  // Save all of the circular dependency stores name.
+  _cycleCollections: Set<string>[] | undefined;
 
   _recycleStrategy: RecycleStrategy = RecycleStrategy.Never;
   _depStoreList: { [storeName: string]: string[] } = {};
@@ -57,6 +58,8 @@ export default class AppStore {
   init() {
     this._init = true;    
     this.prevState = this.state;
+
+    this._cycleCollections = searchCycleCollection(this._storeRegisterMap);
     return this;
   }
 
@@ -72,9 +75,16 @@ export default class AppStore {
     this.stores = {};
   }
 
-  searchCycleCollection() {
-    let storeKeys = Object.keys(this._storeToKeyMap);
-    storeKeys
+  setRecycleStrategy(recycleStrategy: RecycleStrategy) {
+    if (this._recycleStrategy !== recycleStrategy && recycleStrategy === RecycleStrategy.Urgent) {
+      for (let storeKey in this.stores) {
+        let store = this.stores[storeKey];
+        if (store && store.getRefCount() === 0) {
+          this._disposeStoreAndDeps(storeKey, store);
+        }
+      }
+    }
+    this._recycleStrategy = recycleStrategy;
   }
 
   /**
@@ -111,12 +121,18 @@ export default class AppStore {
         let storeInfo = this._storeRegisterMap[curStoreKey];
         if (!storeInfo) {
           console.error(`The request store ${curStoreKey} is not registered!`);
-          return;
+          continue;
         }
         let depNames = storeInfo.depStoreNames || [];
 
         let filterDepNames = [];
         for (let depName of depNames) {
+          // The depName is not registered
+
+          if (!this._storeRegisterMap[depName]) {
+            console.error(`The dependency store ${depName} is not registered!`);
+            continue;
+          }
           let depStore = this.stores[depName];
 
           // If the dependency store has exists, then this store don't need to appear in the depList
@@ -124,14 +140,13 @@ export default class AppStore {
           if (depStore) {
             // This dependency store is exists, then we need add the reference count.
             depStore._addRef();
-          } else if (depList.indexOf(name) !== -1) {
+          } else if (depList.indexOf(depName) === -1) {
             filterDepNames.push(depName);
           }
         }
     
         depList.splice(depList.length, 0, ...filterDepNames);
       }
-
       
       // Create all the dependency stores and add the reference count
       for (let i = depList.length - 1; i >= 0; i -= 1) {
@@ -172,17 +187,71 @@ export default class AppStore {
   }
 
   /**
-   * Relase the store reference count with name of storeKey, if the reference count decrease to 0, then the store destroy.
+   * Release the store reference count with name of storeKey, if the reference count decrease to 0, then the store destroy.
    * @param storeKey 
    */
   releaseStore(storeKey: string) {
     let store = this.stores[storeKey];
     if (!store) return;
-    store._decreaseRef();
-    if (this._recycleStrategy === RecycleStrategy.Urgent && store.getRefCount() === 0) {
-      store.dispose();
-      delete this.stores[storeKey];
-      (this._storeRegisterMap[storeKey].depStoreNames || []).forEach(name => this.releaseStore(name));
+    // store._decreaseRef();
+    // If the store will be disposed, then we check if we can dispose or not
+    if (store.getRefCount() === 1) {
+      for (let cycleSet of this._cycleCollections!) {
+        if (cycleSet.has(storeKey)) {
+          for (let iKey of cycleSet) {
+            if (this.stores[iKey].getRefCount() > 1) {
+              this.stores[iKey]._decreaseRef();
+              return;
+            }
+          }
+        }
+      }
+
+      // console.log("Not found circle dependency can decrease");
+      store._decreaseRef();
+
+      // If all of the cycle collections cannot find the ref count > 1, then we can dispose all of the dependency stores
+      // breadth-first search all the dependency store and derease the reference count, If this store's count decrease to 0, dispose it.
+      if (this._recycleStrategy === RecycleStrategy.Urgent) {
+        this._disposeStoreAndDeps(storeKey, store);        
+      }
+    } else {
+      store._decreaseRef();
+    }
+  }
+
+  _disposeStoreAndDeps(storeKey: string, store: StoreBase<any>) {
+    if (store.getRefCount() > 0) return;
+    store.dispose();
+    delete this.stores[storeKey];
+
+    let depList = [storeKey];
+    for (let i = 0; i < depList.length; i += 1) {
+      let curStoreKey = depList[i];
+
+      let storeInfo = this._storeRegisterMap[curStoreKey];
+      
+      let depNames = storeInfo.depStoreNames || [];
+
+      let filterDepNames = [];
+      for (let depName of depNames) {
+        let depStore = this.stores[depName];
+
+        if (!depStore) continue;
+
+        depStore._decreaseRef();
+
+        if (depStore.getRefCount() === 0) {
+          depStore.dispose();
+          delete this.stores[depName];
+
+          if (depList.indexOf(name) === -1) {
+            filterDepNames.push(depName);
+          }
+        }
+      }
+  
+      depList.splice(depList.length, 0, ...filterDepNames);
     }
   }
 }
