@@ -38,6 +38,7 @@ function depthSearchStore(
   }
   visitStoreList.pop();
   visitStoreSet.delete(storeKey);
+  storeVisits[storeKey] = false;
 }
 
 export default function searchCycleCollection(storeMap: StoreMapDeclarer) {

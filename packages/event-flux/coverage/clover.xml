@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<coverage generated="1568813039874" clover="3.2.0">
-  <project timestamp="1568813039874" name="All files">
-    <metrics statements="259" coveredstatements="180" conditionals="70" coveredconditionals="30" methods="58" coveredmethods="37" elements="387" coveredelements="247" complexity="0" loc="259" ncloc="259" packages="1" files="6" classes="6"/>
+<coverage generated="1568852161418" clover="3.2.0">
+  <project timestamp="1568852161418" name="All files">
+    <metrics statements="260" coveredstatements="181" conditionals="70" coveredconditionals="29" methods="58" coveredmethods="37" elements="388" coveredelements="247" complexity="0" loc="260" ncloc="260" packages="1" files="6" classes="6"/>
     <file name="AppStore.ts" path="C:\workspace\event-flux\packages\event-flux\src\AppStore.ts">
       <metrics statements="103" coveredstatements="45" conditionals="30" coveredconditionals="5" methods="15" coveredmethods="9"/>
       <line num="1" count="1" type="stmt"/>
@@ -201,31 +201,31 @@
     <file name="StoreDeclarer.ts" path="C:\workspace\event-flux\packages\event-flux\src\StoreDeclarer.ts">
       <metrics statements="50" coveredstatements="37" conditionals="16" coveredconditionals="8" methods="14" coveredmethods="7"/>
       <line num="9" count="3" type="stmt"/>
-      <line num="11" count="14" type="cond" truecount="2" falsecount="0"/>
-      <line num="12" count="14" type="cond" truecount="1" falsecount="1"/>
-      <line num="13" count="14" type="stmt"/>
-      <line num="14" count="14" type="stmt"/>
-      <line num="15" count="14" type="cond" truecount="2" falsecount="0"/>
-      <line num="16" count="14" type="stmt"/>
-      <line num="18" count="14" type="cond" truecount="1" falsecount="1"/>
-      <line num="19" count="14" type="stmt"/>
-      <line num="21" count="14" type="stmt"/>
-      <line num="25" count="14" type="cond" truecount="2" falsecount="0"/>
-      <line num="26" count="9" type="stmt"/>
+      <line num="11" count="19" type="cond" truecount="2" falsecount="0"/>
+      <line num="12" count="19" type="cond" truecount="1" falsecount="1"/>
+      <line num="13" count="19" type="stmt"/>
+      <line num="14" count="19" type="stmt"/>
+      <line num="15" count="19" type="cond" truecount="2" falsecount="0"/>
+      <line num="16" count="19" type="stmt"/>
+      <line num="18" count="19" type="cond" truecount="1" falsecount="1"/>
+      <line num="19" count="19" type="stmt"/>
+      <line num="21" count="19" type="stmt"/>
+      <line num="25" count="19" type="cond" truecount="2" falsecount="0"/>
+      <line num="26" count="14" type="stmt"/>
       <line num="28" count="5" type="stmt"/>
       <line num="29" count="5" type="stmt"/>
-      <line num="31" count="14" type="stmt"/>
+      <line num="31" count="19" type="stmt"/>
       <line num="45" count="3" type="stmt"/>
       <line num="46" count="3" type="stmt"/>
-      <line num="52" count="14" type="stmt"/>
-      <line num="53" count="14" type="stmt"/>
-      <line num="54" count="14" type="stmt"/>
-      <line num="55" count="14" type="stmt"/>
-      <line num="58" count="14" type="stmt"/>
+      <line num="52" count="19" type="stmt"/>
+      <line num="53" count="19" type="stmt"/>
+      <line num="54" count="19" type="stmt"/>
+      <line num="55" count="19" type="stmt"/>
+      <line num="58" count="19" type="stmt"/>
       <line num="60" count="3" type="stmt"/>
       <line num="61" count="0" type="cond" truecount="0" falsecount="2"/>
       <line num="63" count="3" type="stmt"/>
-      <line num="66" count="14" type="stmt"/>
+      <line num="66" count="19" type="stmt"/>
       <line num="75" count="3" type="stmt"/>
       <line num="77" count="3" type="stmt"/>
       <line num="83" count="0" type="stmt"/>
@@ -252,32 +252,33 @@
       <line num="137" count="3" type="stmt"/>
     </file>
     <file name="cycleCollectionSearch.ts" path="C:\workspace\event-flux\packages\event-flux\src\cycleCollectionSearch.ts">
-      <metrics statements="25" coveredstatements="25" conditionals="10" coveredconditionals="8" methods="2" coveredmethods="2"/>
-      <line num="20" count="7" type="stmt"/>
-      <line num="21" count="7" type="stmt"/>
-      <line num="22" count="7" type="stmt"/>
-      <line num="23" count="7" type="cond" truecount="1" falsecount="1"/>
-      <line num="25" count="12" type="stmt"/>
-      <line num="27" count="12" type="cond" truecount="2" falsecount="0"/>
-      <line num="28" count="5" type="stmt"/>
-      <line num="29" count="5" type="stmt"/>
-      <line num="30" count="5" type="stmt"/>
-      <line num="31" count="5" type="cond" truecount="1" falsecount="1"/>
-      <line num="32" count="5" type="stmt"/>
-      <line num="34" count="5" type="stmt"/>
-      <line num="36" count="7" type="cond" truecount="2" falsecount="0"/>
-      <line num="37" count="5" type="stmt"/>
-      <line num="39" count="7" type="stmt"/>
-      <line num="40" count="7" type="stmt"/>
-      <line num="43" count="1" type="stmt"/>
-      <line num="44" count="2" type="stmt"/>
-      <line num="45" count="2" type="stmt"/>
-      <line num="46" count="7" type="stmt"/>
-      <line num="49" count="2" type="stmt"/>
-      <line num="50" count="2" type="stmt"/>
-      <line num="51" count="7" type="cond" truecount="2" falsecount="0"/>
-      <line num="52" count="2" type="stmt"/>
-      <line num="55" count="2" type="stmt"/>
+      <metrics statements="26" coveredstatements="26" conditionals="10" coveredconditionals="7" methods="2" coveredmethods="2"/>
+      <line num="20" count="68" type="stmt"/>
+      <line num="21" count="68" type="stmt"/>
+      <line num="22" count="68" type="stmt"/>
+      <line num="23" count="68" type="cond" truecount="1" falsecount="1"/>
+      <line num="25" count="112" type="stmt"/>
+      <line num="27" count="112" type="cond" truecount="2" falsecount="0"/>
+      <line num="28" count="56" type="stmt"/>
+      <line num="29" count="56" type="stmt"/>
+      <line num="30" count="56" type="stmt"/>
+      <line num="31" count="56" type="cond" truecount="2" falsecount="0"/>
+      <line num="32" count="10" type="stmt"/>
+      <line num="34" count="56" type="stmt"/>
+      <line num="36" count="56" type="cond" truecount="1" falsecount="1"/>
+      <line num="37" count="56" type="stmt"/>
+      <line num="39" count="68" type="stmt"/>
+      <line num="40" count="68" type="stmt"/>
+      <line num="41" count="68" type="stmt"/>
+      <line num="44" count="1" type="stmt"/>
+      <line num="45" count="3" type="stmt"/>
+      <line num="46" count="3" type="stmt"/>
+      <line num="47" count="12" type="stmt"/>
+      <line num="50" count="3" type="stmt"/>
+      <line num="51" count="3" type="stmt"/>
+      <line num="52" count="12" type="cond" truecount="1" falsecount="1"/>
+      <line num="53" count="12" type="stmt"/>
+      <line num="56" count="3" type="stmt"/>
     </file>
   </project>
 </coverage>

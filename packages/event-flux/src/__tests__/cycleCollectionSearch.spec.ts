@@ -6,32 +6,45 @@ jest.useFakeTimers();
 
 describe('cycleCollectionSearch', () => {
   
-  test('should get the cycle list', () => {
+  test('should get the cycle list for simple cycle', () => {
     let cycleList = searchCycleCollection({
       a: declareStore(StoreBase, ["b", "c"]),
       b: declareStore(StoreBase, ["a"]),
       c: declareStore(StoreBase),
     });
-    // expect(cycleList).toEqual([["a", "b"]]);
+    expect(cycleList).toEqual([new Set(["a", "b"])]);
   });
  
-  test('should get the cycle list', () => {
+  test('should get the cycle list for complex cycle', () => {
     let cycleList = searchCycleCollection({
       a: declareStore(StoreBase, ["b", "c"]),
       b: declareStore(StoreBase, ["c", "d"]),
       c: declareStore(StoreBase, ["b", "a"]),
       d: declareStore(StoreBase, ["a", "b", "c"])
     });
-    console.log(cycleList)
-    // expect(cycleList).toEqual([
-    //   ["b", "c"],
-    //   ["a", "b", "c"],
-    //   ["a", "b", "d"],
-    //   ["b", "d", "c"],
-    //   ["a", "b", "d", "c"],
-    //   ["b", "c"],
-    //   ["a", "c"], 
-    //   ["b", "d"]
-    // ]);
+    expect(cycleList).toEqual([
+      new Set(["b", "c"]),
+      new Set(["a", "b", "c"]),
+      new Set(["a", "b", "d"]),
+      new Set(["b", "d"]),
+      new Set(["b", "d", "c"]),
+      new Set(["a", "b", "d", "c"]),
+      new Set(["a", "c"]), 
+    ]);
+  });
+
+  test("should get the cycle list for seperate cycle", () => {
+    let cycleList = searchCycleCollection({
+      a: declareStore(StoreBase, ["b", "c", "d"]),
+      b: declareStore(StoreBase, ["c", "a"]),
+      c: declareStore(StoreBase, []),
+      d: declareStore(StoreBase, ["e"]),
+      e: declareStore(StoreBase, ["a"])
+    });
+
+    expect(cycleList).toEqual([
+      new Set(["a", "b"]),
+      new Set(["a", "d", "e"]),
+    ]);
   });
 });
