@@ -1,9 +1,10 @@
 import StoreBase from '../StoreBase';
 import { declareStore } from "../StoreDeclarer";
+import DispatchParent from '../DispatchParent';
 
 class TodoStore extends StoreBase<{ todo2: string }> {
-  constructor(...args: any[]) {
-    super(...args);
+  constructor(appStore: DispatchParent) {
+    super(appStore);
     this.state = { todo2: 'todo2' };
   }
 }

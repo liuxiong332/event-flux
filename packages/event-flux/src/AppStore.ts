@@ -1,18 +1,18 @@
-import StoreBase from './StoreBase';
 import BatchUpdateHost from './BatchUpdateHost';
 import { StoreBaseConstructor, AnyStoreDeclarer } from './StoreDeclarer';
 import RecycleStrategy from "./RecycleStrategy";
 import searchCycleCollection from "./searchCycleCollection";
+import DispatchItem from './DispatchItem';
 const IS_APP_STORE = '@@__APP_STORE__@@';
 
 export default class AppStore {
-  _init = false;
+  _isInit = false;
   didChangeCallbacks: Function[] = [];
 
   batchUpdater: BatchUpdateHost;
   prevState: any = {};
   state: any = {};
-  stores: { [storeKey: string]: StoreBase<any> } = {};
+  stores: { [storeKey: string]: DispatchItem } = {};
 
   _storeRegisterMap: { [storeName: string]: AnyStoreDeclarer } = {};
   // Save all of the circular dependency stores name.
@@ -44,7 +44,7 @@ export default class AppStore {
   // }
 
   setState(state: any) {
-    if (!this._init) {  // 未初始化完成
+    if (!this._isInit) {  // 未初始化完成
       Object.assign(this.state, state);
     } else {
       this.state = Object.assign({}, this.state, state);
@@ -80,13 +80,13 @@ export default class AppStore {
     let initPromises = [];
     for (let i = allDepList.length - 1; i >= 0; i -= 1) {
       let storeKey = allDepList[i];
-      initPromises.push(this.stores[storeKey].init());
+      initPromises.push(this.stores[storeKey]._init());
     }
     return Promise.all(initPromises);
   }
 
   init() {
-    this._init = true;    
+    this._isInit = true;    
     this.prevState = this.state;
 
     this._cycleCollections = searchCycleCollection(this._storeRegisterMap);
@@ -98,9 +98,7 @@ export default class AppStore {
     this.prevState = this.state = null;
     for (var key in this.stores) {
       let store = this.stores[key];
-      if (store instanceof StoreBase) {
-        store.dispose();
-      }
+      store.dispose();
     }
     this.stores = {};
   }
@@ -147,7 +145,7 @@ export default class AppStore {
       // Invoke the depList's init, the dependency store's init will be invoked first
       for (let i = depList.length - 1; i >= 0; i -= 1) {
         let storeKey = depList[i];
-        this.stores[storeKey].init();
+        this.stores[storeKey]._init();
       }
     } else {
       store._addRef();
@@ -229,7 +227,7 @@ export default class AppStore {
     for (let i = depList.length - 1; i >= 0; i -= 1) {
       let storeKey = depList[i];
       // let storeInfo = this._storeRegisterMap[storeKey];
-      let curStore = new this._storeRegisterMap[storeKey].Store(this);
+      let curStore = this._storeRegisterMap[storeKey].create(this);
       curStore._addRef();
       this.stores[storeKey] = curStore;
     }
@@ -239,7 +237,7 @@ export default class AppStore {
       let storeKey = depList[i];
       let storeInfo = this._storeRegisterMap[storeKey];
       let depNames = storeInfo.depStoreNames || [];
-      let depStores: { [storeKey: string]: StoreBase<any> } = {};
+      let depStores: { [storeKey: string]: DispatchItem } = {};
       for (let depName of depNames) {
         depStores[depName] = this.stores[name];
       }
@@ -250,7 +248,7 @@ export default class AppStore {
     return depList;
   }
 
-  _disposeStoreAndDeps(storeKey: string, store: StoreBase<any>) {
+  _disposeStoreAndDeps(storeKey: string, store: DispatchItem) {
     if (store.getRefCount() > 0) return;
     store.dispose();
     delete this.stores[storeKey];

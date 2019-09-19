@@ -1,53 +1,78 @@
-import { initStore, disposeStore } from './storeBuilder';
 import { Emitter, Disposable } from 'event-kit';
 import StoreBase from './StoreBase';
-
-type StoreBuilder<T> = () => StoreBase<T>;
-type StoreObserver<T> = (store: StoreBase<T>, i: number) => Disposable;
+import AppStore from './AppStore';
+import { StoreBaseConstructor, StoreListDeclarerOptions, StoreListDeclarer } from './StoreDeclarer';
+import DispatchItem from './DispatchItem';
+import DispatchParent from './DispatchParent';
 
 export default class StoreList<T> {
   length: number = 0;
   storeArray: StoreBase<T>[] = [];
-  disposables: Disposable[] = [];
-  options: any;
-  builder: StoreBuilder<T>;
-  observer: StoreObserver<T>;
-  parentStore: any = null;
-  appStores: any;
-  emitter = new Emitter();
 
-  constructor(size: number, builder: StoreBuilder<T>, observer: StoreObserver<T>, options: any) {
-    this.builder = builder;
-    this.observer = observer;
-    this.options = options;
-    if (size) this.setSize(size);
+  _options: StoreListDeclarerOptions;
+  _StoreBuilder: StoreBaseConstructor<T>;
+  _depStores: { [storeKey: string]: DispatchItem } = {};
+  _stateKey: string | undefined;
+  
+  _emitter = new Emitter();
+
+  _appStore: DispatchParent;
+  _refCount = 0;
+
+  __initStates__: any;
+  state: any = {};
+
+  constructor(appStore: DispatchParent, StoreBuilder: StoreBaseConstructor<T>, options: StoreListDeclarerOptions) {
+    this._appStore = appStore;
+    this._StoreBuilder = StoreBuilder;
+    this._options = options;
   }
 
-  _initWrap() {
-    // this._isInit = true;
+  _init() {}
+
+  _inject(stateKey?: string, depStores?: { [storeKey: string]: DispatchItem }, initState?: any, args?: any) {
+    this._stateKey = stateKey;
+    if (!stateKey) console.error("StoreList can not let stateKey to null");
+
+    if (depStores) {
+      this._depStores = depStores;
+    }
+    if (initState) {
+      this.__initStates__ = initState;
+      this.state = initState;
+    }
+    if (this._options.size) {
+      this.setSize(this._options.size);
+    }
   }
 
   setSize(count: number) {
     if (this.length === count) return;
     if (this.length < count) {
       for (let i = this.length; i < count; ++i) {
-        let newStore = this.builder();
+        let newStore = new this._StoreBuilder(this);
         (newStore as any).listStoreKey = i;
 
-        // if (this._isInit) initStore(newStore);
-        initStore(newStore, this.parentStore);
+        let initState = this.__initStates__ ? this.__initStates__[i] : undefined;
+        newStore._inject(i.toString(), this._depStores, initState);
+
+        newStore._init();
+
         this.storeArray.push(newStore);
-        this.disposables.push(this.observer(newStore, i));
       }
     } else {
       for (let i = count; i < this.length; ++i) {
-        this.disposables[i].dispose();
-        disposeStore(this.storeArray[i]);
+        this.storeArray[i].dispose();
       }
-      this.disposables.splice(count, this.length - count);
       this.storeArray.splice(count, this.length - count);
     }
     this.length = count;
+  }
+
+  setState(state: any) {
+    if (this._stateKey) {
+      this._appStore.setState({ [this._stateKey]: { ...this.state, ...state } });
+    }
   }
 
   dispose() {
@@ -67,4 +92,16 @@ export default class StoreList<T> {
   get(index: number) { return this.storeArray[index]; }
   slice(begin: number, end: number) { return this.storeArray.slice(begin, end); }
   indexOf(item: StoreBase<T>) { return this.storeArray.indexOf(item); }
+
+  _addRef() {
+    this._refCount += 1;
+  }
+
+  _decreaseRef() {
+    this._refCount -= 1;
+  }
+
+  getRefCount() {
+    return this._refCount;
+  }
 }

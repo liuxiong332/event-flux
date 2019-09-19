@@ -1,4 +1,7 @@
 import StoreBase from "./StoreBase";
+import AppStore from "./AppStore";
+import StoreList from "./StoreList";
+import DispatchParent from "./DispatchParent";
 
 interface IGenericOptions {
   stateKey?: string; 
@@ -32,7 +35,7 @@ function parseOptions<OptionT extends IGenericOptions>(Store: any, depStoreNames
 }
 
 export interface StoreBaseConstructor<T> {
-  new (...args: any[]): StoreBase<T>;
+  new (appStore: DispatchParent): StoreBase<T>;
 }
 
 export interface StoreDeclarerOptions {
@@ -55,6 +58,10 @@ class StoreDeclarer<T> {
     this.options = storeOptions;
   }
   
+  create(appStore: AppStore): StoreBase<T> {
+    return new this.Store(appStore);
+  }
+
   [IS_STORE] = true;
 
   static isStore(maybeStore: any) {
@@ -84,6 +91,10 @@ class StoreListDeclarer<T> {
     let [names, storeOptions] = parseOptions(Store, depStoreNames, options);
     this.depStoreNames = names;
     this.options = storeOptions;
+  }
+
+  create(appStore: AppStore): StoreList<T> {
+    return new StoreList(appStore, this.Store, this.options!);
   }
 
   [IS_STORE_LIST] = true;
@@ -119,6 +130,10 @@ class StoreMapDeclarer<T> {
     let [names, storeOptions] = parseOptions(Store, depStoreNames, options);
     this.depStoreNames = names;
     this.options = storeOptions;;
+  }
+
+  create(appStore: AppStore): StoreBase<T> {
+    return new this.Store(appStore);
   }
 
   [IS_STORE_MAP] = true;

@@ -1,5 +1,6 @@
 import { Emitter, Disposable, CompositeDisposable, DisposableLike } from 'event-kit';
-import AppStore from './AppStore';
+import DispatchParent from './DispatchParent';
+import DispatchItem from './DispatchItem';
 
 const IS_STORE = '@@__FLUX_STORE__@@';
 
@@ -34,8 +35,7 @@ export default class StoreBase<StateT> {
   _inWillUpdate = false;
   _willUpdateStates: any[] = [];
 
-  _isInit = false;
-  _appStore: AppStore;
+  _appStore: DispatchParent;
   _args: any = null;
   _stateKey: string | undefined;
 
@@ -48,7 +48,7 @@ export default class StoreBase<StateT> {
   static isStore: (store: any) => boolean;
   // static innerStores;
 
-  constructor(appStore: AppStore) {
+  constructor(appStore: DispatchParent) {
     this._appStore = appStore;
   }
 
@@ -56,7 +56,7 @@ export default class StoreBase<StateT> {
    * Inject the store's dependency stores into this store, It will be invoked before init
    * @param depStores: the store's dependencies, the dependency stores will be injected to this store
    */
-  _inject(stateKey?: string, depStores?: { [storeKey: string]: StoreBase<any> }, initState?: any, args?: any) {
+  _inject(stateKey?: string, depStores?: { [storeKey: string]: DispatchItem }, initState?: any, args?: any) {
     this._stateKey = stateKey;
     if (depStores) {
       for (let storeKey in depStores) {
@@ -83,7 +83,7 @@ export default class StoreBase<StateT> {
     }
   };
 
-  __init() {
+  _init() {
     // Before init, we will disable update
     this.__enableUpdate = false;
     Promise.resolve(this.init()).finally(() => {
