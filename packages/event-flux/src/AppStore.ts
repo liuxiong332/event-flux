@@ -241,9 +241,9 @@ export default class AppStore {
       for (let depName of depNames) {
         depStores[depName] = this.stores[name];
       }
-      let { stateKey, args } = storeInfo.options!;
+      let { stateKey } = storeInfo.options!;
       let initState = this.__initStates__ ? stateKey ? this.__initStates__[stateKey] : this.__initStates__ : undefined;
-      this.stores[storeKey]._inject(stateKey, depStores, initState, args);
+      this.stores[storeKey]._inject(storeInfo.Store, stateKey, depStores, initState, storeInfo.options);
     }
     return depList;
   }

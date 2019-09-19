@@ -1,10 +1,17 @@
+import { StoreBaseConstructor } from "./StoreDeclarer";
 
 export default interface DispatchItem {
   // Init this dispatch item
   _init(): void;
 
   // AppStore will inject some state into this dispatch item
-  _inject(stateKey?: string, depStores?: { [storeKey: string]: DispatchItem }, initState?: any, args?: any): void;
+  _inject(
+    StoreBuilder: StoreBaseConstructor<any>, 
+    stateKey?: string, 
+    depStores?: { [storeKey: string]: DispatchItem }, 
+    initState?: any, 
+    options?: any
+  ): void;
 
   // Dispose the dispatch item
   dispose(): void;

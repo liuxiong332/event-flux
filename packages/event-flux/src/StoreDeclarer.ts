@@ -2,6 +2,7 @@ import StoreBase from "./StoreBase";
 import AppStore from "./AppStore";
 import StoreList from "./StoreList";
 import DispatchParent from "./DispatchParent";
+import StoreMap from "./StoreMap";
 
 interface IGenericOptions {
   stateKey?: string; 
@@ -38,11 +39,18 @@ export interface StoreBaseConstructor<T> {
   new (appStore: DispatchParent): StoreBase<T>;
 }
 
+export interface StoreListConstructor<T> {
+  new (appStore: DispatchParent): StoreList<T>;
+}
+
+export interface StoreMapConstructor<T> {
+  new (appStore: DispatchParent): StoreMap<T>;
+}
+
 export interface StoreDeclarerOptions {
   args?: any;
   storeKey?: string;
   stateKey?: string;
-  defaultFilter?: boolean;
 }
 
 const IS_STORE = '@@__STORE_ITEM__@@';
@@ -78,6 +86,7 @@ export interface StoreListDeclarerOptions {
   storeKey?: string;
   stateKey?: string;
   size?: number;
+  StoreList?: StoreListConstructor<any>;
 }
 const IS_STORE_LIST = '@@__STORE_LIST__@@';
 
@@ -94,7 +103,8 @@ class StoreListDeclarer<T> {
   }
 
   create(appStore: AppStore): StoreList<T> {
-    return new StoreList(appStore, this.Store, this.options!);
+    const ListClass = this.options!.StoreList || StoreList;
+    return new ListClass(appStore);
   }
 
   [IS_STORE_LIST] = true;
@@ -113,10 +123,8 @@ export interface StoreMapDeclarerOptions {
   args?: [any];
   storeKey?: string;
   stateKey?: string;
-  keys?: [string];
-  directInsert?: boolean;
-  defaultFilter?: boolean;
-  storeDefaultFilter?: boolean;
+  keys?: string[];
+  StoreMap?: StoreMapConstructor<any>
 }
 const IS_STORE_MAP = '@@__STORE_MAP__@@';
 
@@ -132,8 +140,9 @@ class StoreMapDeclarer<T> {
     this.options = storeOptions;;
   }
 
-  create(appStore: AppStore): StoreBase<T> {
-    return new this.Store(appStore);
+  create(appStore: AppStore): StoreMap<T> {
+    const MapClass = this.options!.StoreMap || StoreMap;
+    return new MapClass(appStore);
   }
 
   [IS_STORE_MAP] = true;

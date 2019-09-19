@@ -1,6 +1,7 @@
 import { Emitter, Disposable, CompositeDisposable, DisposableLike } from 'event-kit';
 import DispatchParent from './DispatchParent';
 import DispatchItem from './DispatchItem';
+import { StoreBaseConstructor, StoreMapDeclarer, StoreDeclarerOptions } from './StoreDeclarer';
 
 const IS_STORE = '@@__FLUX_STORE__@@';
 
@@ -56,14 +57,20 @@ export default class StoreBase<StateT> {
    * Inject the store's dependency stores into this store, It will be invoked before init
    * @param depStores: the store's dependencies, the dependency stores will be injected to this store
    */
-  _inject(stateKey?: string, depStores?: { [storeKey: string]: DispatchItem }, initState?: any, args?: any) {
+  _inject(
+    StoreBuilder: StoreBaseConstructor<any>, 
+    stateKey?: string, 
+    depStores?: { [storeKey: string]: DispatchItem }, 
+    initState?: any, 
+    options?: StoreDeclarerOptions
+  ) {
     this._stateKey = stateKey;
     if (depStores) {
       for (let storeKey in depStores) {
         this[storeKey] = depStores[storeKey];
       }
     }
-    this._args = args;
+    this._args = options!.args;
 
     // Observe this store's state and send the state to appStore
     if (initState) {

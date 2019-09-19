@@ -9,8 +9,8 @@ export default class StoreList<T> {
   length: number = 0;
   storeArray: StoreBase<T>[] = [];
 
-  _options: StoreListDeclarerOptions;
-  _StoreBuilder: StoreBaseConstructor<T>;
+  _options: StoreListDeclarerOptions | undefined;
+  _StoreBuilder: StoreBaseConstructor<T> | undefined;
   _depStores: { [storeKey: string]: DispatchItem } = {};
   _stateKey: string | undefined;
   
@@ -20,24 +20,25 @@ export default class StoreList<T> {
   __initStates__: any;
   state: any = {};
 
-  constructor(appStore: DispatchParent, StoreBuilder: StoreBaseConstructor<T>, options: StoreListDeclarerOptions) {
+  constructor(appStore: DispatchParent) {
     this._appStore = appStore;
-    this._StoreBuilder = StoreBuilder;
-    this._options = options;
   }
 
   _init() {
-    if (this._options.size) {
-      return Promise.all([this.setSize(this._options.size), this.init()]);
+    if (this._options!.size) {
+      return Promise.all([this.setSize(this._options!.size), this.init()]);
     }
     return this.init();
   }
 
   init() {}
 
-  _inject(stateKey?: string, depStores?: { [storeKey: string]: DispatchItem }, initState?: any, args?: any) {
+  _inject(StoreBuilder: StoreBaseConstructor<T>, stateKey?: string, depStores?: { [storeKey: string]: DispatchItem }, initState?: any, options?: StoreListDeclarerOptions) {
     this._stateKey = stateKey;
     if (!stateKey) console.error("StoreList can not let stateKey to null");
+
+    this._StoreBuilder = StoreBuilder;
+    this._options = options!;
 
     if (depStores) {
       this._depStores = depStores;
@@ -53,17 +54,17 @@ export default class StoreList<T> {
     if (this.length < count) {
       let initList = [];
       for (let i = this.length; i < count; ++i) {
-        let newStore = new this._StoreBuilder(this);
+        let newStore = new this._StoreBuilder!(this);
         (newStore as any).listStoreKey = i;
 
         let initState = this.__initStates__ ? this.__initStates__[i] : undefined;
-        newStore._inject(i.toString(), this._depStores, initState);
+        newStore._inject(this._StoreBuilder!, i.toString(), this._depStores, initState, {});
         this.storeArray.push(newStore);
         // newStore._init();
         initList.push(newStore);
       }
       this.length = count;
-      return Promise.all(initList.map(store => store.init()));
+      return Promise.all(initList.map(store => store._init()));
     } else {
       for (let i = count; i < this.length; ++i) {
         this.storeArray[i].dispose();

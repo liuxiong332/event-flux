@@ -1,74 +1,89 @@
-import { initStore, disposeStore } from './storeBuilder';
-import { Emitter } from 'event-kit';
-import IExtendStoreBase from '../IExtendStoreBase';
+import { StoreMapDeclarerOptions, StoreBaseConstructor, StoreMapDeclarer } from './StoreDeclarer';
+import DispatchItem from './DispatchItem';
+import DispatchParent from './DispatchParent';
 
-type StoreBuilder = () => IExtendStoreBase | undefined;
-type StoreMapObserver = (store: IExtendStoreBase, index: string) => void;
-
-export interface StoreMapConstructor {
-  new (keys: string[] | null, builder: StoreBuilder, observer: StoreMapObserver, options: any): StoreMap;
-}
-
-export default class StoreMap {
+export default class StoreMap<T> {
   storeMap: Map<string, any> = new Map();
-  disposables = new Map();
-  options: any;
-  builder: StoreBuilder;
-  observer: any;
-  parentStore: any = null;
-  appStores: any;
-  emitter = new Emitter();
 
-  constructor(keys: string[] | null, builder: StoreBuilder, observer: StoreMapObserver, options: any) {
-    this.builder = builder;
-    this.observer = observer;
-    this.options = options;
-    if (Array.isArray(keys)) keys.forEach(key => this.add(key));
+  _options: StoreMapDeclarerOptions | undefined;
+  _StoreBuilder: StoreBaseConstructor<T> | undefined;
+  _depStores: { [storeKey: string]: DispatchItem } = {};
+  _stateKey: string | undefined;
+
+  _appStore: DispatchParent;
+  _refCount = 0;
+
+  __initStates__: any;
+  state: any = {};
+
+  constructor(appStore: DispatchParent) {
+    this._appStore = appStore;
   }
 
-  _initWrap() {
-    // this._isInit = true;
+  _init() {
+    let keys = this._options!.keys;
+    if (keys && Array.isArray(keys)) {
+      return Promise.all([...keys.map(key => this.add(key)), this.init()]);
+    }
+    return this.init();
   }
 
-  add(key: string, prevInit?: (store: IExtendStoreBase) => void): IExtendStoreBase | undefined {
-    if (this.storeMap.has(key)) return;
-    let newStore = this.builder();
-    if (newStore) {
-      (newStore as any).mapStoreKey = key;
-      prevInit && prevInit(newStore);
+  init() {}
   
-      // if (this._isInit) initStore(newStore);
-      initStore(newStore, this.parentStore);
-      this.storeMap.set(key, newStore);
-      this.disposables.set(key, this.observer(newStore, key));
-      return newStore;
+  _inject(StoreBuilder: StoreBaseConstructor<T>, stateKey?: string, depStores?: { [storeKey: string]: DispatchItem }, initState?: any, options?: StoreMapDeclarerOptions) {
+    this._stateKey = stateKey;
+    if (!stateKey) console.error("StoreList can not let stateKey to null");
+
+    this._StoreBuilder = StoreBuilder;
+    this._options = options!;
+
+    if (depStores) {
+      this._depStores = depStores;
+    }
+    if (initState) {
+      this.__initStates__ = initState;
+      this.state = initState;
     }
   }
 
+  add(key: string) {
+    if (this.storeMap.has(key)) return;
+    let newStore = new this._StoreBuilder!(this);
+    (newStore as any).mapStoreKey = key;
+
+    let initState = this.__initStates__ ? this.__initStates__[key] : undefined;
+    newStore._inject(this._StoreBuilder!, key, this._depStores, initState, {});
+    this.storeMap.set(key, newStore);
+    return newStore._init();
+   }
+
   delete(key: string) {
     let store = this.storeMap.get(key);
-    store && disposeStore(store);
+    store.dispose();
     this.storeMap.delete(key);
-    let disposable = this.disposables.get(key);
-    disposable && disposable.dispose();
-    this.disposables.delete(key);
   }
 
   clear() {
     let stores = this.storeMap.values();
     for (let store of stores) {
-      disposeStore(store);
+      store.dispose();
     }
     this.storeMap.clear();
-    let disposables = this.disposables.values();
-    for (let d of disposables) {
-      d.dispose();
+  }
+
+  setState(state: any) {
+    this.state = { ...this.state, ...state };
+    if (this._stateKey) {
+      this._appStore.setState({ [this._stateKey]: this.state });
     }
-    this.disposables.clear();
   }
 
   dispose() {
     this.clear();
+    this.state = {};
+    if (this._stateKey) {
+      this._appStore.setState({ [this._stateKey]: undefined });
+    }
   }
 
   forEach(callback: (value: any, key: string, map: Map<string, any>) => void) { 
@@ -84,4 +99,16 @@ export default class StoreMap {
   values() { return this.storeMap.values(); }
 
   entries() { return this.storeMap.entries(); }
+
+  _addRef() {
+    this._refCount += 1;
+  }
+
+  _decreaseRef() {
+    this._refCount -= 1;
+  }
+
+  getRefCount() {
+    return this._refCount;
+  }
 }
