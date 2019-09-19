@@ -67,6 +67,14 @@ describe('AppStore', () => {
     expect(appStore._storeRegisterMap["todoStore"].Store).toEqual(TodoStore);
   });
 
+  test("constructor and registerStore should register store declarer", () => {
+    let appStore = new AppStore([declareStore(StoreBase)]);
+    appStore.registerStore(declareStore(TodoStore));
+
+    expect(appStore._storeRegisterMap["storeBaseStore"].Store).toEqual(StoreBase);
+    expect(appStore._storeRegisterMap["todoStore"].Store).toEqual(TodoStore);
+  });
+
   test("should request store for dependency store dependen on self", () => {
     class Todo1Store extends StoreBase<any> {}
     class Todo2Store extends StoreBase<any> {}
@@ -156,5 +164,56 @@ describe('AppStore', () => {
     expect(appStore.stores.todo3Store._args).toBe("myArg");
     expect(appStore.stores.todo3Store._stateKey).toBe("todo3");
     expect(appStore.stores.todo3Store.state).toEqual({ hello: "world" });
+    expect(appStore.stores.todo3Store.init).toHaveBeenCalled();
+
+    appStore.requestStore("todo1Store");
+    expect(appStore.stores.todo1Store._args).toBe(undefined);
+    expect(appStore.stores.todo1Store._stateKey).toBe("todo1");
+    expect(appStore.stores.todo1Store.state).toEqual({});
+    expect(appStore.stores.todo3Store.init).toHaveBeenCalled();
+    expect(appStore.state).toEqual({ todo3: { hello: "world" }, todo1: {}, todo2: {} });
+  });
+
+  test("should can preload stores ahead of time", () => {
+    class Todo1Store extends StoreBase<any> {}
+    class Todo2Store extends StoreBase<any> {}
+    class Todo3Store extends StoreBase<any> {}
+
+    let appStore = new AppStore({ todo3: { hello: "world" } });
+    appStore.registerStore(
+      declareStore(Todo1Store, ["todo2Store", "todo3Store"]),
+      declareStore(Todo2Store, ["todo1Store"]),
+      declareStore(Todo3Store, { args: "myArg" })
+    );
+
+    Todo1Store.prototype.init = jest.fn();
+    Todo2Store.prototype.init = jest.fn();
+    Todo3Store.prototype.init = jest.fn();
+
+    appStore.preloadStores(["todo3Store", "todo1Store", "todo2Store", ]);
+    expect(appStore.stores.todo1Store.getRefCount()).toBe(0);
+    expect(appStore.stores.todo2Store.getRefCount()).toBe(1);
+    expect(appStore.stores.todo3Store.getRefCount()).toBe(1);
+
+    expect(appStore.stores.todo1Store.init).toHaveBeenCalledTimes(1);
+    expect(appStore.stores.todo2Store.init).toHaveBeenCalledTimes(1);
+    expect(appStore.stores.todo3Store.init).toHaveBeenCalledTimes(1);
+  });
+
+  test("setRecycleStrategy to urgent should dispose not used stores", () => {
+    class Todo1Store extends StoreBase<any> {}
+    class Todo2Store extends StoreBase<any> {}
+    class Todo3Store extends StoreBase<any> {}
+
+    let appStore = new AppStore({ todo3: { hello: "world" } });
+    appStore.registerStore(
+      declareStore(Todo1Store, ["todo2Store", "todo3Store"]),
+      declareStore(Todo2Store, ["todo1Store"]),
+      declareStore(Todo3Store, { args: "myArg" })
+    );
+    appStore.preloadStores(["todo3Store", "todo1Store", "todo2Store", ]);
+    
+    appStore.setRecycleStrategy(RecycleStrategy.Urgent);
+    expect(appStore.stores).toEqual({});
   });
 });

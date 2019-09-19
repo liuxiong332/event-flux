@@ -1,11 +1,11 @@
 import StoreBase from '../StoreBase';
-import RecycleStrategy from "../RecycleStrategy";
+import AppStore from '../AppStore';
 
 jest.useFakeTimers();
 
 describe('StoreBase', () => {
   test('onDidUpdate method', () => {
-    let store = new StoreBase();
+    let store = new StoreBase(new AppStore());
     let stateChangeMock = jest.fn();
     store.onDidUpdate(stateChangeMock);
     expect(stateChangeMock.mock.calls.length).toBe(0);
@@ -15,7 +15,7 @@ describe('StoreBase', () => {
   });
 
   test('observe method', () => {
-    let store = new StoreBase();
+    let store = new StoreBase(new AppStore());
     let stateChangeMock = jest.fn();
     store.observe(stateChangeMock);
     expect(stateChangeMock.mock.calls.length).toBe(1);
@@ -26,7 +26,7 @@ describe('StoreBase', () => {
 
 
   test('setState method', () => {
-    let store = new StoreBase();
+    let store = new StoreBase(new AppStore());
     let stateChangeMock = jest.fn();
     store.onDidUpdate(stateChangeMock);
     store.setState({ hello: 'world' });
@@ -35,7 +35,7 @@ describe('StoreBase', () => {
   });
 
   test('setState will update test', () => {
-    let store = new StoreBase();
+    let store = new StoreBase(new AppStore());
     store.setState({ hello: 'hello1' });
     let stateChangeMock = jest.fn();
     store.onDidUpdate(stateChangeMock);
@@ -55,8 +55,7 @@ describe('StoreBase', () => {
   });
 
   test("storeBase constructor and dispose test", () => {
-    let myAppStore = {};
-    let store = new StoreBase(myAppStore, { hello: "arg" });
+    let store = new StoreBase(new AppStore());
     store.addDisposable({ dispose: () => {} });
     store.onDidUpdate(jest.fn);
     store.dispose();
@@ -66,8 +65,7 @@ describe('StoreBase', () => {
   });
 
   test("storeBase addRef and decreaseRef test", () => {
-    let myAppStore = {};
-    let store = new StoreBase(myAppStore, { hello: "arg" });
+    let store = new StoreBase(new AppStore());
 
     store._addRef();
     store._decreaseRef();

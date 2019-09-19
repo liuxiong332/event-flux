@@ -63,18 +63,25 @@ export default class StoreBase<StateT> {
         this[storeKey] = depStores[storeKey];
       }
     }
-    this.state = initState;
     this._args = args;
+
     // Observe this store's state and send the state to appStore
-    this.addDisposable(this.observe((state) => {
-      let stateKey = this._stateKey;
-      if (stateKey) {
-        this._appStore.setState({ [stateKey]: state });
-      } else {
-        this._appStore.setState(state);
-      }
-    }));  
+    if (initState) {
+      this.state = initState;
+      this.addDisposable(this.onDidUpdate(this._handleUpdate));  
+    } else {
+      this.addDisposable(this.observe(this._handleUpdate));  
+    }
   }
+
+  _handleUpdate = (state: any) => {
+    let stateKey = this._stateKey;
+    if (stateKey) {
+      this._appStore.setState({ [stateKey]: state });
+    } else {
+      this._appStore.setState(state);
+    }
+  };
 
   __init() {
     // Before init, we will disable update
@@ -161,6 +168,7 @@ export default class StoreBase<StateT> {
   dispose() {
     this._disposables.dispose();
     this._emitter.dispose();
+    this._handleUpdate(undefined);
   }
 
   getState() {

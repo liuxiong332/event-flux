@@ -15,7 +15,6 @@ export default class AppStore {
   stores: { [storeKey: string]: StoreBase<any> } = {};
 
   _storeRegisterMap: { [storeName: string]: AnyStoreDeclarer } = {};
-  _storeToKeyMap: Map<StoreBaseConstructor<any>, string[]> = new Map();
   // Save all of the circular dependency stores name.
   _cycleCollections: Set<string>[] | undefined;
 
@@ -36,6 +35,7 @@ export default class AppStore {
     }
     if (initStates) {
       this.__initStates__ = initStates;
+      this.state = initStates;
     }
   }
 
@@ -125,13 +125,6 @@ export default class AppStore {
     for (let storeDeclarer of storeDeclarers) {
       let storeKey = storeDeclarer.options!.storeKey!;
       this._storeRegisterMap[storeKey] = storeDeclarer;
-
-      let storeClass = storeDeclarer.Store;
-      if (!this._storeToKeyMap.has(storeClass)) {
-        this._storeToKeyMap.set(storeDeclarer.Store, [storeKey]);
-      } else {
-        this._storeToKeyMap.set(storeDeclarer.Store, [...this._storeToKeyMap.get(storeClass), storeKey]);
-      }
     }
   }
 
