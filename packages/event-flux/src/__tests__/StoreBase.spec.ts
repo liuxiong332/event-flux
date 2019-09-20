@@ -1,9 +1,94 @@
-import StoreBase from '../StoreBase';
+import StoreBase, { reducer, returnReducer } from '../StoreBase';
 import AppStore from '../AppStore';
 
 jest.useFakeTimers();
 
 describe('StoreBase', () => {
+  test("sync init should invoke synchronously", () => {
+    class MyStore extends StoreBase<any> {
+      state = { hello: 0 };
+
+      init() {
+        this.setState({ hello: 1 });
+      }
+    }
+    let appStore = new AppStore();
+    let store = new MyStore(appStore);
+    store._inject(MyStore, "my", {}, undefined);
+    store._init();
+
+    expect(store.state).toEqual({ hello: 1 });
+    expect(appStore.state).toEqual({ my: { hello: 1 } });
+  });
+
+  test("async init should invoke asynchronously", async () => {
+    class MyStore extends StoreBase<any> {
+      state = { hello: 0 };
+
+      async init() {
+        this.setState({ hello: 1 });
+        this.setState({ hello: 2 });
+      }
+    }
+    let appStore = { setState: jest.fn() };
+    let store = new MyStore(appStore);
+    store._inject(MyStore, "my", {}, undefined);
+    await store._init();
+
+    expect(store.state).toEqual({ hello: 2 });
+    // console.log(appStore.setState)
+    expect(appStore.setState).toHaveBeenCalledTimes(2);
+    expect(appStore.setState).toHaveBeenLastCalledWith(
+      { my: { hello: 2 } },
+    );
+  });
+
+  test("should process reducer and returnReducer action", async () => {
+    class MyStore extends StoreBase<any> {
+      state = { hello: 0 };
+
+      @reducer
+      doSync() {
+        this.setState({ hello: "doSync" });
+      }
+
+      @reducer
+      async doAsync() {
+        this.setState({ hello: "doAsync" });
+      }
+
+      @returnReducer
+      doRetSync() {
+        return "doRetSync";
+      }
+
+      @returnReducer
+      async doRetAsync() {
+        this.setState({ "hello": "doRetAsync" });
+        return "doRetAsync";
+      }
+    }
+    let appStore = { setState: jest.fn() };
+    let store = new MyStore(appStore);
+    store._inject(MyStore, "my", {}, undefined);
+    await store._init();
+
+    appStore.setState.mockReset();
+    store.doSync();
+    expect(store.state).toEqual({ hello: "doSync" });
+    expect(appStore.setState).toHaveBeenCalledWith({ my: { hello: "doSync" } });
+
+    appStore.setState.mockReset();
+    await store.doAsync();
+    expect(store.state).toEqual({ hello: "doAsync" });
+    expect(appStore.setState).toHaveBeenCalledWith({ my: { hello: "doAsync" } });
+
+    appStore.setState.mockReset();
+    expect(store.doRetSync()).toBe("doRetSync");
+    expect(await store.doRetAsync()).toBe("doRetAsync");
+    expect(appStore.setState).toHaveBeenCalledWith({ my: { hello: "doRetAsync" } });
+  });
+
   test('onDidUpdate method', () => {
     let store = new StoreBase(new AppStore());
     let stateChangeMock = jest.fn();

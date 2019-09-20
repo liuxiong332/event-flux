@@ -1,4 +1,4 @@
-import React from 'react';
+import * as React from 'react';
 import AppStore from './AppStore';
 
 export const StoreContext = React.createContext('event-flux');

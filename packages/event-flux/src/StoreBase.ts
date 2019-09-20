@@ -10,20 +10,31 @@ export function eventListener(target: any, propertyKey: string, descriptor: Prop
 }
 
 export function reducer(target: StoreBase<any>, propertyKey: string, descriptor: PropertyDescriptor) {
-  return function(...args: any[]) {
-    target._disableUpdate();
-    Promise.resolve(target[propertyKey](...args)).finally(() => {
-      target._enableUpdate();
-    });
+  let originalMethod = descriptor.value;
+
+  descriptor.value = function(this: StoreBase<any>, ...args: any[]) {
+    this._disableUpdate();
+    let retVal = originalMethod.apply(this, args);
+    if (retVal && retVal.finally) {
+      retVal.finally(this._enableUpdate);
+    } else {
+      this._enableUpdate();
+    }
   }
 }
 
 export function returnReducer(target: any, propertyKey: string, descriptor: PropertyDescriptor) {
-  return function(...args: any[]) {
-    target._disableUpdate();
-    return Promise.resolve(target[propertyKey](...args)).finally(() => {
-      target._enableUpdate();
-    });
+  let originalMethod = descriptor.value;
+
+  descriptor.value = function(this: StoreBase<any>, ...args: any[]) {
+    this._disableUpdate();
+    let retVal = originalMethod.apply(this, args);    
+    if (retVal && retVal.finally) {
+      return retVal.finally(this._enableUpdate);
+    } else {
+      this._enableUpdate();
+      return retVal;
+    }
   }
 }
 
@@ -70,7 +81,7 @@ export default class StoreBase<StateT> {
         this[storeKey] = depStores[storeKey];
       }
     }
-    this._args = options!.args;
+    this._args = options ? options.args : undefined;
 
     // Observe this store's state and send the state to appStore
     if (initState) {
@@ -90,23 +101,25 @@ export default class StoreBase<StateT> {
     }
   };
 
-  _init() {
+  _init(): void | Promise<void> {
     // Before init, we will disable update
-    this.__enableUpdate = false;
-    Promise.resolve(this.init()).finally(() => {
-      // After init, We will send the new state to appStore and enable update
-      this.__enableUpdate = true;
-      this._emitter.emit('did-update', this.state);
-    });
+    this._disableUpdate();
+    let retVal = this.init();
+    // Check the return value is Promise-like or not
+    if (retVal && retVal.finally) {
+      return retVal.finally(this._enableUpdate);
+    } else {
+      this._enableUpdate();
+    }
   }
 
-  init() {}
+  init(): void | Promise<void> {}
 
   _disableUpdate() {
     this.__enableUpdate = false;
   }
 
-  _enableUpdate() {
+  _enableUpdate = () => {
     this.__enableUpdate = true;
     if (this._hasUpdate) {
       this._hasUpdate = false;
