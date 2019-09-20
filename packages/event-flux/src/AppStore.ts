@@ -63,6 +63,14 @@ export default class AppStore {
   
   onDidChange(callback: Function) {
     this.didChangeCallbacks.push(callback);
+    return { 
+      dispose: () => {
+        let index = this.didChangeCallbacks.indexOf(callback);
+        if (index !== -1) {
+          this.didChangeCallbacks.splice(index, 1);
+        }
+      }
+    };
   }
 
   preloadStores(stores: string[]) {

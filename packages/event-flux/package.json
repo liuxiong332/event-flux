@@ -39,6 +39,7 @@
     "weak": "^1.0.1"
   },
   "dependencies": {
-    "event-kit": "^2.5.3"
+    "event-kit": "^2.5.3",
+    "memoize-one": "^5.1.1"
   }
 }

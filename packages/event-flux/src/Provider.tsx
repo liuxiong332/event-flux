@@ -1,34 +1,42 @@
 import * as React from 'react';
+import { DisposableLike } from 'event-kit';
 import AppStore from './AppStore';
+import DispatchItem from './DispatchItem';
 
-export const StoreContext = React.createContext('event-flux');
+interface ContextValue {
+  _appStore: AppStore | undefined;
+  stores: { [storeKey: string]: DispatchItem };
+  state: any; 
+}
+
+interface ProviderProps {
+  appStore: AppStore;
+}
+
+export const StoreContext = React.createContext<ContextValue>({ _appStore: undefined, stores: {}, state: {} });
 const ContextProvider = StoreContext.Provider;
 
-export default class Provider extends React.PureComponent<any, any> {
-  appStore: any;
-  state: any;
+export default class Provider extends React.PureComponent<ProviderProps, ContextValue> {
+  disposable: DisposableLike;
 
-  constructor(props: any) {
+  constructor(props: ProviderProps) {
     super(props);
-    let inStores = props.stores;
-    if (!Array.isArray(inStores)) {
-      inStores = [inStores];
-    } 
-    this.appStore = new AppStore(this.stateChanged);
+    const appStore = props.appStore;
+    this.disposable = appStore.onDidChange(this.handleStateChange);
     this.state = { 
-      _appStore: this.appStore, 
-      stores: this.appStore.stores, 
-      state: this.appStore.state, 
+      _appStore: appStore, 
+      stores: appStore.stores, 
+      state: appStore.state, 
     };
   }
-
-  componentDidMount() {
-    this.appStore.init();
-  }
-
-  stateChanged = (state: any) => {
+  
+  handleStateChange = (state: any) => {
     this.setState({ state });
   };
+
+  componentWillUnmount() {
+    this.disposable.dispose();
+  }
 
   render() {
     return (
