@@ -1,4 +1,11 @@
-export { default as AppStore } from './AppStore';
-export { default as StoreBase } from './StoreBase';
-export { default as Provider } from './Provider';
-export { default as withEventFlux } from './withEventFlux';
+export { default as AppStore } from "./AppStore";
+export { default as StoreBase } from "./StoreBase";
+export { default as StoreList } from "./StoreList";
+export { default as StoreMap } from "./StoreMap";
+export { declareStore, declareStoreList, declareStoreMap } from "./StoreDeclarer";
+export { default as Provider } from "./Provider";
+export { default as withEventFlux } from "./withEventFlux";
+export { default as useEventFlux } from "./useEventFlux";
+export { default as DispatchItem } from "./DispatchItem";
+export { default as DispatchParent } from "./DispatchParent";
+export { default as RecycleStrategy } from "./RecycleStrategy";

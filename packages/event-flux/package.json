@@ -1,6 +1,6 @@
 {
   "name": "event-flux",
-  "version": "0.10.3",
+  "version": "1.0.0",
   "description": "The flux framework for React",
   "main": "./lib/index.js",
   "scripts": {
@@ -9,14 +9,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/liuxiong332/reevent.git"
+    "url": "git+https://github.com/liuxiong332/event-flux.git"
   },
   "author": "liuxiong",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/liuxiong332/reevent/issues"
+    "url": "https://github.com/liuxiong332/event-flux/issues"
   },
-  "homepage": "https://github.com/liuxiong332/reevent#readme",
+  "homepage": "https://github.com/liuxiong332/event-flux#readme",
   "files": [
     "src",
     "lib"
