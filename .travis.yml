@@ -7,7 +7,7 @@ branches:
   only:
     - master
 
-install:
+before_install:
   - npm install -g jest 
   - npm install -g codecov
   
