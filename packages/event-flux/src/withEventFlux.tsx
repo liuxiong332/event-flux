@@ -59,7 +59,7 @@ export function genStoreAndState(args: StoreDefineObj[] | StoreDefineItem[]) {
     for (let storeDef of defList) {
       let storeKey = storeDef[0];
       reqStores[storeKey] = _appStore!.requestStore(storeKey);
-      storeDef[2] = reqStores[storeKey]._stateKey;
+      storeDef[2] = reqStores[storeKey]._stateKey!;
     }
     return reqStores;
   }, []);

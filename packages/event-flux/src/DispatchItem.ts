@@ -25,5 +25,5 @@ export default interface DispatchItem {
   // Get this dispatch item's reference count
   getRefCount(): number;
 
-  _stateKey: string;
+  _stateKey: string | undefined;
 }
