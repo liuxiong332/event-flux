@@ -10,14 +10,10 @@ gulp.task('clean', function () {
   ]);
 });
 
+var tsProject = ts.createProject("tsconfig.json");
 gulp.task('ts', function () {
   var tsResult = gulp.src('src/**/*.ts')
-    .pipe(ts({
-      declaration: true,
-      "target": "es5",
-      "lib": ["es2015", "es2017", "dom"],
-      "jsx": "react",
-    }));
+    .pipe(tsProject());
 
   return merge([
     tsResult.dts.pipe(gulp.dest('lib')),
