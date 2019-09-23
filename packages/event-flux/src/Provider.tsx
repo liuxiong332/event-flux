@@ -41,7 +41,7 @@ export default class Provider extends React.PureComponent<ProviderProps, Context
   render() {
     return (
       <ContextProvider value={this.state}>
-        {React.Children.only(this.props.children)}
+        {this.props.children}
       </ContextProvider>
     );
   }

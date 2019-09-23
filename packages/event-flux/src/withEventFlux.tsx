@@ -2,7 +2,7 @@ import * as React from 'react';
 import Provider, { StoreContext } from './Provider';
 import AppStore from "./AppStore";
 import DispatchItem from './DispatchItem';
-import memoizeOne from 'memoize-one';
+const memoizeOne = require('memoize-one');
 
 const { useContext, useEffect, useMemo, useRef } = React;
 
@@ -18,7 +18,7 @@ export type StoreDefineItem = string | [string, string[] | StateFilter];
 
 type StoreDefItemWithKey = [string, string[] | StateFilter, string | null];
 
-function transformDefArgs(args: StoreDefineObj[] | StoreDefineItem[]): StoreDefItemWithKey[] {
+export function transformDefArgs(args: StoreDefineObj[] | StoreDefineItem[]): StoreDefItemWithKey[] {
   let defList: StoreDefItemWithKey[] = [];
   if (args.length === 1 && typeof args[0] === "object" && !Array.isArray(args[0])) {
     let defObj = args[0] as StoreDefineObj;
@@ -36,14 +36,14 @@ function transformDefArgs(args: StoreDefineObj[] | StoreDefineItem[]): StoreDefI
   return defList;
 }
 
-function processState(state: any, handler: string[] | StateFilter) {
+export function processState(state: any, handler: string[] | StateFilter) {
   if (Array.isArray(handler)) {
     let retState: any = {};
     for (let key of handler) {
       let keys: string[] = key.split(".");
       retState[keys[keys.length - 1]] = keys.reduce((obj: any, k) => (obj == null ? obj : obj[k]), state);
     }
-    return;
+    return retState;
   } else {
     return handler(state);
   }
@@ -80,18 +80,21 @@ export function genStoreAndState(args: StoreDefineObj[] | StoreDefineItem[]) {
     let stateKey: string = storeDef[2]!;
     let curHandler = stateRefs.current[stateKey];
     if (!curHandler) {
-      curHandler = stateRefs.current.stateKey = memoizeOne(
-        (curState: any) => processState(curState, defList[1] as string[] | StateFilter),
-      )
+      curHandler = stateRefs.current[stateKey] = memoizeOne(
+        (curState: any, stateFunc: string[] | StateFilter) => processState(curState, stateFunc),
+      );
+      // When we first create the store, we get the state from the appStore
+      Object.assign(newState, curHandler(stateKey ? _appStore!.state[stateKey] : _appStore!.state, storeDef[1]));
+    } else {
+      Object.assign(newState, curHandler(stateKey ? state[stateKey] : state, storeDef[1]));
     }
-    Object.assign(newState, curHandler(stateKey ? state[stateKey] : state));
   }
   return [retStores, newState];
 }
 
 export default function withEventFlux(...args: StoreDefineObj[] | StoreDefineItem[]) {
   
-  return function(Component: React.ComponentClass) {
+  return function(Component: React.ComponentType) {
 
     return function(props: any) {
       let [retStores, newState] = genStoreAndState(args);

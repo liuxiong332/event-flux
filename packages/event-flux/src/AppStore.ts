@@ -139,7 +139,7 @@ export default class AppStore {
    * Request the appStore to add reference count if this store has exists.
    * @param storeKey 
    */
-  requestStore(storeKey: string) {
+  requestStore(storeKey: string): DispatchItem {
     let store = this.stores[storeKey];
     if (!store) {
       
@@ -155,6 +155,7 @@ export default class AppStore {
         let storeKey = depList[i];
         this.stores[storeKey]._init();
       }
+      store = this.stores[storeKey];
     } else {
       store._addRef();
     }
