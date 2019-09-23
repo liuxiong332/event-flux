@@ -1,0 +1,6 @@
+language: node_js
+env: CI=true
+node_js:
+  - 'v10.16.0'
+script:
+  - cd packages/event-flux/ && npm run test
