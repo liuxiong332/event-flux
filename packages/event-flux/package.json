@@ -9,14 +9,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/liuxiong332/event-flux.git"
+    "url": "git+https://github.com/event-flux/event-flux.git"
   },
   "author": "liuxiong",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/liuxiong332/event-flux/issues"
+    "url": "https://github.com/event-flux/event-flux/issues"
   },
-  "homepage": "https://github.com/liuxiong332/event-flux#readme",
+  "homepage": "https://github.com/event-flux/event-flux#readme",
   "files": [
     "src",
     "lib"
