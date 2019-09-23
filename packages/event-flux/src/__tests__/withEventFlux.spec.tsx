@@ -81,8 +81,13 @@ describe('withEventFlux', () => {
     expect(Object.keys(propInvoker[0])).toEqual(["todo1Store", "state1", "state2"]);
     expect(Object.keys(propInvoker[1])).toEqual(["todo2Store", "state1", "state2"]);
 
+    appStore.setState({ todo1: { state1: "hello", state2: "hello" } });
+    expect(propInvoker[2]).toBeFalsy();
+    jest.runAllTimers();
+    expect(Object.keys(propInvoker[2])).toEqual(["todo1Store", "state1", "state2"]);
+    expect(propInvoker[2].state1).toBe("hello");
+
     wrapper.unmount();
     expect(appStore.stores).toEqual({});
   });
- 
 });
