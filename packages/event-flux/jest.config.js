@@ -15,4 +15,6 @@ module.exports = {
     "node"
   ],
   "setupFilesAfterEnv": ["./src/setupTests.ts"],
+  "coverageDirectory": "./coverage/",
+  "collectCoverage": true,
 }

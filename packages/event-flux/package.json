@@ -4,7 +4,7 @@
   "description": "The flux framework for React",
   "main": "./lib/index.js",
   "scripts": {
-    "test": "jest --detectLeaks --coverage",
+    "test": "jest --detectLeaks --coverage && codecov",
     "prepublish": "gulp"
   },
   "repository": {
