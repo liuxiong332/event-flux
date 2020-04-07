@@ -77,6 +77,7 @@ function storeEnhancer(appStore: MultiWindowAppStore, stores: { [storeKey: strin
         let result = store[method].apply(store, args);
         return Promise.resolve(result);
       } catch (err) {
+        appStore.onHandleErr(err);
         return Promise.reject(err);
       }
     }
@@ -199,6 +200,8 @@ class MultiWindowAppStore extends AppStore {
     let winStores = this.stores[winManagerStoreName].winPackMap[clientId];
     if (winStores) return winStores[storeName];
   }
+
+  onHandleErr(err: any) {}
 
   // 构建子Stores
   buildStores() {}
